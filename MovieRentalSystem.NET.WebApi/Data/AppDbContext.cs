@@ -14,6 +14,15 @@ public class AppDbContext : DbContext
     public DbSet<Rental> Rentals => Set<Rental>();
     public DbSet<User> Users => Set<User>();
 
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<MovieGenre>()
+            .HasKey(mg => new { mg.MovieId, mg.GenreId });
+        modelBuilder.Entity<MoviePhysicalCopy>()
+            .HasIndex(c => c.Code)
+            .IsUnique();
+    }
+
 }
 
 

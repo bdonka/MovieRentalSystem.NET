@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace MovieRentalSystem.NET.WebApi.Entities
+﻿namespace MovieRentalSystem.NET.WebApi.Entities
 {
     public class Genre
     {

@@ -53,7 +53,7 @@ public class MoviesController : ControllerBase
 
     // PUT : api/movies/5
     [HttpPut("{id}")]
-    public async Task<ActionResult<Movie>> PutMovie(int id, Movie movie)
+    public async Task<IActionResult> PutMovie(int id, Movie movie)
     {
         if (id != movie.Id)
         {
@@ -77,7 +77,11 @@ public class MoviesController : ControllerBase
         }
         catch (DbUpdateConcurrencyException)
         {
-            return NotFound();
+            if (!MovieExists(id))
+            {
+                return NotFound();
+            }
+            throw;
         }
 
         return NoContent();
@@ -97,4 +101,9 @@ public class MoviesController : ControllerBase
         await _context.SaveChangesAsync();
         return NoContent();
     }
+    private bool MovieExists(int id)
+    {
+            return _context.Movies.Any(e => e.Id == id);
+    }
 }
+

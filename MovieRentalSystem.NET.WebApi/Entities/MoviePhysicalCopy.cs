@@ -1,5 +1,4 @@
 ﻿using MovieRentalSystem.NET.WebApi.Enums;
-using System.ComponentModel.DataAnnotations;
 
 namespace MovieRentalSystem.NET.WebApi.Entities
 {
