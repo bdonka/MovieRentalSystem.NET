@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using MovieRentalSystem.NET.WebApi.Data;
 using MovieRentalSystem.NET.WebApi.Entities;
+using MovieRentalSystem.NET.WebApi.Models.Requests.Users;
 
 namespace MovieRentalSystem.NET.WebApi.Controllers
 {
@@ -20,67 +21,67 @@ namespace MovieRentalSystem.NET.WebApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            return await _context.Users.ToListAsync();
+            //return await _context.Users.ToListAsync();
         }
 
         // GET: api/user/5
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUser(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
+            //var user = await _context.Users.FindAsync(id);
+            //if (user == null)
+            //{
+            //    return NotFound();
+            //}
 
-            return user;
+            //return user;
         }
 
 
         // POST: api/users
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser(User user)
+        public async Task<ActionResult<User>> PostUser(CreateUserRequest request)
         {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            //_context.Users.Add(user);
+            //await _context.SaveChangesAsync();
 
-            return CreatedAtAction(
-                nameof(GetUser),
-                new { id = user.Id },
-                user);
+            //return CreatedAtAction(
+            //    nameof(GetUser),
+            //    new { id = user.Id },
+            //    user);
         }
 
 
         // PUT : api/user/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(int id, User user)
+        public async Task<IActionResult> PutUser(int id, UpdateUserRequest request)
         {
-            if (id != user.Id)
-            {
-                return BadRequest();
-            }
+            //if (id != user.Id)
+            //{
+            //    return BadRequest();
+            //}
 
-            var userItem = await _context.Users.FindAsync(id);
-            if (userItem == null)
-            {
-                return NotFound();
-            }
+            //var userItem = await _context.Users.FindAsync(id);
+            //if (userItem == null)
+            //{
+            //    return NotFound();
+            //}
 
-            userItem.Name = user.Name;
-            userItem.Email = user.Email;
-            userItem.Password = user.Password;
-            userItem.Role = user.Role;
+            //userItem.Name = user.Name;
+            //userItem.Email = user.Email;
+            //userItem.Password = user.Password;
+            //userItem.Role = user.Role;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                 return NotFound();
-            }
+            //try
+            //{
+            //    await _context.SaveChangesAsync();
+            //}
+            //catch (DbUpdateConcurrencyException)
+            //{
+            //     return NotFound();
+            //}
 
-            return NoContent();
+            //return NoContent();
         }
 
 
@@ -88,14 +89,14 @@ namespace MovieRentalSystem.NET.WebApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
-            return NoContent();
+            //var user = await _context.Users.FindAsync(id);
+            //if (user == null)
+            //{
+            //    return NotFound();
+            //}
+            //_context.Users.Remove(user);
+            //await _context.SaveChangesAsync();
+            //return NoContent();
         }
     }
 }

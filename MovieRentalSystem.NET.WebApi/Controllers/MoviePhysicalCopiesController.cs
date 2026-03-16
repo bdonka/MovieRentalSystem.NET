@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using MovieRentalSystem.NET.WebApi.Data;
 using MovieRentalSystem.NET.WebApi.Entities;
+using MovieRentalSystem.NET.WebApi.Models.Requests.MoviePhysicalCopies;
 
 namespace MovieRentalSystem.NET.WebApi.Controllers;
 
@@ -20,78 +21,78 @@ public class MoviePhysicalCopiesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<MoviePhysicalCopy>>> GetMoviePhysicalCopies()
     {
-        return await _context.MoviePhysicalCopies.ToListAsync();
+        //return await _context.MoviePhysicalCopies.ToListAsync();
     }
 
     // GET: api/movies/id
     [HttpGet("{id}")]
     public async Task<ActionResult<MoviePhysicalCopy>> GetMoviePhysicalCopy(int id)
     {
-        var moviePhysicalCopy = await _context.MoviePhysicalCopies.FindAsync(id);
-        if (moviePhysicalCopy == null)
-        {
-            return NotFound();
-        }
+        //var moviePhysicalCopy = await _context.MoviePhysicalCopies.FindAsync(id);
+        //if (moviePhysicalCopy == null)
+        //{
+        //    return NotFound();
+        //}
 
-        return moviePhysicalCopy;
+        //return moviePhysicalCopy;
     }
 
 
     // POST: api/moviePhysicalCopy
     [HttpPost]
-    public async Task<ActionResult<MoviePhysicalCopy>> PostMoviePhysicalCopy(MoviePhysicalCopy moviePhysicalCopy)
+    public async Task<ActionResult<MoviePhysicalCopy>> PostMoviePhysicalCopy(CreateMoviePhysicalCopyRequest request)
     {
-        var exists = await _context.MoviePhysicalCopies
-            .AnyAsync(mg => mg.Id == moviePhysicalCopy.Id);
+        //var exists = await _context.MoviePhysicalCopies
+        //    .AnyAsync(mg => mg.Id == moviePhysicalCopy.Id);
 
-        if (exists)
-        {
-            return Conflict("This physical copy already exists.");
-        }
+        //if (exists)
+        //{
+        //    return Conflict("This physical copy already exists.");
+        //}
 
-        _context.MoviePhysicalCopies.Add(moviePhysicalCopy);
-        await _context.SaveChangesAsync();
+        //_context.MoviePhysicalCopies.Add(moviePhysicalCopy);
+        //await _context.SaveChangesAsync();
 
-        return CreatedAtAction(
-            nameof(GetMoviePhysicalCopy),
-            new { id = moviePhysicalCopy.Id },
-            moviePhysicalCopy);
+        //return CreatedAtAction(
+        //    nameof(GetMoviePhysicalCopy),
+        //    new { id = moviePhysicalCopy.Id },
+        //    moviePhysicalCopy);
     }
 
     // PUT: api/moviePhysicalCopies/{id}/{movieId}
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutMoviePhysicalCopy(int id, MoviePhysicalCopy moviePhysicalCopy)
+    public async Task<IActionResult> PutMoviePhysicalCopy(int id, UpdateMoviePhysicalCopyRequest request)
     {
-        if (id != moviePhysicalCopy.Id)
-        {
-            return BadRequest();
-        }
+        //if (id != moviePhysicalCopy.Id)
+        //{
+        //    return BadRequest();
+        //}
 
-        var existingCopy = await _context.MoviePhysicalCopies.FindAsync(id);
+        //var existingCopy = await _context.MoviePhysicalCopies.FindAsync(id);
 
-        if (existingCopy == null)
-        {
-            return NotFound();
-        }
+        //if (existingCopy == null)
+        //{
+        //    return NotFound();
+        //}
 
-        existingCopy.Status = moviePhysicalCopy.Status;
+        //existingCopy.Status = moviePhysicalCopy.Status;
 
-        await _context.SaveChangesAsync();
+        //await _context.SaveChangesAsync();
 
-        return NoContent();
+        //return NoContent();
     }
 
     // DELETE: api/movies/5
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteMoviePhysicalCopy(int id)
     {
-        var moviePhysicalCopy = await _context.MoviePhysicalCopies.FindAsync(id);
-        if (moviePhysicalCopy == null)
-        {
-            return NotFound();
-        }
-        _context.MoviePhysicalCopies.Remove(moviePhysicalCopy);
-        await _context.SaveChangesAsync();
-        return NoContent();
+        //var moviePhysicalCopy = await _context.MoviePhysicalCopies.FindAsync(id);
+        //if (moviePhysicalCopy == null)
+        //{
+        //    return NotFound();
+        //}
+        //_context.MoviePhysicalCopies.Remove(moviePhysicalCopy);
+        //await _context.SaveChangesAsync();
+        //return NoContent();
     }
 }
