@@ -1,5 +1,7 @@
 ﻿using MovieRentalSystem.NET.WebApi.Entities;
+using MovieRentalSystem.NET.WebApi.Mappings;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Movies;
+using MovieRentalSystem.NET.WebApi.Models.Responses;
 using MovieRentalSystem.NET.WebApi.Services.Interfaces;
 
 namespace MovieRentalSystem.NET.WebApi.Services;
@@ -8,18 +10,18 @@ public class MovieService : IMovieService
 {
     private static readonly List<Movie> _movies = new();
 
-    public Task<IEnumerable<Movie>> GetAllAsync()
+    public async Task<IEnumerable<MovieResponse>> GetAllAsync()
     {
-        return Task.FromResult(_movies.AsEnumerable());
+        return _movies.Select(m => m.MapToMovieResponse());
     }
 
-    public Task<Movie?> GetByIdAsync(int id)
+    public async Task<MovieResponse?> GetByIdAsync(int id)
     {
         var movie = _movies.FirstOrDefault(m => m.Id == id);
-        return Task.FromResult(movie);
+        return movie?.MapToMovieResponse();
     }
 
-    public Task<Movie> CreateAsync(CreateMovieRequest request)
+    public async Task<MovieResponse> CreateAsync(CreateMovieRequest request)
     {
         var movie = new Movie
         {
@@ -32,32 +34,28 @@ public class MovieService : IMovieService
 
         _movies.Add(movie);
 
-        return Task.FromResult(movie);
+        return movie.MapToMovieResponse();
     }
 
-    public Task<bool> UpdateAsync(int id, UpdateMovieRequest request)
+    public async Task<bool> UpdateAsync(int id, UpdateMovieRequest request)
     {
         var movie = _movies.FirstOrDefault(m => m.Id == id);
-
-        if (movie == null)
-            return Task.FromResult(false);
+        if (movie == null) return false;
 
         movie.Title = request.Title;
         movie.Description = request.Description;
         movie.ReleaseYear = request.ReleaseYear;
         movie.RentalPrice = request.RentalPrice;
 
-        return Task.FromResult(true);
+        return true;
     }
-    public Task<bool> DeleteAsync(int id)
+
+    public async Task<bool> DeleteAsync(int id)
     {
         var movie = _movies.FirstOrDefault(m => m.Id == id);
-
-        if (movie == null)
-            return Task.FromResult(false);
+        if (movie == null) return false;
 
         _movies.Remove(movie);
-
-        return Task.FromResult(true);
+        return true;
     }
 }

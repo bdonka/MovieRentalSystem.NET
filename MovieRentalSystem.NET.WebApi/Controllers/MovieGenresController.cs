@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MovieRentalSystem.NET.WebApi.Data;
-using MovieRentalSystem.NET.WebApi.Entities;
 using MovieRentalSystem.NET.WebApi.Models.Requests.MovieGenres;
+using MovieRentalSystem.NET.WebApi.Models.Responses;
+using MovieRentalSystem.NET.WebApi.Services.Interfaces;
 
 namespace MovieRentalSystem.NET.WebApi.Controllers;
 
@@ -10,67 +9,47 @@ namespace MovieRentalSystem.NET.WebApi.Controllers;
 [ApiController]
 public class MovieGenresController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly IMovieGenreService _movieGenreService;
 
-    public MovieGenresController(AppDbContext context)
+    public MovieGenresController(IMovieGenreService movieGenreService)
     {
-        _context = context;
+        _movieGenreService = movieGenreService;
     }
 
     // GET: api/movieGenres
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MovieGenre>>> GetMovieGenres()
+    public async Task<ActionResult<IEnumerable<MovieGenreResponse>>> GetMovieGenres()
     {
-        //return await _context.MovieGenres.ToListAsync();
+        var movieGenres = await _movieGenreService.GetAllAsync();
+        return Ok(movieGenres);
     }
 
     // GET: api/movieGenres/{movieId}/{genreId}
     [HttpGet("{movieId}/{genreId}")]
-    public async Task<ActionResult<MovieGenre>> GetMovieGenre(int movieId, int genreId)
+    public async Task<ActionResult<MovieGenreResponse>> GetMovieGenre(int movieId, int genreId)
     {
-        //var movieGenre = await _context.MovieGenres.FindAsync(movieId, genreId);
-        //if (movieGenre == null)
-        //{
-        //    return NotFound();
-        //}
-
-        //return movieGenre;
+        var movieGenre = await _movieGenreService.GetByIdAsync(movieId, genreId);
+        if (movieGenre == null) return NotFound();
+        return Ok(movieGenre);
     }
-
 
     // POST: api/movieGenres
     [HttpPost]
-    public async Task<ActionResult<MovieGenre>> PostMovieGenre(CreateMovieGenreRequest request)
+    public async Task<ActionResult<MovieGenreResponse>> PostMovieGenre(CreateMovieGenreRequest request)
     {
-        //var exists = await _context.MovieGenres
-        //    .AnyAsync(mg => mg.MovieId == movieGenre.MovieId && mg.GenreId == movieGenre.GenreId);
-
-        //if (exists)
-        //{
-        //    return Conflict("This movie already has this genre.");
-        //}
-
-        //_context.MovieGenres.Add(movieGenre);
-        //await _context.SaveChangesAsync();
-
-        //return CreatedAtAction(
-        //    nameof(GetMovieGenre),
-        //    new { movieId = movieGenre.MovieId, genreId = movieGenre.GenreId },
-        //    movieGenre);
+        var movieGenre = await _movieGenreService.CreateAsync(request);
+        return CreatedAtAction(
+            nameof(GetMovieGenre),
+            new { movieId = movieGenre.MovieId, genreId = movieGenre.GenreId },
+            movieGenre);
     }
-
 
     // DELETE: api/movieGenres/{movieId}/{genreId}
     [HttpDelete("{movieId}/{genreId}")]
     public async Task<IActionResult> DeleteMovieGenre(int movieId, int genreId)
     {
-        //var movieGenre = await _context.MovieGenres.FindAsync(movieId, genreId);
-        //if (movieGenre == null)
-        //{
-        //    return NotFound();
-        //}
-        //_context.MovieGenres.Remove(movieGenre);
-        //await _context.SaveChangesAsync();
-        //return NoContent();
+        var deleted = await _movieGenreService.DeleteAsync(movieId, genreId);
+        if (!deleted) return NotFound();
+        return NoContent();
     }
 }

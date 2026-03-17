@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MovieRentalSystem.NET.WebApi.Data;
-using MovieRentalSystem.NET.WebApi.Entities;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Rentals;
+using MovieRentalSystem.NET.WebApi.Models.Responses;
+using MovieRentalSystem.NET.WebApi.Services.Interfaces;
 
 namespace MovieRentalSystem.NET.WebApi.Controllers;
 
@@ -10,105 +9,56 @@ namespace MovieRentalSystem.NET.WebApi.Controllers;
 [ApiController]
 public class RentalsController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly IRentalService _rentalService;
 
-    public RentalsController(AppDbContext context)
+    public RentalsController(IRentalService rentalService)
     {
-        _context = context;
+        _rentalService = rentalService;
     }
 
     // GET: api/rentals
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Rental>>> GetRentals()
+    public async Task<ActionResult<IEnumerable<RentalResponse>>> GetRentals()
     {
-        //return await _context.Rentals
-        //    .Include(r=> r.User)
-        //    .Include(r=>r.MoviePhysicalCopy)
-        //    .ToListAsync();
+        var rentals = await _rentalService.GetAllAsync();
+        return Ok(rentals);
     }
 
-    // GET: api/rental/5
+    // GET: api/rentals/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<Rental>> GetRental(int id)
+    public async Task<ActionResult<RentalResponse>> GetRental(int id)
     {
-        //var rental = await _context.Rentals.FindAsync(id);
-        //if (rental == null)
-        //{
-        //    return NotFound();
-        //}
-
-        //return rental;
+        var rental = await _rentalService.GetByIdAsync(id);
+        if (rental == null) return NotFound();
+        return Ok(rental);
     }
-
 
     // POST: api/rentals
     [HttpPost]
-    public async Task<ActionResult<Rental>> PostRental(CreateRentalRequest request)
+    public async Task<ActionResult<RentalResponse>> PostRental(CreateRentalRequest request)
     {
-        //_context.Rentals.Add(rental);
-        //await _context.SaveChangesAsync();
-
-        //return CreatedAtAction(
-        //    nameof(GetRental),
-        //    new { id = rental.Id },
-        //    rental);
+        var rental = await _rentalService.CreateAsync(request);
+        return CreatedAtAction(
+            nameof(GetRental),
+            new { id = rental.Id },
+            rental);
     }
 
-
-    // PUT : api/rentals/5
+    // PUT: api/rentals/5
     [HttpPut("{id}")]
     public async Task<IActionResult> PutRental(int id, UpdateRentalRequest request)
     {
-        //if (id != rental.Id)
-        //{
-        //    return BadRequest();
-        //}
-
-        //var rentalItem = await _context.Rentals.FindAsync(id);
-        //if (rentalItem == null)
-        //{
-        //    return NotFound();
-        //}
-
-        //rentalItem.OrderDate = rental.OrderDate;
-        //rentalItem.RentalStartDate = rental.RentalStartDate;
-        //rentalItem.DueDate = rental.DueDate;
-        //rentalItem.ReturnDate = rental.ReturnDate;
-        //rentalItem.TotalPrice = rental.TotalPrice;
-        //rentalItem.Status = rental.Status;
-
-        //try
-        //{
-        //    await _context.SaveChangesAsync();
-        //}
-        //catch (DbUpdateConcurrencyException)
-        //{
-        //    if (!RentalExists(id))
-        //    {
-        //        return NotFound();
-        //    }
-        //    throw;
-        //}
-
-        //return NoContent();
+        var updated = await _rentalService.UpdateAsync(id, request);
+        if (!updated) return NotFound();
+        return NoContent();
     }
 
-
-    // DELETE: api/rental/5
+    // DELETE: api/rentals/5
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteRental(int id)
     {
-        //var rental = await _context.Rentals.FindAsync(id);
-        //if (rental == null)
-        //{
-        //    return NotFound();
-        //}
-        //_context.Rentals.Remove(rental);
-        //await _context.SaveChangesAsync();
-        //return NoContent();
+        var deleted = await _rentalService.DeleteAsync(id);
+        if (!deleted) return NotFound();
+        return NoContent();
     }
-    //private bool RentalExists(int id)
-    //{
-    //    return _context.Rentals.Any(e => e.Id == id);
-    //}
 }

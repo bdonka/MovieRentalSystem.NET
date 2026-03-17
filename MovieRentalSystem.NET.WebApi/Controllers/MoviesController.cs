@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MovieRentalSystem.NET.WebApi.Data;
-using MovieRentalSystem.NET.WebApi.Entities;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Movies;
+using MovieRentalSystem.NET.WebApi.Models.Responses;
+using MovieRentalSystem.NET.WebApi.Services.Interfaces;
 
 namespace MovieRentalSystem.NET.WebApi.Controllers;
 
@@ -10,101 +9,56 @@ namespace MovieRentalSystem.NET.WebApi.Controllers;
 [ApiController]
 public class MoviesController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly IMovieService _movieService;
 
-    public MoviesController(AppDbContext context)
+    public MoviesController(IMovieService movieService)
     {
-        _context = context;
+        _movieService = movieService;
     }
 
     // GET: api/movies
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Movie>>> GetMovies()
+    public async Task<ActionResult<IEnumerable<MovieResponse>>> GetMovies()
     {
-        //return await _context.Movies.ToListAsync();
+        var movies = await _movieService.GetAllAsync();
+        return Ok(movies);
     }
 
     // GET: api/movies/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<Movie>> GetMovie(int id)
+    public async Task<ActionResult<MovieResponse>> GetMovie(int id)
     {
-        //var movie = await _context.Movies.FindAsync(id);
-        //if (movie == null)
-        //{
-        //    return NotFound();
-        //}
-
-        //return movie;
+        var movie = await _movieService.GetByIdAsync(id);
+        if (movie == null) return NotFound();
+        return Ok(movie);
     }
-
 
     // POST: api/movies
     [HttpPost]
-    public async Task<ActionResult<Movie>> PostMovie(CreateMovieRequest request) 
+    public async Task<ActionResult<MovieResponse>> PostMovie(CreateMovieRequest request)
     {
-        //_context.Movies.Add(movie);
-        //await _context.SaveChangesAsync();
-
-        //return CreatedAtAction(
-        //    nameof(GetMovie),
-        //    new { id = movie.Id },
-        //    movie);
+        var movie = await _movieService.CreateAsync(request);
+        return CreatedAtAction(
+            nameof(GetMovie),
+            new { id = movie.Id },
+            movie);
     }
-
 
     // PUT : api/movies/5
     [HttpPut("{id}")]
     public async Task<IActionResult> PutMovie(int id, UpdateMovieRequest request)
     {
-        //if (id != movie.Id)
-        //{
-        //    return BadRequest();
-        //}
-
-        //var movieItem = await _context.Movies.FindAsync(id);
-        //if (movieItem == null)
-        //{
-        //    return NotFound();
-        //}
-
-        //movieItem.Title = movie.Title;
-        //movieItem.Description = movie.Description;
-        //movieItem.ReleaseYear = movie.ReleaseYear;
-        //movieItem.RentalPrice = movie.RentalPrice;
-
-        //try
-        //{
-        //    await _context.SaveChangesAsync();
-        //}
-        //catch (DbUpdateConcurrencyException)
-        //{
-        //    if (!MovieExists(id))
-        //    {
-        //        return NotFound();
-        //    }
-        //    throw;
-        //}
-
-        //return NoContent();
+        var updated = await _movieService.UpdateAsync(id, request);
+        if (!updated) return NotFound();
+        return NoContent();
     }
-
 
     // DELETE: api/movies/5
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteMovie(int id)
     {
-        //var movie = await _context.Movies.FindAsync(id);
-        //if (movie == null)
-        //{
-        //    return NotFound();
-        //}
-        //_context.Movies.Remove(movie);
-        //await _context.SaveChangesAsync();
-        //return NoContent();
+        var deleted = await _movieService.DeleteAsync(id);
+        if (!deleted) return NotFound();
+        return NoContent();
     }
-    //private bool MovieExists(int id)
-    //{
-    //        return _context.Movies.Any(e => e.Id == id);
-    //}
 }
-

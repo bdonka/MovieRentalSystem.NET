@@ -1,5 +1,6 @@
-﻿namespace MovieRentalSystem.NET.WebApi.Entities;
-public class User
+﻿namespace MovieRentalSystem.NET.WebApi.Models.Responses;
+
+public class UserResponse
 {
     public int Id { get; set; }
     public string Name { get; set; } = null!;

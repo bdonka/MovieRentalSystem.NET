@@ -1,5 +1,7 @@
 ﻿using MovieRentalSystem.NET.WebApi.Entities;
+using MovieRentalSystem.NET.WebApi.Mappings;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Genres;
+using MovieRentalSystem.NET.WebApi.Models.Responses;
 using MovieRentalSystem.NET.WebApi.Services.Interfaces;
 
 namespace MovieRentalSystem.NET.WebApi.Services;
@@ -8,15 +10,17 @@ public class GenreService : IGenreService
 {
     private static readonly List<Genre> _genres = new();
 
-    public Task<IEnumerable<Genre>> GetAllAsync()
+    public async Task<IEnumerable<GenreResponse>> GetAllAsync()
     {
-        return Task.FromResult(_genres.AsEnumerable());
+        return _genres.Select(g => g.MapToGenreResponse());
     }
-    public Task<Genre?> GetByIdAsync(int id)
+    public async Task<GenreResponse?> GetByIdAsync(int id)
     {
-        return Task.FromResult(_genres.FirstOrDefault(g => g.Id == id));
+        return _genres
+            .Select(g => g.MapToGenreResponse())
+            .FirstOrDefault(g => g.Id == id);
     }
-    public Task<Genre> CreateAsync(CreateGenreRequest request)
+    public async Task<GenreResponse> CreateAsync(CreateGenreRequest request)
     {
         var genre = new Genre
         {
@@ -24,21 +28,22 @@ public class GenreService : IGenreService
             Name = request.Name
         };
         _genres.Add(genre);
-        return Task.FromResult(genre);
+
+        return genre.MapToGenreResponse();
     }
 
-    public Task<bool> UpdateAsync(int id, UpdateGenreRequest request)
+    public async Task<bool> UpdateAsync(int id, UpdateGenreRequest request)
     {
         var genre = _genres.FirstOrDefault(g => g.Id == id);
-        if (genre == null) return Task.FromResult(false);
+        if (genre == null) return false;
         genre.Name = request.Name;
-        return Task.FromResult(true);
+        return true;
     }
-    public Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var genre = _genres.FirstOrDefault(g => g.Id == id);
-        if (genre == null) return Task.FromResult(false);
+        if (genre == null) return false;
         _genres.Remove(genre);
-        return Task.FromResult(true);
+        return true;
     }
 }

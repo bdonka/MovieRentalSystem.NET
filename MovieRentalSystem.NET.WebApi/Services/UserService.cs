@@ -1,5 +1,7 @@
 ﻿using MovieRentalSystem.NET.WebApi.Entities;
+using MovieRentalSystem.NET.WebApi.Mappings;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Users;
+using MovieRentalSystem.NET.WebApi.Models.Responses;
 using MovieRentalSystem.NET.WebApi.Services.Interfaces;
 
 namespace MovieRentalSystem.NET.WebApi.Services;
@@ -8,17 +10,18 @@ public class UserService : IUserService
 {
     private static readonly List<User> _users = new();
 
-    public Task<IEnumerable<User>> GetAllAsync()
+    public async Task<IEnumerable<UserResponse>> GetAllAsync()
     {
-        return Task.FromResult(_users.AsEnumerable());
+        return _users.Select(u => u.MapToUserResponse());
     }
 
-    public Task<User?> GetByIdAsync(int id)
+    public async Task<UserResponse?> GetByIdAsync(int id)
     {
-        return Task.FromResult(_users.FirstOrDefault(u => u.Id == id));
+        var user = _users.FirstOrDefault(u => u.Id == id);
+        return user?.MapToUserResponse();
     }
 
-    public Task<User> CreateAsync(CreateUserRequest request)
+    public async Task<UserResponse> CreateAsync(CreateUserRequest request)
     {
         var user = new User
         {
@@ -26,36 +29,30 @@ public class UserService : IUserService
             Name = request.Name,
             Email = request.Email,
             Password = request.Password,
+            Role = "User"
         };
+
         _users.Add(user);
-        return Task.FromResult(user);
+        return user.MapToUserResponse();
     }
 
-    public Task<bool> UpdateAsync(int id, UpdateUserRequest request)
+    public async Task<bool> UpdateAsync(int id, UpdateUserRequest request)
     {
         var user = _users.FirstOrDefault(u => u.Id == id);
-        if (user == null) return Task.FromResult(false);
+        if (user == null) return false;
 
         user.Name = request.Name;
         user.Email = request.Email;
 
-        return Task.FromResult(true);
+        return true;
     }
 
-    public Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var user = _users.FirstOrDefault(u => u.Id == id);
-        if (user == null) return Task.FromResult(false);
+        if (user == null) return false;
+
         _users.Remove(user);
-        return Task.FromResult(true);
-    }
-
-
-
-
-
-    public Task<bool> UpdateAsync(int id, UpdateUserRequest request)
-    {
-        throw new NotImplementedException();
+        return true;
     }
 }
