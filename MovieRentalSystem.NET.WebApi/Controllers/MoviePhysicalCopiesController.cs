@@ -18,6 +18,7 @@ public class MoviePhysicalCopiesController : ControllerBase
 
     // GET: api/moviePhysicalCopies
     [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<MoviePhysicalCopyResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<MoviePhysicalCopyResponse>>> GetMoviePhysicalCopies()
     {
         var copies = await _copyService.GetAllAsync();
@@ -26,6 +27,8 @@ public class MoviePhysicalCopiesController : ControllerBase
 
     // GET: api/moviePhysicalCopies/{id}/{movieId}
     [HttpGet("{id}/{movieId}")]
+    [ProducesResponseType(typeof(MoviePhysicalCopyResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<MoviePhysicalCopyResponse>> GetMoviePhysicalCopy(int id, int movieId)
     {
         var copy = await _copyService.GetByIdAsync(id, movieId);
@@ -35,6 +38,8 @@ public class MoviePhysicalCopiesController : ControllerBase
 
     // POST: api/moviePhysicalCopies
     [HttpPost]
+    [ProducesResponseType(typeof(MoviePhysicalCopyResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<MoviePhysicalCopyResponse>> PostMoviePhysicalCopy(CreateMoviePhysicalCopyRequest request)
     {
         var copy = await _copyService.CreateAsync(request);
@@ -46,6 +51,9 @@ public class MoviePhysicalCopiesController : ControllerBase
 
     // PUT: api/moviePhysicalCopies/{id}/{movieId}
     [HttpPut("{id}/{movieId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PutMoviePhysicalCopy(int id, int movieId, UpdateMoviePhysicalCopyRequest request)
     {
         var updated = await _copyService.UpdateAsync(id, movieId, request);
@@ -55,6 +63,8 @@ public class MoviePhysicalCopiesController : ControllerBase
 
     // DELETE: api/moviePhysicalCopies/{id}/{movieId}
     [HttpDelete("{id}/{movieId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteMoviePhysicalCopy(int id, int movieId)
     {
         var deleted = await _copyService.DeleteAsync(id, movieId);

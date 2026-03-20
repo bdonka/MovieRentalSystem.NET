@@ -18,6 +18,7 @@ public class RentalsController : ControllerBase
 
     // GET: api/rentals
     [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<RentalResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<RentalResponse>>> GetRentals()
     {
         var rentals = await _rentalService.GetAllAsync();
@@ -26,6 +27,8 @@ public class RentalsController : ControllerBase
 
     // GET: api/rentals/5
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(RentalResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<RentalResponse>> GetRental(int id)
     {
         var rental = await _rentalService.GetByIdAsync(id);
@@ -35,6 +38,8 @@ public class RentalsController : ControllerBase
 
     // POST: api/rentals
     [HttpPost]
+    [ProducesResponseType(typeof(RentalResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<RentalResponse>> PostRental(CreateRentalRequest request)
     {
         var rental = await _rentalService.CreateAsync(request);
@@ -46,6 +51,9 @@ public class RentalsController : ControllerBase
 
     // PUT: api/rentals/5
     [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PutRental(int id, UpdateRentalRequest request)
     {
         var updated = await _rentalService.UpdateAsync(id, request);
@@ -55,6 +63,8 @@ public class RentalsController : ControllerBase
 
     // DELETE: api/rentals/5
     [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteRental(int id)
     {
         var deleted = await _rentalService.DeleteAsync(id);

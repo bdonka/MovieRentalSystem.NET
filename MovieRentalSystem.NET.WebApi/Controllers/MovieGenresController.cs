@@ -18,6 +18,7 @@ public class MovieGenresController : ControllerBase
 
     // GET: api/movieGenres
     [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<MovieGenreResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<MovieGenreResponse>>> GetMovieGenres()
     {
         var movieGenres = await _movieGenreService.GetAllAsync();
@@ -26,6 +27,8 @@ public class MovieGenresController : ControllerBase
 
     // GET: api/movieGenres/{movieId}/{genreId}
     [HttpGet("{movieId}/{genreId}")]
+    [ProducesResponseType(typeof(MovieGenreResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<MovieGenreResponse>> GetMovieGenre(int movieId, int genreId)
     {
         var movieGenre = await _movieGenreService.GetByIdAsync(movieId, genreId);
@@ -35,6 +38,9 @@ public class MovieGenresController : ControllerBase
 
     // POST: api/movieGenres
     [HttpPost]
+    [ProducesResponseType(typeof(MovieGenreResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(IEnumerable<MovieGenreResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<MovieGenreResponse>> PostMovieGenre(CreateMovieGenreRequest request)
     {
         var movieGenre = await _movieGenreService.CreateAsync(request);
@@ -46,6 +52,8 @@ public class MovieGenresController : ControllerBase
 
     // DELETE: api/movieGenres/{movieId}/{genreId}
     [HttpDelete("{movieId}/{genreId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteMovieGenre(int movieId, int genreId)
     {
         var deleted = await _movieGenreService.DeleteAsync(movieId, genreId);
