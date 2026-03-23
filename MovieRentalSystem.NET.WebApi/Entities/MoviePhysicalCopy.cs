@@ -8,5 +8,6 @@ namespace MovieRentalSystem.NET.WebApi.Entities
         public int MovieId { get; set; }
         public string Code { get; set; } = null!;
         public MovieCopyStatus Status { get; set; } = MovieCopyStatus.Available;
+        public Movie Movie { get; set; } = null!;
     }
 }
