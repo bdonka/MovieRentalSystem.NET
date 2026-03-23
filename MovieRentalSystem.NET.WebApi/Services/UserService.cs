@@ -3,6 +3,8 @@ using MovieRentalSystem.NET.WebApi.Mappings;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Users;
 using MovieRentalSystem.NET.WebApi.Models.Responses;
 using MovieRentalSystem.NET.WebApi.Services.Interfaces;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace MovieRentalSystem.NET.WebApi.Services;
 
@@ -28,7 +30,7 @@ public class UserService : IUserService
             Id = _users.Count + 1,
             Name = request.Name,
             Email = request.Email,
-            Password = request.Password,
+            Password = HashPassword(request.Password),
             Role = "User"
         };
 
@@ -54,5 +56,16 @@ public class UserService : IUserService
 
         _users.Remove(user);
         return true;
+    }
+
+    private static string HashPassword(string password)
+    {
+        using var sha256 = SHA256.Create();
+
+        var bytes = Encoding.UTF8.GetBytes(password);
+
+        var hash = sha256.ComputeHash(bytes);
+
+        return Convert.ToBase64String(hash);
     }
 }

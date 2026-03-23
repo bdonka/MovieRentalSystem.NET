@@ -16,11 +16,7 @@ public class ApplicationDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<MovieGenre>()
-            .HasKey(mg => new { mg.MovieId, mg.GenreId });
-        modelBuilder.Entity<MoviePhysicalCopy>()
-            .HasIndex(c => c.Code)
-            .IsUnique();
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 
 }
