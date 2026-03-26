@@ -1,4 +1,7 @@
-﻿using MovieRentalSystem.NET.WebApi.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using MovieRentalSystem.NET.WebApi.Data;
+using MovieRentalSystem.NET.WebApi.Entities;
+using MovieRentalSystem.NET.WebApi.Enums;
 using MovieRentalSystem.NET.WebApi.Mappings;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Rentals;
 using MovieRentalSystem.NET.WebApi.Models.Responses;
@@ -8,37 +11,47 @@ namespace MovieRentalSystem.NET.WebApi.Services;
 
 public class RentalService : IRentalService
 {
-    private static readonly List<Rental> _rentals = new();
+    private readonly ApplicationDbContext _context;
+    public RentalService(ApplicationDbContext context)
+    {
+        _context = context;
+    }
 
     public async Task<IEnumerable<RentalResponse>> GetAllAsync()
     {
-        return _rentals.Select(r => r.MapToRentalResponse());
+        return await _context.Rentals.Select(r => r.MapToRentalResponse()).ToListAsync();
     }
 
     public async Task<RentalResponse?> GetByIdAsync(int id)
     {
-        var rental = _rentals.FirstOrDefault(r => r.Id == id);
+        var rental = await _context.Rentals.FirstOrDefaultAsync(r => r.Id == id);
         return rental?.MapToRentalResponse();
     }
 
     public async Task<RentalResponse> CreateAsync(CreateRentalRequest request)
     {
+        if (!await _context.Users.AnyAsync(u => u.Id == request.UserId))
+            throw new InvalidOperationException($"User with Id {request.UserId} does not exist.");
+
+        if (!await _context.MoviePhysicalCopies.AnyAsync(c => c.Id == request.MoviePhysicalCopyId))
+            throw new InvalidOperationException($"MoviePhysicalCopy with Id {request.MoviePhysicalCopyId} does not exist.");
+
         var rental = new Rental
         {
-            Id = _rentals.Count + 1,
             UserId = request.UserId,
             MoviePhysicalCopyId = request.MoviePhysicalCopyId,
             RentalStartDate = request.RentalStartDate,
             DueDate = request.DueDate
         };
 
-        _rentals.Add(rental);
+        _context.Rentals.Add(rental);
+        await _context.SaveChangesAsync();
         return rental.MapToRentalResponse();
     }
 
     public async Task<bool> UpdateAsync(int id, UpdateRentalRequest request)
     {
-        var rental = _rentals.FirstOrDefault(r => r.Id == id);
+        var rental = await _context.Rentals.FirstOrDefaultAsync(r => r.Id == id);
         if (rental == null) return false;
 
         rental.RentalStartDate = request.RentalStartDate;
@@ -47,15 +60,26 @@ public class RentalService : IRentalService
         rental.TotalPrice = request.TotalPrice;
         rental.Status = request.Status;
 
+        if (request.ReturnDate != null)
+        {
+            var copy = await _context.MoviePhysicalCopies
+                .FirstOrDefaultAsync(c => c.Id == rental.MoviePhysicalCopyId);
+
+            if (copy != null)
+                copy.Status = MovieCopyStatus.Available;
+        }
+
+        await _context.SaveChangesAsync();
         return true;
     }
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var rental = _rentals.FirstOrDefault(r => r.Id == id);
+        var rental = await _context.Rentals.FirstOrDefaultAsync(r => r.Id == id);
         if (rental == null) return false;
 
-        _rentals.Remove(rental);
+        _context.Rentals.Remove(rental);
+        await _context.SaveChangesAsync();
         return true;
     }
 }
