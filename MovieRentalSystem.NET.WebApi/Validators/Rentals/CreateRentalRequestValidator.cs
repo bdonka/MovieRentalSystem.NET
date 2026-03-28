@@ -1,0 +1,22 @@
+﻿using FluentValidation;
+using MovieRentalSystem.NET.WebApi.Models.Requests.Rentals;
+using System;
+
+namespace MovieRentalSystem.NET.WebApi.Validators.Rentals;
+
+public class CreateRentalRequestValidator : AbstractValidator<CreateRentalRequest>
+{
+    public CreateRentalRequestValidator()
+    {
+        RuleFor(x => x.UserId)
+            .GreaterThan(0).WithMessage("UserId must be greater than 0");
+
+        RuleFor(x => x.MoviePhysicalCopyId)
+            .GreaterThan(0).WithMessage("MoviePhysicalCopyId must be greater than 0");
+
+        RuleFor(x => x.RentalStartDate)
+            .LessThanOrEqualTo(x => x.DueDate)
+            .When(x => x.RentalStartDate.HasValue && x.DueDate.HasValue)
+            .WithMessage("RentalStartDate must be earlier than or equal to DueDate");
+    }
+}
