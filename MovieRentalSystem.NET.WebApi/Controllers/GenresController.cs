@@ -30,6 +30,7 @@ public class GenresController : ControllerBase
     // GET: api/genres/5
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(GenreResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<GenreResponse>> GetGenre(int id)
     {
         var genre = await _genreService.GetByIdAsync(id);

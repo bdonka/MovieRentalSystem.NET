@@ -12,33 +12,28 @@ public class MovieConfiguration : IEntityTypeConfiguration<Movie>
         builder.Property(m => m.Title)
             .IsRequired()
             .HasMaxLength(200);
-        builder.HasIndex(m => m.Title).IsUnique();
         builder.Property(m => m.Description )
             .IsRequired()
             .HasMaxLength(1000);
         builder.Property(m => m.RentalPrice)
             .HasPrecision(10, 2);
+        builder.HasIndex(m => new { m.Title, m.ReleaseYear })
+            .IsUnique();
         builder.ToTable(t =>
         {
-            t.HasCheckConstraint("CK_Movie_Title_NotEmpty", "LEN(Title) > 0");
-            t.HasCheckConstraint("CK_Movie_Description_NotEmpty", "LEN(Description) > 0");
-            t.HasCheckConstraint(
-                "CK_Movie_ReleaseYear",
-                $"ReleaseYear >= 1888 AND ReleaseYear <= {DateTime.UtcNow.Year}"
-            );
             t.HasCheckConstraint(
                 "CK_Movie_RentalPrice",
                 "RentalPrice >= 0"
             );
         });
         builder.HasMany(m => m.MovieGenres)
-       .WithOne(mg => mg.Movie)
-       .HasForeignKey(mg => mg.MovieId)
-       .OnDelete(DeleteBehavior.Cascade);
+            .WithOne(mg => mg.Movie)
+            .HasForeignKey(mg => mg.MovieId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(m => m.PhysicalCopies)
-               .WithOne(pc => pc.Movie)
-               .HasForeignKey(pc => pc.MovieId)
-               .OnDelete(DeleteBehavior.Cascade);
+            .WithOne(pc => pc.Movie)
+            .HasForeignKey(pc => pc.MovieId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

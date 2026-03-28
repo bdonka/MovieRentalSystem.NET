@@ -17,15 +17,6 @@ public class MovieGenreConfiguration : IEntityTypeConfiguration<MovieGenre>
             .WithMany(g => g.MovieGenres)
             .HasForeignKey(mg => mg.GenreId)
             .OnDelete(DeleteBehavior.Restrict);
-        builder.HasOne(mg => mg.Genre)
-               .WithMany(g => g.MovieGenres)
-               .HasForeignKey(mg => mg.GenreId)
-               .OnDelete(DeleteBehavior.Restrict);
         builder.HasIndex(mg => new { mg.MovieId, mg.GenreId }).IsUnique();
-        builder.ToTable(t =>
-        {
-            t.HasCheckConstraint("CK_MovieGenre_MovieId", "MovieId > 0");
-            t.HasCheckConstraint("CK_MovieGenre_GenreId", "GenreId > 0");
-        });
     }
 }

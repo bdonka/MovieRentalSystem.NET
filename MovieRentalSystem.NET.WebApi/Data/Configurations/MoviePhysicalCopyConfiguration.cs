@@ -19,12 +19,6 @@ public class MoviePhysicalCopyConfiguration : IEntityTypeConfiguration<MoviePhys
         builder.HasOne(m => m.Movie)
             .WithMany(m => m.PhysicalCopies)
             .HasForeignKey(m => m.MovieId)
-            .OnDelete(DeleteBehavior.Cascade);
-        builder.ToTable(t =>
-        {
-            t.HasCheckConstraint("CK_MoviePhysicalCopy_Status",
-                $"Status >= {(int)MovieCopyStatus.Available} AND Status <= {(int)MovieCopyStatus.Damaged}");
-            t.HasCheckConstraint("CK_MoviePhysicalCopy_MovieId", "MovieId > 0");
-        });
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

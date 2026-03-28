@@ -29,12 +29,5 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
                .WithOne(r => r.User)
                .HasForeignKey(r => r.UserId)
                .OnDelete(DeleteBehavior.Restrict);
-        builder.ToTable(t =>
-        {
-            t.HasCheckConstraint(
-                "CK_User_Role",
-                "Role IN ('User','Admin')"
-            );
-        });
     }
 }

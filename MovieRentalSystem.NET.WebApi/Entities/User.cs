@@ -6,6 +6,6 @@ public class User
     public string? Email { get; set; } = null;
     public string? Password { get; set; } = null;
     public string? Role { get; set; } = "User";
-    public DateTime DateRegistered { get; set; } = DateTime.Now;
+    public DateTime DateRegistered { get; set; } = DateTime.UtcNow;
     public ICollection<Rental> Rentals { get; set; } = new List<Rental>();
 }

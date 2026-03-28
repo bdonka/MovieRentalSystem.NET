@@ -13,14 +13,8 @@ public class GenreConfiguration : IEntityTypeConfiguration<Genre>
         builder.Property(g => g.Name)
             .IsRequired()
             .HasMaxLength(100);
-        builder.ToTable(t =>
-        {
-            t.HasCheckConstraint(
-                "CK_Genre_Name", 
-                "LEN(Name) > 0"
-            );
-        });
-
+        builder.HasIndex(g => g.Name)
+            .IsUnique();
         builder.HasMany(g => g.MovieGenres)
                 .WithOne(mg => mg.Genre)
                 .HasForeignKey(mg => mg.GenreId)

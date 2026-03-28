@@ -14,8 +14,6 @@ public class RentalConfiguration : IEntityTypeConfiguration<Rental>
         builder.ToTable(t =>
         {
             t.HasCheckConstraint("CK_Rental_TotalPrice", "TotalPrice >= 0");
-            t.HasCheckConstraint("CK_Rental_UserId", "UserId >= 0");
-            t.HasCheckConstraint("CK_Rental_MoviePhysicalCopyId", "MoviePhysicalCopyId >= 0");
             t.HasCheckConstraint(
                 "CK_Rental_RentalStartDate",
                 "RentalStartDate IS NULL OR DueDate IS NULL OR RentalStartDate <= DueDate"
