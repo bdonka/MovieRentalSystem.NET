@@ -71,4 +71,37 @@ public class MoviesController : ControllerBase
         if (!deleted) return NotFound();
         return NoContent();
     }
+
+
+    // GET: /api/movies/{id}/genres
+    [HttpGet("{movieId}/genres")]
+    [ProducesResponseType(typeof(IEnumerable<GenreResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IEnumerable<GenreResponse>>> GetGenres(int movieId)
+    {
+        var genres = await _movieService.GetGenresAsync(movieId);
+        if (!genres.Any()) return NotFound();
+        return Ok(genres);
+    }
+
+    // POST: api/movies/{id}/genres/{id}
+    [HttpPost("{movieId}/genres/{genreId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<ActionResult> AssignGenre(int movieId, int genreId)
+    {
+        var result = await _movieService.AssignGenreAsync(movieId, genreId);
+        if (!result) return NotFound();
+        return NoContent();
+    }
+
+    // DELETE: api/movies/{id}/genres/{id}
+    [HttpDelete("{movieId}/genres/{genreId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RemoveGenre(int movieId, int genreId)
+    {
+        var removed = await _movieService.RemoveGenreAsync(movieId, genreId);
+        if (!removed) return NotFound();
+        return NoContent();
+    }
 }

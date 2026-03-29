@@ -25,7 +25,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<IGenreService, GenreService>();
-builder.Services.AddScoped<IMovieGenreService, MovieGenreService>();
+//builder.Services.AddScoped<IMovieGenreService, MovieGenreService>();
 builder.Services.AddScoped<IMoviePhysicalCopyService, MoviePhysicalCopyService>();
 builder.Services.AddScoped<IRentalService, RentalService>();
 builder.Services.AddScoped<IUserService, UserService>();
