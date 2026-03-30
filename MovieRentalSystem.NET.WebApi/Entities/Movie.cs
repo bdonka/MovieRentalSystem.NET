@@ -8,6 +8,7 @@
         public int ReleaseYear { get; set; }
         public decimal RentalPrice { get; set; }
         public List<Genre> Genres { get; } = [];
+
         public ICollection<MoviePhysicalCopy> PhysicalCopies { get; set; } = new List<MoviePhysicalCopy>();
     }
 }
