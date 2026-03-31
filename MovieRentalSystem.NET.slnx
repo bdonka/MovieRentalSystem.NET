@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="MovieRentalSystem.NET.AppHost/MovieRentalSystem.NET.AppHost.csproj" Id="4590134a-5ce5-4c33-93d5-00d161d8c32d" />
+  <Project Path="MovieRentalSystem.NET.MigrationService/MovieRentalSystem.NET.MigrationService.csproj" />
   <Project Path="MovieRentalSystem.NET.ServiceDefaults/MovieRentalSystem.NET.ServiceDefaults.csproj" Id="17afac59-0258-4eee-80f6-f65508c16974" />
   <Project Path="MovieRentalSystem.NET.WebApi/MovieRentalSystem.NET.WebApi.csproj" />
 </Solution>

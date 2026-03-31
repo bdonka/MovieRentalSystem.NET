@@ -9,6 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.SqlServer" Version="13.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MovieRentalSystem.NET.MigrationService\MovieRentalSystem.NET.MigrationService.csproj" />
     <ProjectReference Include="..\MovieRentalSystem.NET.WebApi\MovieRentalSystem.NET.WebApi.csproj" />
   </ItemGroup>
 

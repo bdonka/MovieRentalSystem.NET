@@ -21,8 +21,10 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 //    options.UseSqlServer(
 //        builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseInMemoryDatabase("MovieRentalDb"));
+//builder.Services.AddDbContext<ApplicationDbContext>(options =>
+//    options.UseInMemoryDatabase("MovieRentalDb"));
+
+builder.AddSqlServerDbContext<ApplicationDbContext>(connectionName: "sqldb");
 
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<IGenreService, GenreService>();
