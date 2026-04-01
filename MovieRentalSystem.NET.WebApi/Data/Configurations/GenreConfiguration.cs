@@ -15,9 +15,7 @@ public class GenreConfiguration : IEntityTypeConfiguration<Genre>
             .HasMaxLength(100);
         builder.HasIndex(g => g.Name)
             .IsUnique();
-        builder.HasMany(g => g.MovieGenres)
-                .WithOne(mg => mg.Genre)
-                .HasForeignKey(mg => mg.GenreId)
-                .OnDelete(DeleteBehavior.Cascade);
+        builder.HasMany(g => g.Movies)
+                .WithMany(m => m.Genres);
     }
 }

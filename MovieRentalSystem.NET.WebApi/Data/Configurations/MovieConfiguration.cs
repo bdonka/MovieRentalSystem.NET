@@ -26,10 +26,8 @@ public class MovieConfiguration : IEntityTypeConfiguration<Movie>
                 "RentalPrice >= 0"
             );
         });
-        builder.HasMany(m => m.MovieGenres)
-            .WithOne(mg => mg.Movie)
-            .HasForeignKey(mg => mg.MovieId)
-            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasMany(m => m.Genres)
+            .WithMany(m => m.Movies);
 
         builder.HasMany(m => m.PhysicalCopies)
             .WithOne(pc => pc.Movie)

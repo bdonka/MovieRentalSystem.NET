@@ -1,0 +1,20 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.1.0">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>ecc1d071-cd60-407d-8313-359d4456c7f2</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.SqlServer" Version="13.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MovieRentalSystem.NET.MigrationService\MovieRentalSystem.NET.MigrationService.csproj" />
+    <ProjectReference Include="..\MovieRentalSystem.NET.WebApi\MovieRentalSystem.NET.WebApi.csproj" />
+  </ItemGroup>
+
+</Project>

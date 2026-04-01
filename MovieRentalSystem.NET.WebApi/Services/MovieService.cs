@@ -72,4 +72,46 @@ public class MovieService : IMovieService
         await _context.SaveChangesAsync();
         return true;
     }
+
+
+
+    public async Task<IEnumerable<GenreResponse>?> GetGenresAsync(int movieId)
+    {
+        var movie = await _context.Movies.Include(m => m.Genres).FirstOrDefaultAsync(m => m.Id == movieId);
+
+        if (movie == null)
+        {
+            return null;
+        }
+
+        return movie.Genres.Select(g => g.MapToGenreResponse());
+    }
+
+    public async Task<bool> AssignGenreAsync(int movieId, int genreId) 
+    { 
+        var movie = await _context.Movies.Include(m => m.Genres).FirstOrDefaultAsync(m => m.Id == movieId);
+        var genre = await _context.Genres.FindAsync(genreId);
+        
+        if (movie == null || genre == null) return false;
+
+        if (!movie.Genres.Contains(genre))
+            movie.Genres.Add(genre);
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> RemoveGenreAsync(int movieId, int genreId)
+    {
+        var movie = await _context.Movies.Include(m => m.Genres).FirstOrDefaultAsync(m => m.Id == movieId);
+        var genre = await _context.Genres.FindAsync(genreId);
+
+        if (movie == null || genre == null) return false;
+
+        if (movie.Genres.Contains(genre))
+            movie.Genres.Remove(genre);
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
 }

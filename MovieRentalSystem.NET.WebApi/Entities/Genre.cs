@@ -4,6 +4,6 @@
     {
         public int Id { get; set; }
         public string Name { get; set; } = null!;
-        public ICollection<MovieGenre> MovieGenres { get; set; } = new List<MovieGenre>();
+        public List<Movie> Movies { get; } = [];
     }
 }

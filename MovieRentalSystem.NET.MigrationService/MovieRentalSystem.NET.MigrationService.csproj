@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-MovieRentalSystem.NET.MigrationService-fe09b88f-12b8-4167-b127-1ec063e79ac8</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" Version="13.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MovieRentalSystem.NET.ServiceDefaults\MovieRentalSystem.NET.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\MovieRentalSystem.NET.WebApi\MovieRentalSystem.NET.WebApi.csproj" />
+  </ItemGroup>
+</Project>

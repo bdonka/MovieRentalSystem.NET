@@ -7,5 +7,5 @@ public class User
     public string? Password { get; set; } = null;
     public string? Role { get; set; } = "User";
     public DateTime DateRegistered { get; set; } = DateTime.UtcNow;
-    public ICollection<Rental> Rentals { get; set; } = new List<Rental>();
+    public List<Rental> Rentals { get; } = [];
 }
