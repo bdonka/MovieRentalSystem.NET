@@ -80,7 +80,7 @@ public class MoviesController : ControllerBase
     public async Task<ActionResult<IEnumerable<GenreResponse>>> GetGenres(int movieId)
     {
         var genres = await _movieService.GetGenresAsync(movieId);
-        if (!genres.Any()) return NotFound();
+        if (genres == null) return NotFound();
         return Ok(genres);
     }
 

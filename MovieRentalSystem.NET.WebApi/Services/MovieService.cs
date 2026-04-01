@@ -75,13 +75,13 @@ public class MovieService : IMovieService
 
 
 
-    public async Task<IEnumerable<GenreResponse>> GetGenresAsync(int movieId)
+    public async Task<IEnumerable<GenreResponse>?> GetGenresAsync(int movieId)
     {
         var movie = await _context.Movies.Include(m => m.Genres).FirstOrDefaultAsync(m => m.Id == movieId);
 
         if (movie == null)
         {
-            return Enumerable.Empty<GenreResponse>();
+            return null;
         }
 
         return movie.Genres.Select(g => g.MapToGenreResponse());

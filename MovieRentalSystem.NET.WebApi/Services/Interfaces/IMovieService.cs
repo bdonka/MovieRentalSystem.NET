@@ -12,7 +12,7 @@ namespace MovieRentalSystem.NET.WebApi.Services.Interfaces
         Task<bool> DeleteAsync(int id);
 
 
-        Task<IEnumerable<GenreResponse>> GetGenresAsync(int movieId);
+        Task<IEnumerable<GenreResponse>?> GetGenresAsync(int movieId);
         Task<bool> AssignGenreAsync(int movieId, int genreId);
         Task<bool> RemoveGenreAsync(int movieId, int genreId);
     }
