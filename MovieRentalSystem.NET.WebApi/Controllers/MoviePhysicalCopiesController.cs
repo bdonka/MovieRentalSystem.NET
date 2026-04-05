@@ -31,9 +31,10 @@ public class MoviePhysicalCopiesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<MoviePhysicalCopyResponse>> GetMoviePhysicalCopy(int id, int movieId)
     {
-        var copy = await _copyService.GetByIdAsync(id, movieId);
-        if (copy == null) return NotFound();
-        return Ok(copy);
+        var result = await _copyService.GetByIdAsync(id, movieId);
+        if (result.IsFailed) 
+            return NotFound(result.Errors.First().Message);
+        return Ok(result.Value);
     }
 
     // POST: api/moviePhysicalCopies
@@ -42,11 +43,13 @@ public class MoviePhysicalCopiesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<MoviePhysicalCopyResponse>> PostMoviePhysicalCopy(CreateMoviePhysicalCopyRequest request)
     {
-        var copy = await _copyService.CreateAsync(request);
+        var result = await _copyService.CreateAsync(request);
+        if (result.IsFailed) 
+            return BadRequest(result.Errors.First().Message);
         return CreatedAtAction(
             nameof(GetMoviePhysicalCopy),
-            new { id = copy.Id, movieId = copy.MovieId },
-            copy);
+            new { id = result.Value.Id, movieId = result.Value.MovieId },
+            result.Value);
     }
 
     // PUT: api/moviePhysicalCopies/{id}/{movieId}
@@ -56,8 +59,9 @@ public class MoviePhysicalCopiesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PutMoviePhysicalCopy(int id, int movieId, UpdateMoviePhysicalCopyRequest request)
     {
-        var updated = await _copyService.UpdateAsync(id, movieId, request);
-        if (!updated) return NotFound();
+        var result = await _copyService.UpdateAsync(id, movieId, request);
+        if (result.IsFailed) 
+            return NotFound(result.Errors.First().Message);
         return NoContent();
     }
 
@@ -67,8 +71,9 @@ public class MoviePhysicalCopiesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteMoviePhysicalCopy(int id, int movieId)
     {
-        var deleted = await _copyService.DeleteAsync(id, movieId);
-        if (!deleted) return NotFound();
+        var result = await _copyService.DeleteAsync(id, movieId);
+        if (result.IsFailed)
+            return NotFound(result.Errors.First().Message);
         return NoContent();
     }
 }

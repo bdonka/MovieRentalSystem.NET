@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FluentResults;
+using Microsoft.EntityFrameworkCore;
 using MovieRentalSystem.NET.WebApi.Data;
 using MovieRentalSystem.NET.WebApi.Entities;
 using MovieRentalSystem.NET.WebApi.Mappings;
@@ -22,19 +23,21 @@ public class MoviePhysicalCopyService : IMoviePhysicalCopyService
         return copies.Select(c => c.MapToMoviePhysicalCopyResponse());
     }
 
-    public async Task<MoviePhysicalCopyResponse?> GetByIdAsync(int id, int movieId)
+    public async Task<Result<MoviePhysicalCopyResponse>> GetByIdAsync(int id, int movieId)
     {
         var copy = await _context.MoviePhysicalCopies.FirstOrDefaultAsync(c => c.Id == id && c.MovieId == movieId);
-        return copy?.MapToMoviePhysicalCopyResponse();
+        if (copy == null) 
+            return Result.Fail($"Movie physical copy with Id {id} for MovieId {movieId} not found.");
+        return Result.Ok(copy.MapToMoviePhysicalCopyResponse());
     }
 
-    public async Task<MoviePhysicalCopyResponse> CreateAsync(CreateMoviePhysicalCopyRequest request)
+    public async Task<Result<MoviePhysicalCopyResponse>> CreateAsync(CreateMoviePhysicalCopyRequest request)
     {
         if (!await _context.Movies.AnyAsync(m => m.Id == request.MovieId))
-            throw new InvalidOperationException($"Movie with Id {request.MovieId} does not exist.");
+            Result.Fail<MoviePhysicalCopyResponse>($"Movie with Id {request.MovieId} does not exist.");
 
         if (await _context.MoviePhysicalCopies.AnyAsync(c => c.Code == request.Code))
-            throw new InvalidOperationException($"Code '{request.Code}' is already used.");
+            Result.Fail<MoviePhysicalCopyResponse>($"Code '{request.Code}' is already used.");
 
         var copy = new MoviePhysicalCopy
         {
@@ -44,26 +47,28 @@ public class MoviePhysicalCopyService : IMoviePhysicalCopyService
         _context.MoviePhysicalCopies.Add(copy);
         await _context.SaveChangesAsync();
 
-        return copy.MapToMoviePhysicalCopyResponse();
+        return Result.Ok(copy.MapToMoviePhysicalCopyResponse());
     }
 
-    public async Task<bool> UpdateAsync(int id, int movieId, UpdateMoviePhysicalCopyRequest request)
+    public async Task<Result> UpdateAsync(int id, int movieId, UpdateMoviePhysicalCopyRequest request)
     {
         var copy = await _context.MoviePhysicalCopies.FirstOrDefaultAsync(c => c.Id == id && c.MovieId == movieId);
-        if (copy == null) return false;
+        if (copy == null) 
+            return Result.Fail($"Movie physical copy with Id {id} for MovieId {movieId} not found.");
 
         copy.Status = request.Status;
         await _context.SaveChangesAsync();
-        return true;
+        return Result.Ok();
     }
 
-    public async Task<bool> DeleteAsync(int id, int movieId)
+    public async Task<Result> DeleteAsync(int id, int movieId)
     {
         var copy = await _context.MoviePhysicalCopies.FirstOrDefaultAsync(c => c.Id == id && c.MovieId == movieId);
-        if (copy == null) return false;
+        if (copy == null)
+            return Result.Fail($"Movie physical copy with Id {id} for MovieId {movieId} not found.");
 
         _context.MoviePhysicalCopies.Remove(copy);
         await _context.SaveChangesAsync();
-        return true;
+        return Result.Ok();
     }
 }

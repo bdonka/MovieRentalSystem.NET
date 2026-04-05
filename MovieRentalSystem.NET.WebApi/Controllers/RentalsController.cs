@@ -31,9 +31,10 @@ public class RentalsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<RentalResponse>> GetRental(int id)
     {
-        var rental = await _rentalService.GetByIdAsync(id);
-        if (rental == null) return NotFound();
-        return Ok(rental);
+        var result = await _rentalService.GetByIdAsync(id);
+        if (result.IsFailed)
+            return NotFound(result.Errors.First().Message);
+        return Ok(result.Value);
     }
 
     // POST: api/rentals
@@ -42,11 +43,18 @@ public class RentalsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<RentalResponse>> PostRental(CreateRentalRequest request)
     {
-        var rental = await _rentalService.CreateAsync(request);
+        var result = await _rentalService.CreateAsync(request);
+        if (result.IsFailed)
+        {
+            if (result.Errors.First().Message.Contains("already rented"))
+                return Conflict(result.Errors.First().Message);
+
+            return BadRequest(result.Errors.First().Message);
+        }
         return CreatedAtAction(
             nameof(GetRental),
-            new { id = rental.Id },
-            rental);
+            new { id = result.Value.Id },
+            result.Value);
     }
 
     // PUT: api/rentals/5
@@ -56,8 +64,14 @@ public class RentalsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PutRental(int id, UpdateRentalRequest request)
     {
-        var updated = await _rentalService.UpdateAsync(id, request);
-        if (!updated) return NotFound();
+        var result = await _rentalService.UpdateAsync(id, request);
+        if (result.IsFailed)
+        {
+            if (result.Errors.First().Message.Contains("already rented"))
+                return Conflict(result.Errors.First().Message);
+
+            return BadRequest(result.Errors.First().Message);
+        }
         return NoContent();
     }
 
@@ -67,8 +81,9 @@ public class RentalsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteRental(int id)
     {
-        var deleted = await _rentalService.DeleteAsync(id);
-        if (!deleted) return NotFound();
+        var result = await _rentalService.DeleteAsync(id);
+        if (result.IsFailed)
+            return NotFound(result.Errors.First().Message);
         return NoContent();
     }
 }

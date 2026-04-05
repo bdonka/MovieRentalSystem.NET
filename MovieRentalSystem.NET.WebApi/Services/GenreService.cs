@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FluentResults;
+using Microsoft.EntityFrameworkCore;
 using MovieRentalSystem.NET.WebApi.Data;
 using MovieRentalSystem.NET.WebApi.Entities;
 using MovieRentalSystem.NET.WebApi.Mappings;
@@ -20,15 +21,17 @@ public class GenreService : IGenreService
         var genres = await _context.Genres.ToListAsync();
         return genres.Select(g => g.MapToGenreResponse());
     }
-    public async Task<GenreResponse?> GetByIdAsync(int id)
+    public async Task<Result<GenreResponse>> GetByIdAsync(int id)
     {
         var genre = await _context.Genres.FirstOrDefaultAsync(g => g.Id == id);
-        return genre?.MapToGenreResponse();
+        if (genre == null) 
+            return Result.Fail<GenreResponse>($"Genre with ID {id} not found.");
+        return Result.Ok(genre.MapToGenreResponse());
     }
-    public async Task<GenreResponse> CreateAsync(CreateGenreRequest request)
+    public async Task<Result<GenreResponse>> CreateAsync(CreateGenreRequest request)
     {
         if (await _context.Genres.AnyAsync(g => g.Name == request.Name))
-            throw new InvalidOperationException($"Genre '{request.Name}' already exists.");
+            return Result.Fail<GenreResponse>($"Genre '{request.Name}' already exists.");
         
         var genre = new Genre
         {
@@ -36,25 +39,28 @@ public class GenreService : IGenreService
         };
         _context.Genres.Add(genre);
         await _context.SaveChangesAsync();
-        return genre.MapToGenreResponse();
+        return Result.Ok(genre.MapToGenreResponse());
     }
 
-    public async Task<bool> UpdateAsync(int id, UpdateGenreRequest request)
+    public async Task<Result> UpdateAsync(int id, UpdateGenreRequest request)
     {
         var genre = await _context.Genres.FirstOrDefaultAsync(g => g.Id == id);
-        if (genre == null) return false;
+        if (genre == null)
+            return Result.Fail($"Genre with ID {id} not found.");
+
         if (await _context.Genres.AnyAsync(g => g.Name == request.Name && g.Id != id))
-            throw new InvalidOperationException($"Genre '{request.Name}' already exists.");
+            return Result.Fail($"Genre '{request.Name}' already exists.");
         genre.Name = request.Name;
         await _context.SaveChangesAsync();
-        return true;
+        return Result.Ok();
     }
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<Result> DeleteAsync(int id)
     {
         var genre = await _context.Genres.FirstOrDefaultAsync(g => g.Id == id);
-        if (genre == null) return false;
+        if (genre == null)
+            return Result.Fail($"Genre with ID {id} not found.");
         _context.Genres.Remove(genre);
         await _context.SaveChangesAsync();
-        return true;
+        return Result.Ok();
     }
 }

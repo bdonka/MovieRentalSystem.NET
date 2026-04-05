@@ -31,9 +31,10 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<UserResponse>> GetUser(int id)
     {
-        var user = await _userService.GetByIdAsync(id);
-        if (user == null) return NotFound();
-        return Ok(user);
+        var result = await _userService.GetByIdAsync(id);
+        if (result.IsFailed)
+            return NotFound(result.Errors.First().Message);
+        return Ok(result.Value);
     }
 
     // POST: api/users
@@ -42,11 +43,18 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<UserResponse>> PostUser(CreateUserRequest request)
     {
-        var user = await _userService.CreateAsync(request);
+        var result = await _userService.CreateAsync(request);
+        if (result.IsFailed)
+        {
+            if (result.Errors.First().Message.Contains("already exists"))
+                return Conflict(result.Errors.First().Message);
+
+            return BadRequest(result.Errors.First().Message);
+        }
         return CreatedAtAction(
             nameof(GetUser),
-            new { id = user.Id },
-            user);
+            new { id = result.Value.Id },
+            result.Value);
     }
 
     // PUT: api/users/5
@@ -56,8 +64,14 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PutUser(int id, UpdateUserRequest request)
     {
-        var updated = await _userService.UpdateAsync(id, request);
-        if (!updated) return NotFound();
+        var result = await _userService.UpdateAsync(id, request);
+        if (result.IsFailed)
+        {
+            if (result.Errors.First().Message.Contains("already exists"))
+                return Conflict(result.Errors.First().Message);
+
+            return BadRequest(result.Errors.First().Message);
+        }
         return NoContent();
     }
 
@@ -67,8 +81,9 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteUser(int id)
     {
-        var deleted = await _userService.DeleteAsync(id);
-        if (!deleted) return NotFound();
+        var result = await _userService.DeleteAsync(id);
+        if (result.IsFailed)
+            return NotFound(result.Errors.First().Message);
         return NoContent();
     }
 }

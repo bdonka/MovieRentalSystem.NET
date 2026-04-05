@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FluentResults;
+using Microsoft.EntityFrameworkCore;
 using MovieRentalSystem.NET.WebApi.Data;
 using MovieRentalSystem.NET.WebApi.Entities;
 using MovieRentalSystem.NET.WebApi.Mappings;
@@ -24,16 +25,18 @@ public class UserService : IUserService
         return users.Select(u => u.MapToUserResponse());
     }
 
-    public async Task<UserResponse?> GetByIdAsync(int id)
+    public async Task<Result<UserResponse>> GetByIdAsync(int id)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
-        return user?.MapToUserResponse();
+        if (user == null) 
+            return Result.Fail<UserResponse>($"User with ID {id} not found.");
+        return Result.Ok(user.MapToUserResponse());
     }
 
-    public async Task<UserResponse> CreateAsync(CreateUserRequest request)
+    public async Task<Result<UserResponse>> CreateAsync(CreateUserRequest request)
     {
         if (await _context.Users.AnyAsync(u => u.Email == request.Email))
-            throw new InvalidOperationException($"User with Email '{request.Email}' already exists.");
+            return Result.Fail<UserResponse>($"User with Email '{request.Email}' already exists.");
 
         var user = new User
         {
@@ -45,32 +48,33 @@ public class UserService : IUserService
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
-        return user.MapToUserResponse();
+        return Result.Ok(user.MapToUserResponse());
     }
 
-    public async Task<bool> UpdateAsync(int id, UpdateUserRequest request)
+    public async Task<Result> UpdateAsync(int id, UpdateUserRequest request)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
-        if (user == null) return false;
+        if (user == null)
+            return Result.Fail($"User with ID {id} not found.");
 
         if (await _context.Users.AnyAsync(u => u.Email == request.Email && u.Id != id))
-            throw new InvalidOperationException($"User with Email '{request.Email}' already exists.");
+            return Result.Fail($"User with Email '{request.Email}' already exists.");
 
         user.Name = request.Name;
         user.Email = request.Email;
 
         await _context.SaveChangesAsync();
-        return true;
+        return Result.Ok();
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<Result> DeleteAsync(int id)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
-        if (user == null) return false;
-
+        if (user == null)
+            return Result.Fail($"User with ID {id} not found.");
         _context.Users.Remove(user);
         await _context.SaveChangesAsync();
-        return true;
+        return Result.Ok();
     }
 
     private static string HashPassword(string password)

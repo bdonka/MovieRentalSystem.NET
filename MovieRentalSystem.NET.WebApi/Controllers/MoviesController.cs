@@ -31,9 +31,10 @@ public class MoviesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<MovieResponse>> GetMovie(int id)
     {
-        var movie = await _movieService.GetByIdAsync(id);
-        if (movie == null) return NotFound();
-        return Ok(movie);
+        var result = await _movieService.GetByIdAsync(id);
+        if (result.IsFailed)
+            return NotFound(result.Errors.First().Message);
+        return Ok(result.Value);
     }
 
     // POST: api/movies
@@ -42,11 +43,17 @@ public class MoviesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<MovieResponse>> PostMovie(CreateMovieRequest request)
     {
-        var movie = await _movieService.CreateAsync(request);
+        var result = await _movieService.CreateAsync(request);
+        if (result.IsFailed)
+        {
+            if (result.Errors.First().Message.Contains("already exists"))
+                return Conflict(result.Errors.First().Message);
+            return BadRequest(result.Errors.First().Message);
+        }
         return CreatedAtAction(
             nameof(GetMovie),
-            new { id = movie.Id },
-            movie);
+            new { id = result.Value.Id },
+            result.Value);
     }
 
     // PUT : api/movies/5
@@ -56,8 +63,17 @@ public class MoviesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PutMovie(int id, UpdateMovieRequest request)
     {
-        var updated = await _movieService.UpdateAsync(id, request);
-        if (!updated) return NotFound();
+        var result = await _movieService.UpdateAsync(id, request);
+        if (result.IsFailed)
+        {
+            if (result.Errors.First().Message.Contains("not found"))
+                return NotFound(result.Errors.First().Message);
+
+            if (result.Errors.First().Message.Contains("already exists"))
+                return Conflict(result.Errors.First().Message);
+
+            return BadRequest(result.Errors.First().Message);
+        }
         return NoContent();
     }
 
@@ -67,8 +83,9 @@ public class MoviesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteMovie(int id)
     {
-        var deleted = await _movieService.DeleteAsync(id);
-        if (!deleted) return NotFound();
+        var result = await _movieService.DeleteAsync(id);
+        if (result.IsFailed)
+            return NotFound(result.Errors.First().Message);
         return NoContent();
     }
 
@@ -79,9 +96,10 @@ public class MoviesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IEnumerable<GenreResponse>>> GetGenres(int movieId)
     {
-        var genres = await _movieService.GetGenresAsync(movieId);
-        if (genres == null) return NotFound();
-        return Ok(genres);
+        var result = await _movieService.GetGenresAsync(movieId);
+        if (result.IsFailed)
+            return NotFound(result.Errors.First().Message);
+        return Ok(result.Value);
     }
 
     // POST: api/movies/{id}/genres/{id}
@@ -90,7 +108,8 @@ public class MoviesController : ControllerBase
     public async Task<ActionResult> AssignGenre(int movieId, int genreId)
     {
         var result = await _movieService.AssignGenreAsync(movieId, genreId);
-        if (!result) return NotFound();
+        if (result.IsFailed)
+            return NotFound(result.Errors.First().Message);
         return NoContent();
     }
 
@@ -100,8 +119,9 @@ public class MoviesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> RemoveGenre(int movieId, int genreId)
     {
-        var removed = await _movieService.RemoveGenreAsync(movieId, genreId);
-        if (!removed) return NotFound();
+        var result = await _movieService.RemoveGenreAsync(movieId, genreId);
+        if (result.IsFailed)
+            return NotFound(result.Errors.First().Message);
         return NoContent();
     }
 }

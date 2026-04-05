@@ -1,5 +1,4 @@
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
 using MovieRentalSystem.NET.WebApi.Data;
 using MovieRentalSystem.NET.WebApi.Services;
 using MovieRentalSystem.NET.WebApi.Services.Interfaces;
