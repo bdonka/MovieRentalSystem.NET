@@ -1,7 +1,6 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-var sql = builder.AddSqlServer("sql");
-var sqldata = sql.AddDatabase("sqldata");
+var sql = builder.AddSqlServer("sql").AddDatabase("sqldata");
 
 
 var migrations = builder.AddProject<Projects.MovieRentalSystem_NET_MigrationService>("migrations")
@@ -9,7 +8,7 @@ var migrations = builder.AddProject<Projects.MovieRentalSystem_NET_MigrationServ
     .WaitFor(sql);
 
 var api = builder.AddProject<Projects.MovieRentalSystem_NET_WebApi>("api")
-    .WithReference(sqldata)
+    .WithReference(sql)
     .WithReference(migrations)
     .WaitForCompletion(migrations);
 

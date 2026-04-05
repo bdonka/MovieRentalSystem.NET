@@ -20,7 +20,8 @@ public class UserService : IUserService
 
     public async Task<IEnumerable<UserResponse>> GetAllAsync()
     {
-        return await _context.Users.Select(u => u.MapToUserResponse()).ToListAsync();
+        var users = await _context.Users.ToListAsync();
+        return users.Select(u => u.MapToUserResponse());
     }
 
     public async Task<UserResponse?> GetByIdAsync(int id)

@@ -47,25 +47,30 @@ public class Worker(
     }
 
     private static async Task SeedDataAsync(
-        ApplicationDbContext dbContext, CancellationToken cancellationToken)
+    ApplicationDbContext dbContext, CancellationToken cancellationToken)
     {
-        var movie = new Movie
-        {
-            Title = "The Matrix",
-            Description = "Sci-fi classic",
-            ReleaseYear = 1999,
-            RentalPrice = 9.99m
-        };
-
         var strategy = dbContext.Database.CreateExecutionStrategy();
         await strategy.ExecuteAsync(async () =>
         {
-            // Seed the database
             await using var transaction = await dbContext.Database
                 .BeginTransactionAsync(cancellationToken);
 
-            await dbContext.Movies.AddAsync(movie, cancellationToken);
-            await dbContext.SaveChangesAsync(cancellationToken);
+            if (!await dbContext.Movies.AnyAsync(
+                    m => m.Title == "The Matrix" && m.ReleaseYear == 1999,
+                    cancellationToken))
+            {
+                var movie = new Movie
+                {
+                    Title = "The Matrix",
+                    Description = "Sci-fi classic",
+                    ReleaseYear = 1999,
+                    RentalPrice = 9.99m
+                };
+
+                await dbContext.Movies.AddAsync(movie, cancellationToken);
+                await dbContext.SaveChangesAsync(cancellationToken);
+            }
+
             await transaction.CommitAsync(cancellationToken);
         });
     }
