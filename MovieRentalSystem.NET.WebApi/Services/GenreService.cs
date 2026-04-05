@@ -17,12 +17,13 @@ public class GenreService : IGenreService
     }
     public async Task<IEnumerable<GenreResponse>> GetAllAsync()
     {
-        return await _context.Genres.Select(g => g.MapToGenreResponse()).ToListAsync();
+        var genres = await _context.Genres.ToListAsync();
+        return genres.Select(g => g.MapToGenreResponse());
     }
     public async Task<GenreResponse?> GetByIdAsync(int id)
     {
-        return await _context.Genres.Select(g => g.MapToGenreResponse())
-            .FirstOrDefaultAsync(g => g.Id == id);
+        var genre = await _context.Genres.FirstOrDefaultAsync(g => g.Id == id);
+        return genre?.MapToGenreResponse();
     }
     public async Task<GenreResponse> CreateAsync(CreateGenreRequest request)
     {

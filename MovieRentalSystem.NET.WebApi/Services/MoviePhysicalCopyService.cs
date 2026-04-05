@@ -18,7 +18,8 @@ public class MoviePhysicalCopyService : IMoviePhysicalCopyService
 
     public async Task<IEnumerable<MoviePhysicalCopyResponse>> GetAllAsync()
     {
-        return await _context.MoviePhysicalCopies.Select(c => c.MapToMoviePhysicalCopyResponse()).ToListAsync();
+        var copies = await _context.MoviePhysicalCopies.ToListAsync();
+        return copies.Select(c => c.MapToMoviePhysicalCopyResponse());
     }
 
     public async Task<MoviePhysicalCopyResponse?> GetByIdAsync(int id, int movieId)

@@ -19,7 +19,8 @@ public class RentalService : IRentalService
 
     public async Task<IEnumerable<RentalResponse>> GetAllAsync()
     {
-        return await _context.Rentals.Select(r => r.MapToRentalResponse()).ToListAsync();
+        var rentals = await _context.Rentals.ToListAsync();
+        return rentals.Select(r => r.MapToRentalResponse());
     }
 
     public async Task<RentalResponse?> GetByIdAsync(int id)

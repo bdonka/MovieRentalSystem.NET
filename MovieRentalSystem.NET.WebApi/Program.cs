@@ -14,7 +14,7 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
-builder.AddSqlServerDbContext<ApplicationDbContext>(connectionName: "sqldb");
+builder.AddSqlServerDbContext<ApplicationDbContext>(connectionName: "sqldata");
 
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<IGenreService, GenreService>();

@@ -18,7 +18,8 @@ public class MovieService : IMovieService
 
     public async Task<IEnumerable<MovieResponse>> GetAllAsync()
     {
-        return await _context.Movies.Select(m => m.MapToMovieResponse()).ToListAsync();
+        var movies = await _context.Movies.ToListAsync();
+        return movies.Select(m => m.MapToMovieResponse());
     }
 
     public async Task<MovieResponse?> GetByIdAsync(int id)
@@ -84,7 +85,7 @@ public class MovieService : IMovieService
             return null;
         }
 
-        return movie.Genres.Select(g => g.MapToGenreResponse());
+        return movie.Genres.ToList().Select(g => g.MapToGenreResponse());
     }
 
     public async Task<bool> AssignGenreAsync(int movieId, int genreId) 
