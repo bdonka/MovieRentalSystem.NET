@@ -1,8 +1,5 @@
-﻿using FluentResults;
-using Microsoft.AspNetCore.Mvc;
-using MovieRentalSystem.NET.WebApi.Models.Requests.Genres;
-using MovieRentalSystem.NET.WebApi.Models.Responses;
-using MovieRentalSystem.NET.WebApi.Services.Interfaces;
+﻿using Microsoft.AspNetCore.Mvc;
+
 
 namespace MovieRentalSystem.NET.WebApi.Controllers;
 

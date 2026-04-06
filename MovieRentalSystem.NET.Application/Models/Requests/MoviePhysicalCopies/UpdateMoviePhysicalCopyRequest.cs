@@ -1,6 +1,6 @@
 ﻿using MovieRentalSystem.NET.Domain.Enums;
 
-namespace MovieRentalSystem.NET.WebApi.Models.Requests.MoviePhysicalCopies;
+namespace MovieRentalSystem.NET.Application.Models.Requests.MoviePhysicalCopies;
 
 public class UpdateMoviePhysicalCopyRequest
 {

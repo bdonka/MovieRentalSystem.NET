@@ -33,6 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MovieRentalSystem.NET.Domain\MovieRentalSystem.NET.Domain.csproj" />
     <ProjectReference Include="..\MovieRentalSystem.NET.ServiceDefaults\MovieRentalSystem.NET.ServiceDefaults.csproj" />
   </ItemGroup>
 

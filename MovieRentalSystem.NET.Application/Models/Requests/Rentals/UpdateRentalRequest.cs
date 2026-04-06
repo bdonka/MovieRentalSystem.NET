@@ -1,7 +1,6 @@
 ﻿using MovieRentalSystem.NET.Domain.Enums;
-using MovieRentalSystem.NET.WebApi.Enums;
 
-namespace MovieRentalSystem.NET.WebApi.Models.Requests.Rentals;
+namespace MovieRentalSystem.NET.Application.Models.Requests.Rentals;
 
 public class UpdateRentalRequest
 {
