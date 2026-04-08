@@ -7,13 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" Version="13.2.0" />
     <PackageReference Include="FluentResults" Version="4.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.15.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\MovieRentalSystem.NET.Application\MovieRentalSystem.NET.Application.csproj" />
-    <ProjectReference Include="..\MovieRentalSystem.NET.Domain\MovieRentalSystem.NET.Domain.csproj" />
   </ItemGroup>
 
 </Project>

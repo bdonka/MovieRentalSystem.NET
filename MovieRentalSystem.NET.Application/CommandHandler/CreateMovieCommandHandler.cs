@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using MovieRentalSystem.NET.Application.Interfaces;
-using MovieRentalSystem.NET.WebApi.Models.Requests.Movies;
 
 public class CreateMovieCommandHandler : IRequestHandler<CreateMovieCommand, int>
 {

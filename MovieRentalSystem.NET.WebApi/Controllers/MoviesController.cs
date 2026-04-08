@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Movies;
 using MovieRentalSystem.NET.WebApi.Models.Responses;
-using MovieRentalSystem.NET.WebApi.Services.Interfaces;
 
 namespace MovieRentalSystem.NET.WebApi.Controllers;
 

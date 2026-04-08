@@ -1,12 +1,9 @@
 ﻿using FluentResults;
 using Microsoft.EntityFrameworkCore;
 using MovieRentalSystem.NET.Application.Interfaces;
-using MovieRentalSystem.NET.Application.Mappings;
 using MovieRentalSystem.NET.Domain.Entities;
 using MovieRentalSystem.NET.Domain.Enums;
 using MovieRentalSystem.NET.Infrastructure.Data;
-using MovieRentalSystem.NET.WebApi.Models.Requests.Rentals;
-using MovieRentalSystem.NET.WebApi.Models.Responses;
 
 namespace MovieRentalSystem.NET.Infrastructure.Services;
 

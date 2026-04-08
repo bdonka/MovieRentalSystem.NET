@@ -1,0 +1,19 @@
+﻿using MediatR;
+using MovieRentalSystem.NET.Application.Interfaces;
+using MovieRentalSystem.NET.Application.Query;
+using MovieRentalSystem.NET.Domain.Entities;
+
+public class GetUserQueryHandler : IRequestHandler<GetUserQuery, IEnumerable<UserResponse>>
+{
+    private readonly IUserService _userService;
+    public GetUserQueryHandler(IUserService userService)
+    {
+        _userService = userService;
+    }
+
+    public async Task<IEnumerable<UserResponse>> Handle(
+        GetUserQuery request, CancellationToken cancellationToken)
+    {
+        return await _userService.GetAllAsync();
+    }
+}

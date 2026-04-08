@@ -1,7 +1,4 @@
-﻿using FluentValidation;
-using MovieRentalSystem.NET.WebApi.Models.Requests.Genres;
-
-namespace MovieRentalSystem.NET.Application.Validators.Genres;
+﻿namespace MovieRentalSystem.NET.Application.Validators.Genres;
 
 public class UpdateGenreRequestValidator : AbstractValidator<UpdateGenreRequest>
 {

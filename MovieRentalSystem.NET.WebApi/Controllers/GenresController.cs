@@ -1,38 +1,29 @@
-﻿using Microsoft.AspNetCore.Mvc;
-
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using MovieRentalSystem.NET.WebApi.Models.Requests.Genres;
+using MovieRentalSystem.NET.WebApi.Models.Responses;
 
 namespace MovieRentalSystem.NET.WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class GenresController : ControllerBase
+public class GenresController(IMediator mediator) : ControllerBase
 {
-    private readonly IGenreService _genreService;
-
-    public GenresController(IGenreService genreService)
-    {
-        _genreService = genreService;
-    }
-
     // GET: api/genres
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<GenreResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<GenreResponse>>> GetGenres()
     {
-        var genres = await _genreService.GetAllAsync();
-        return Ok(genres);
+        return Ok(await mediator.Send(new GetGenreQuery()));
     }
 
     // GET: api/genres/5
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(GenreResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<GenreResponse>> GetGenre(int id)
+    public async Task<ActionResult<GenreResponse>> GetGenre(int Id)
     {
-        var result = await _genreService.GetByIdAsync(id);
-        if (result.IsFailed)
-            return NotFound(result.Errors.First().Message);
-        return Ok(result.Value);
+        return Ok(await mediator.Send(new GetGenreByIdQuery()));
     }
 
 

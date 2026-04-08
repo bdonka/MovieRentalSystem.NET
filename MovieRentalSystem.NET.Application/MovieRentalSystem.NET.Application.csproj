@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MovieRentalSystem.NET.Domain\MovieRentalSystem.NET.Domain.csproj" />
-    <ProjectReference Include="..\MovieRentalSystem.NET.WebApi\MovieRentalSystem.NET.WebApi.csproj" />
   </ItemGroup>
 
 </Project>

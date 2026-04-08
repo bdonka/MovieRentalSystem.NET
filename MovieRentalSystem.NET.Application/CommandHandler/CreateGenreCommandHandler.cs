@@ -1,7 +1,5 @@
 ﻿using MediatR;
 using MovieRentalSystem.NET.Application.Interfaces;
-using MovieRentalSystem.NET.WebApi.Models.Requests.Genres;
-
 public class CreateGenreCommandHandler : IRequestHandler<CreateGenreCommand, int>
 {
     private readonly IGenreService _genreService;

@@ -1,6 +1,4 @@
-﻿using MovieRentalSystem.NET.WebApi.Enums;
-
-namespace MovieRentalSystem.NET.WebApi.Models.Responses;
+﻿namespace MovieRentalSystem.NET.WebApi.Models.Responses;
 
 public class MoviePhysicalCopyResponse
 {

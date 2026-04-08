@@ -1,8 +1,4 @@
-﻿using FluentResults;
-using MovieRentalSystem.NET.WebApi.Models.Requests.MoviePhysicalCopies;
-using MovieRentalSystem.NET.WebApi.Models.Responses;
-
-namespace MovieRentalSystem.NET.Application.Interfaces
+﻿namespace MovieRentalSystem.NET.Application.Interfaces
 {
     public interface IMoviePhysicalCopyService
     {
