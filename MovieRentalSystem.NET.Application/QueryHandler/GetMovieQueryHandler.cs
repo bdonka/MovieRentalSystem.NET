@@ -1,10 +1,9 @@
 ﻿using MediatR;
+using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Application.Query;
-using MovieRentalSystem.NET.Domain.Entities;
-using System.Collections;
 
-public class GetMovieQueryHandler : IRequestHandler<GetMovieQuery, IEnumerable<MovieResponse>>
+public class GetMovieQueryHandler : IRequestHandler<GetMovieQuery, IEnumerable<MovieDto>>
 {
     private readonly IMovieService _movieService;
     public GetMovieQueryHandler(IMovieService movieService)
@@ -12,7 +11,7 @@ public class GetMovieQueryHandler : IRequestHandler<GetMovieQuery, IEnumerable<M
         _movieService = movieService;
     }
 
-    public async Task<IEnumerable<MovieResponse>> Handle(
+    public async Task<IEnumerable<MovieDto>> Handle(
         GetMovieQuery request, CancellationToken cancellationToken)
     {
         return await _movieService.GetAllAsync();

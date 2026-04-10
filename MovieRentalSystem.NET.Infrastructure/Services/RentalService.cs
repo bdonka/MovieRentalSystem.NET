@@ -1,9 +1,11 @@
 ﻿using FluentResults;
 using Microsoft.EntityFrameworkCore;
+using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Domain.Entities;
 using MovieRentalSystem.NET.Domain.Enums;
 using MovieRentalSystem.NET.Infrastructure.Data;
+using MovieRentalSystem.NET.Infrastructure.Mapping;
 
 namespace MovieRentalSystem.NET.Infrastructure.Services;
 
@@ -15,27 +17,27 @@ public class RentalService : IRentalService
         _context = context;
     }
 
-    public async Task<IEnumerable<RentalResponse>> GetAllAsync()
+    public async Task<IEnumerable<RentalDto>> GetAllAsync()
     {
         var rentals = await _context.Rentals.ToListAsync();
-        return rentals.Select(r => r.MapToRentalResponse());
+        return rentals.Select(r => r.MapToRentalDto());
     }
 
-    public async Task<Result<RentalResponse>> GetByIdAsync(int id)
+    public async Task<Result<RentalDto>> GetByIdAsync(int id)
     {
         var rental = await _context.Rentals.FirstOrDefaultAsync(r => r.Id == id);
         if (rental == null)
             return Result.Fail($"Rental with ID {id} not found.");
-        return Result.Ok(rental.MapToRentalResponse());
+        return Result.Ok(rental.MapToRentalDto());
     }
 
-    public async Task<Result<RentalResponse>> CreateAsync(CreateRentalRequest request)
+    public async Task<Result<RentalDto>> CreateAsync(RentalDto request)
     {
         if (!await _context.Users.AnyAsync(u => u.Id == request.UserId))
-            return Result.Fail<RentalResponse>($"User with Id {request.UserId} does not exist.");
+            return Result.Fail<RentalDto>($"User with Id {request.UserId} does not exist.");
 
         if (!await _context.MoviePhysicalCopies.AnyAsync(c => c.Id == request.MoviePhysicalCopyId))
-            return Result.Fail<RentalResponse>($"MoviePhysicalCopy with Id {request.MoviePhysicalCopyId} does not exist.");
+            return Result.Fail<RentalDto>($"MoviePhysicalCopy with Id {request.MoviePhysicalCopyId} does not exist.");
 
         var rental = new Rental
         {
@@ -47,10 +49,10 @@ public class RentalService : IRentalService
 
         _context.Rentals.Add(rental);
         await _context.SaveChangesAsync();
-        return Result.Ok(rental.MapToRentalResponse());
+        return Result.Ok(rental.MapToRentalDto());
     }
 
-    public async Task<Result> UpdateAsync(int id, UpdateRentalRequest request)
+    public async Task<Result> UpdateAsync(int id, RentalDto request)
     {
         var rental = await _context.Rentals.FirstOrDefaultAsync(r => r.Id == id);
         if (rental == null) 

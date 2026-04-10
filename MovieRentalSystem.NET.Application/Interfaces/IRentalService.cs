@@ -1,11 +1,14 @@
-﻿namespace MovieRentalSystem.NET.Application.Interfaces
+﻿using FluentResults;
+using MovieRentalSystem.NET.Application.Dtos;
+
+namespace MovieRentalSystem.NET.Application.Interfaces
 {
     public interface IRentalService
     {
-        Task<IEnumerable<RentalResponse>> GetAllAsync();
-        Task<Result<RentalResponse>> GetByIdAsync(int id);
-        Task<Result<RentalResponse>> CreateAsync(CreateRentalRequest request);
-        Task<Result> UpdateAsync(int id, UpdateRentalRequest request);
+        Task<IEnumerable<RentalDto>> GetAllAsync();
+        Task<Result<RentalDto>> GetByIdAsync(int id);
+        Task<Result<RentalDto>> CreateAsync(RentalDto request);
+        Task<Result> UpdateAsync(int id, RentalDto request);
         Task<Result> DeleteAsync(int id);
     }
 }

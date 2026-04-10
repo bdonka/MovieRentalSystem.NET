@@ -1,6 +1,8 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
+using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
-public class CreateGenreCommandHandler : IRequestHandler<CreateGenreCommand, int>
+public class CreateGenreCommandHandler : IRequestHandler<CreateGenreCommand, Result<GenreDto>>
 {
     private readonly IGenreService _genreService;
 
@@ -9,10 +11,10 @@ public class CreateGenreCommandHandler : IRequestHandler<CreateGenreCommand, int
         _genreService = genreService;
     }
 
-    public async Task<int> Handle(
+    public async Task<Result<GenreDto>> Handle(
         CreateGenreCommand request, CancellationToken cancellationToken)
     {
-        var createRequest = new CreateGenreRequest
+        var createRequest = new GenreDto
         {
             Name = request.Name
         };
@@ -23,6 +25,6 @@ public class CreateGenreCommandHandler : IRequestHandler<CreateGenreCommand, int
             throw new ApplicationException(result.Errors.First().Message);
         }
 
-        return result.Value.Id;
+        return result;
     }
 }

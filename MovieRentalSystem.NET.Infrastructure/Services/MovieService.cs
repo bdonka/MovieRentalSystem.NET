@@ -1,8 +1,10 @@
 ﻿using FluentResults;
 using Microsoft.EntityFrameworkCore;
+using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Domain.Entities;
 using MovieRentalSystem.NET.Infrastructure.Data;
+using MovieRentalSystem.NET.Infrastructure.Mapping;
 
 namespace MovieRentalSystem.NET.Infrastructure.Services;
 
@@ -14,24 +16,24 @@ public class MovieService : IMovieService
         _context = context;
     }
 
-    public async Task<IEnumerable<MovieResponse>> GetAllAsync()
+    public async Task<IEnumerable<MovieDto>> GetAllAsync()
     {
         var movies = await _context.Movies.ToListAsync();
-        return movies.Select(m => m.MapToMovieResponse());
+        return movies.Select(m => m.MapToMovieDto());
     }
 
-    public async Task<Result<MovieResponse>> GetByIdAsync(int id)
+    public async Task<Result<MovieDto>> GetByIdAsync(int id)
     {
         var movie = await _context.Movies.FirstOrDefaultAsync(m => m.Id == id);
         if (movie == null) 
-            return Result.Fail<MovieResponse>($"Movie with ID {id} not found.");
-        return Result.Ok(movie.MapToMovieResponse());
+            return Result.Fail<MovieDto>($"Movie with ID {id} not found.");
+        return Result.Ok(movie.MapToMovieDto());
     }
 
-    public async Task<Result<MovieResponse>> CreateAsync(CreateMovieRequest request)
+    public async Task<Result<MovieDto>> CreateAsync(MovieDto request)
     {
         if (await _context.Movies.AnyAsync(m => m.Title == request.Title))
-            return Result.Fail<MovieResponse>($"Movie '{request.Title}' already exists.");
+            return Result.Fail<MovieDto>($"Movie '{request.Title}' already exists.");
 
         var movie = new Movie
         {
@@ -44,10 +46,10 @@ public class MovieService : IMovieService
         _context.Movies.Add(movie);
         await _context.SaveChangesAsync();
 
-        return Result.Ok(movie.MapToMovieResponse());
+        return Result.Ok(movie.MapToMovieDto());
     }
 
-    public async Task<Result> UpdateAsync(int id, UpdateMovieRequest request)
+    public async Task<Result> UpdateAsync(int id, MovieDto request)
     {
         var movie = await _context.Movies.FirstOrDefaultAsync(m => m.Id == id);
         if (movie == null) 
@@ -78,16 +80,16 @@ public class MovieService : IMovieService
 
 
 
-    public async Task<Result<IEnumerable<GenreResponse>>> GetGenresAsync(int movieId)
+    public async Task<Result<IEnumerable<GenreDto>>> GetGenresAsync(int movieId)
     {
         var movie = await _context.Movies.Include(m => m.Genres).FirstOrDefaultAsync(m => m.Id == movieId);
 
         if (movie == null)
         {
-            return Result.Fail<IEnumerable<GenreResponse>>($"Movie with Id {movieId} not found.");
+            return Result.Fail<IEnumerable<GenreDto>>($"Movie with Id {movieId} not found.");
         }
 
-        var genres = movie.Genres.ToList().Select(g => g.MapToGenreResponse());
+        var genres = movie.Genres.ToList().Select(g => g.MapToGenreDto());
         return Result.Ok(genres);
     }
 

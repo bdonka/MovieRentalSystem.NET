@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.WebApi.Models.Requests.MoviePhysicalCopies;
 using MovieRentalSystem.NET.WebApi.Models.Responses;
 

@@ -1,8 +1,10 @@
 ﻿using FluentResults;
 using Microsoft.EntityFrameworkCore;
+using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Domain.Entities;
 using MovieRentalSystem.NET.Infrastructure.Data;
+using MovieRentalSystem.NET.Infrastructure.Mapping;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -16,39 +18,38 @@ public class UserService : IUserService
         _context = context;
     }
 
-    public async Task<IEnumerable<UserResponse>> GetAllAsync()
+    public async Task<IEnumerable<UserDto>> GetAllAsync()
     {
         var users = await _context.Users.ToListAsync();
-        return users.Select(u => u.MapToUserResponse());
+        return users.Select(u => u.MapToUserDto());
     }
 
-    public async Task<Result<UserResponse>> GetByIdAsync(int id)
+    public async Task<Result<UserDto>> GetByIdAsync(int id)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
         if (user == null) 
-            return Result.Fail<UserResponse>($"User with ID {id} not found.");
-        return Result.Ok(user.MapToUserResponse());
+            return Result.Fail<UserDto>($"User with ID {id} not found.");
+        return Result.Ok(user.MapToUserDto());
     }
 
-    public async Task<Result<UserResponse>> CreateAsync(CreateUserRequest request)
+    public async Task<Result<UserDto>> CreateAsync(CreateUserDto request)
     {
         if (await _context.Users.AnyAsync(u => u.Email == request.Email))
-            return Result.Fail<UserResponse>($"User with Email '{request.Email}' already exists.");
+            return Result.Fail<UserDto>($"User with Email '{request.Email}' already exists.");
 
         var user = new User
         {
             Name = request.Name,
             Email = request.Email,
-            Password = HashPassword(request.Password),
-            Role = "User"
+            Password = HashPassword(request.Password)
         };
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
-        return Result.Ok(user.MapToUserResponse());
+        return Result.Ok(user.MapToUserDto());
     }
 
-    public async Task<Result> UpdateAsync(int id, UpdateUserRequest request)
+    public async Task<Result> UpdateAsync(int id, UserDto request)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
         if (user == null)

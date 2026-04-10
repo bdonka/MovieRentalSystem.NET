@@ -1,18 +1,20 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
+using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Application.Query;
 
-public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserResponse>
+public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, Result<UserDto>>
 {
-    private readonly IGenreService _genreService;
-    public GetUserByIdQueryHandler(IGenreService genreService)
+    private readonly IUserService _userService;
+    public GetUserByIdQueryHandler(IUserService userService)
     {
-        _genreService = genreService;
+        _userService = userService;
     }
 
-    public async Task<UserResponse> Handle(
+    public async Task<Result<UserDto>> Handle(
         GetUserByIdQuery request, CancellationToken cancellationToken)
     {
-        return await _genreService.GetByIdAsync(request.Id);
+        return await _userService.GetByIdAsync(request.Id);
     }
 }

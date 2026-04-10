@@ -1,7 +1,9 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
+using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
 
-public class CreateMovieCommandHandler : IRequestHandler<CreateMovieCommand, int>
+public class CreateMovieCommandHandler : IRequestHandler<CreateMovieCommand, Result<MovieDto>>
 {
     private readonly IMovieService _movieService;
 
@@ -10,15 +12,15 @@ public class CreateMovieCommandHandler : IRequestHandler<CreateMovieCommand, int
         _movieService = movieService;
     }
 
-    public async Task<int> Handle(
+    public async Task<Result<MovieDto>> Handle(
         CreateMovieCommand request, CancellationToken cancellationToken)
     {
-        var createRequest = new CreateMovieRequest
+        var createRequest = new MovieDto
         {
             Title = request.Title,
             Description = request.Description,
             ReleaseYear = request.ReleaseYear,
-            RentalPrice = request.RentalPrice
+            RentalPrice = request.RentalPrice,
         };
         var result = await _movieService.CreateAsync(createRequest);
 
@@ -27,6 +29,6 @@ public class CreateMovieCommandHandler : IRequestHandler<CreateMovieCommand, int
             throw new ApplicationException(result.Errors.First().Message);
         }
 
-        return result.Value.Id;
+        return result;
     }
 }

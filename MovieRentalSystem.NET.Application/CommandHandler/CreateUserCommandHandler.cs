@@ -1,7 +1,9 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
+using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
 
-public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, int>
+public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Result<UserDto>>
 {
     private readonly IUserService _userService;
 
@@ -10,10 +12,10 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, int>
         _userService = userService;
     }
 
-    public async Task<int> Handle(
+    public async Task<Result<UserDto>> Handle(
         CreateUserCommand request, CancellationToken cancellationToken)
     {
-        var createRequest = new CreateUserRequest
+        var createRequest = new CreateUserDto
         {
             Name = request.Name,
             Email = request.Email,
@@ -26,6 +28,6 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, int>
             throw new ApplicationException(result.Errors.First().Message);
         }
 
-        return result.Value.Id;
+        return result;
     }
 }

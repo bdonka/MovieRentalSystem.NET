@@ -1,7 +1,9 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
+using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
 
-public class CreateMoviePhysicalCopyCommandHandler : IRequestHandler<CreateMoviePhysicalCopyCommand, int>
+public class CreateMoviePhysicalCopyCommandHandler : IRequestHandler<CreateMoviePhysicalCopyCommand, Result<MoviePhysicalCopyDto>>
 {
     private readonly IMoviePhysicalCopyService _moviePhysicalCopyService;
 
@@ -10,10 +12,10 @@ public class CreateMoviePhysicalCopyCommandHandler : IRequestHandler<CreateMovie
         _moviePhysicalCopyService = moviePhysicalCopyService;
     }
 
-    public async Task<int> Handle(
+    public async Task<Result<MoviePhysicalCopyDto>> Handle(
         CreateMoviePhysicalCopyCommand request, CancellationToken cancellationToken)
     {
-        var createRequest = new CreateMoviePhysicalCopyRequest
+        var createRequest = new MoviePhysicalCopyDto
         {
             MovieId = request.MovieId,
             Code = request.Code
@@ -25,6 +27,6 @@ public class CreateMoviePhysicalCopyCommandHandler : IRequestHandler<CreateMovie
             throw new ApplicationException(result.Errors.First().Message);
         }
 
-        return result.Value.Id;
+        return result;
     }
 }

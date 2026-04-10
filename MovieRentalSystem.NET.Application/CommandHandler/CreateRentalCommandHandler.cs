@@ -1,7 +1,9 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
+using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
 
-public class CreateRentalCommandHandler : IRequestHandler<CreateRentalCommand, int>
+public class CreateRentalCommandHandler : IRequestHandler<CreateRentalCommand, Result<RentalDto>>
 {
     private readonly IRentalService _rentalService;
 
@@ -10,10 +12,10 @@ public class CreateRentalCommandHandler : IRequestHandler<CreateRentalCommand, i
         _rentalService = rentalService;
     }
 
-    public async Task<int> Handle(
+    public async Task<Result<RentalDto>> Handle(
         CreateRentalCommand request, CancellationToken cancellationToken)
     {
-        var createRequest = new CreateRentalRequest
+        var createRequest = new RentalDto
         {
             UserId = request.UserId,
             MoviePhysicalCopyId = request.MoviePhysicalCopyId,
@@ -27,6 +29,6 @@ public class CreateRentalCommandHandler : IRequestHandler<CreateRentalCommand, i
             throw new ApplicationException(result.Errors.First().Message);
         }
 
-        return result.Value.Id;
+        return result;
     }
 }

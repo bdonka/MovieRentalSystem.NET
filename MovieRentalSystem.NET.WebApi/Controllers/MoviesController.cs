@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Movies;
 using MovieRentalSystem.NET.WebApi.Models.Responses;
 
@@ -9,7 +10,7 @@ namespace MovieRentalSystem.NET.WebApi.Controllers;
 public class MoviesController : ControllerBase
 {
     private readonly IMovieService _movieService;
-
+    private readonly IMediator _mediator;
     public MoviesController(IMovieService movieService)
     {
         _movieService = movieService;
@@ -42,6 +43,8 @@ public class MoviesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<MovieResponse>> PostMovie(CreateMovieRequest request)
     {
+       var result = await _mediator.Send(new CreateMovieCommand())
+
         var result = await _movieService.CreateAsync(request);
         if (result.IsFailed)
         {

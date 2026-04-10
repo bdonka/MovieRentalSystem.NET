@@ -1,7 +1,9 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
+using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Application.Query;
-public class GetMovieGenresQueryHandler : IRequestHandler<GetMovieGenresQuery, IEnumerable<GenreResponse>>
+public class GetMovieGenresQueryHandler : IRequestHandler<GetMovieGenresQuery, Result<IEnumerable<GenreDto>>>
 {
     private readonly IMovieService _movieService;
     public GetMovieGenresQueryHandler(IMovieService movieService)
@@ -9,7 +11,7 @@ public class GetMovieGenresQueryHandler : IRequestHandler<GetMovieGenresQuery, I
         _movieService = movieService;
     }
 
-    public async Task<IEnumerable<GenreResponse>> Handle(
+    public async Task<Result<IEnumerable<GenreDto>>> Handle(
         GetMovieGenresQuery request, CancellationToken cancellationToken)
     {
         return await _movieService.GetGenresAsync(request.MovieId);
