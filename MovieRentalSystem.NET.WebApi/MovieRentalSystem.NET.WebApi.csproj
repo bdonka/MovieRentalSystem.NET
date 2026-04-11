@@ -36,6 +36,7 @@
   <ItemGroup>
     <ProjectReference Include="..\MovieRentalSystem.NET.Application\MovieRentalSystem.NET.Application.csproj" />
     <ProjectReference Include="..\MovieRentalSystem.NET.ServiceDefaults\MovieRentalSystem.NET.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\MovieRentalSystem.NET.Infrastructure\MovieRentalSystem.NET.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

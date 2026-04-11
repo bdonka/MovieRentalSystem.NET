@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using MovieRentalSystem.NET.Application.Query;
+using MovieRentalSystem.NET.Domain.Enums;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Rentals;
 using MovieRentalSystem.NET.WebApi.Models.Responses;
 
@@ -6,21 +9,14 @@ namespace MovieRentalSystem.NET.WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class RentalsController : ControllerBase
+public class RentalsController(IMediator mediator) : ControllerBase
 {
-    private readonly IRentalService _rentalService;
-
-    public RentalsController(IRentalService rentalService)
-    {
-        _rentalService = rentalService;
-    }
-
     // GET: api/rentals
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<RentalResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<RentalResponse>>> GetRentals()
     {
-        var rentals = await _rentalService.GetAllAsync();
+        var rentals = await mediator.Send(new GetRentalQuery());
         return Ok(rentals);
     }
 
@@ -30,7 +26,7 @@ public class RentalsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<RentalResponse>> GetRental(int id)
     {
-        var result = await _rentalService.GetByIdAsync(id);
+        var result = await mediator.Send(new GetRentalByIdQuery { Id = id });
         if (result.IsFailed)
             return NotFound(result.Errors.First().Message);
         return Ok(result.Value);
@@ -42,7 +38,13 @@ public class RentalsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<RentalResponse>> PostRental(CreateRentalRequest request)
     {
-        var result = await _rentalService.CreateAsync(request);
+        var result = await mediator.Send(new CreateRentalCommand
+        {
+            UserId = request.UserId,
+            MoviePhysicalCopyId = request.MoviePhysicalCopyId,
+            RentalStartDate = request.RentalStartDate,
+            DueDate = request.DueDate
+        });
         if (result.IsFailed)
         {
             if (result.Errors.First().Message.Contains("already rented"))
@@ -63,7 +65,15 @@ public class RentalsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PutRental(int id, UpdateRentalRequest request)
     {
-        var result = await _rentalService.UpdateAsync(id, request);
+        var result = await mediator.Send(new UpdateRentalCommand
+        {
+            Id = id,
+            RentalStartDate = request.RentalStartDate,
+            DueDate = request.DueDate,
+            ReturnDate = request.ReturnDate,
+            TotalPrice = request.TotalPrice,
+            Status = request.Status
+        });
         if (result.IsFailed)
         {
             if (result.Errors.First().Message.Contains("already rented"))
@@ -80,7 +90,7 @@ public class RentalsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteRental(int id)
     {
-        var result = await _rentalService.DeleteAsync(id);
+        var result = await mediator.Send(new DeleteRentalCommand { Id = id });
         if (result.IsFailed)
             return NotFound(result.Errors.First().Message);
         return NoContent();

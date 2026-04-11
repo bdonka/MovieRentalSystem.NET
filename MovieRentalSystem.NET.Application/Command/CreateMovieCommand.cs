@@ -2,10 +2,9 @@
 using MediatR;
 using MovieRentalSystem.NET.Application.Dtos;
 
-public class CreateMovieCommand : IRequest<Result<MovieDto>>
-{
-    public required string Title { get; set; }
-    public required string Description { get; set; }
-    public int ReleaseYear { get; set; }
-    public decimal RentalPrice { get; set; }
-}
+public record CreateMovieCommand(
+    string Title,
+    string Description,
+    int ReleaseYear,
+    decimal RentalPrice
+) : IRequest<Result<MovieDto>>;

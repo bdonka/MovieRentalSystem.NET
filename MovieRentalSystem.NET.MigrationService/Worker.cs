@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using MovieRentalSystem.NET.Domain.Entities;
+using MovieRentalSystem.NET.Infrastructure.Data;
 
 namespace MovieRentalSystem.NET.MigrationService;
 

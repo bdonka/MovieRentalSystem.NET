@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using MovieRentalSystem.NET.Application.Query;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Genres;
 using MovieRentalSystem.NET.WebApi.Models.Responses;
 
@@ -21,9 +22,17 @@ public class GenresController(IMediator mediator) : ControllerBase
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(GenreResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<GenreResponse>> GetGenre(int Id)
+    public async Task<ActionResult<GenreResponse>> GetGenre(int id)
     {
-        return Ok(await mediator.Send(new GetGenreByIdQuery()));
+        var result = await mediator.Send(new GetGenreByIdQuery
+        {
+            Id = id
+        });
+
+        if (result.IsFailed)
+            return NotFound(result.Errors.First().Message);
+
+        return Ok(result.Value);
     }
 
 
@@ -33,7 +42,10 @@ public class GenresController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<GenreResponse>> PostGenre(CreateGenreRequest request)
     {
-        var result = await _genreService.CreateAsync(request);
+        var result = await mediator.Send(new CreateGenreCommand()
+        {
+            Name = request.Name
+        });
         if (result.IsFailed)
         {
             if (result.Errors.First().Message.Contains("already exists"))
@@ -52,7 +64,11 @@ public class GenresController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PutGenre(int id, UpdateGenreRequest request)
     {
-        var result = await _genreService.UpdateAsync(id, request);
+        var result = await mediator.Send(new UpdateGenreCommand
+        {
+            Id = id,
+            Name = request.Name
+        });
         if (result.IsFailed)
         {
             if (result.Errors.First().Message.Contains("not found"))
@@ -73,7 +89,7 @@ public class GenresController(IMediator mediator) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteGenre(int id)
     {
-        var result = await _genreService.DeleteAsync(id);
+        var result = await mediator.Send(new DeleteGenreCommand { Id = id });
         if (result.IsFailed)
         {
             if (result.Errors.First().Message.Contains("not found"))

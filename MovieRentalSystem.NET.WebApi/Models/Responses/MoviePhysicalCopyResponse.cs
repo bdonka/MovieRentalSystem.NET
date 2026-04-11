@@ -1,4 +1,6 @@
-﻿namespace MovieRentalSystem.NET.WebApi.Models.Responses;
+﻿using MovieRentalSystem.NET.Domain.Enums;
+
+namespace MovieRentalSystem.NET.WebApi.Models.Responses;
 
 public class MoviePhysicalCopyResponse
 {

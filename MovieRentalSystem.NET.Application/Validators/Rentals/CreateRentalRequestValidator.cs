@@ -1,6 +1,8 @@
-﻿namespace MovieRentalSystem.NET.Application.Validators.Rentals;
+﻿using FluentValidation;
 
-public class CreateRentalRequestValidator : AbstractValidator<CreateRentalRequest>
+namespace MovieRentalSystem.NET.Application.Validators.Rentals;
+
+public class CreateRentalRequestValidator : AbstractValidator<CreateRentalCommand>
 {
     public CreateRentalRequestValidator()
     {

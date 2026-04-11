@@ -13,7 +13,11 @@ public static class MovieDtoMapping
             Title = movie.Title,
             Description = movie.Description,
             ReleaseYear = movie.ReleaseYear,
-            RentalPrice = movie.RentalPrice
+            RentalPrice = movie.RentalPrice,
+
+            Genres = movie.Genres?
+            .Select(g => g.MapToGenreDto())
+            .ToList() ?? new List<GenreDto>()
         };
     }
 }

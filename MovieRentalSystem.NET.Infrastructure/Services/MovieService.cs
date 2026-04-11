@@ -18,13 +18,17 @@ public class MovieService : IMovieService
 
     public async Task<IEnumerable<MovieDto>> GetAllAsync()
     {
-        var movies = await _context.Movies.ToListAsync();
+        var movies = await _context.Movies
+            .Include(m => m.Genres)
+            .ToListAsync();
         return movies.Select(m => m.MapToMovieDto());
     }
 
     public async Task<Result<MovieDto>> GetByIdAsync(int id)
     {
-        var movie = await _context.Movies.FirstOrDefaultAsync(m => m.Id == id);
+        var movie = await _context.Movies
+            .Include(m => m.Genres)
+            .FirstOrDefaultAsync(m => m.Id == id);
         if (movie == null) 
             return Result.Fail<MovieDto>($"Movie with ID {id} not found.");
         return Result.Ok(movie.MapToMovieDto());
@@ -45,6 +49,10 @@ public class MovieService : IMovieService
 
         _context.Movies.Add(movie);
         await _context.SaveChangesAsync();
+        await _context
+            .Entry(movie)
+            .Collection(m => m.Genres)
+            .LoadAsync();
 
         return Result.Ok(movie.MapToMovieDto());
     }
@@ -96,15 +104,15 @@ public class MovieService : IMovieService
     public async Task<Result> AssignGenreAsync(int movieId, int genreId) 
     { 
         var movie = await _context.Movies.Include(m => m.Genres).FirstOrDefaultAsync(m => m.Id == movieId);
-        var genre = await _context.Genres.FindAsync(genreId);
-        
         if (movie == null) 
             return Result.Fail($"Movie with Id {movieId} not found.");
+
+        var genre = await _context.Genres.FirstOrDefaultAsync(g => g.Id == genreId);
 
         if (genre == null) 
             return Result.Fail($"Genre with Id {genreId} not found.");
 
-        if (!movie.Genres.Contains(genre))
+        if (!movie.Genres.Any(g => g.Id == genreId))
             movie.Genres.Add(genre);
 
         await _context.SaveChangesAsync();

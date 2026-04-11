@@ -3,15 +3,16 @@ using Microsoft.Extensions.DependencyInjection;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Infrastructure.Data;
 using MovieRentalSystem.NET.Infrastructure.Services;
+using Microsoft.Extensions.Configuration;
 
 namespace MovieRentalSystem.NET.Infrastructure.InfrastructureDependencies;
 
-public static class AddInfrastructureDependencies
+public static class InfrastructureDependencies
 {
-    public static IServiceCollection InfrastructureDependencies(this IServiceCollection services)
+    public static IServiceCollection AddInfrastructureDependencies(this IServiceCollection services, IConfiguration configuration)
     {
 
-        services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString: "sqldata"));
+        services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("sqldata")));
 
         services.AddScoped<IMovieService, MovieService>();
         services.AddScoped<IGenreService, GenreService>();

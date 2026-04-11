@@ -1,3 +1,4 @@
+using MovieRentalSystem.NET.Infrastructure.Data;
 using MovieRentalSystem.NET.MigrationService;
 
 var builder = Host.CreateApplicationBuilder(args);

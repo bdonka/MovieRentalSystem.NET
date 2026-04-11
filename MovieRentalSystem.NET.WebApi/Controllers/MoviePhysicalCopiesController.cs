@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using MovieRentalSystem.NET.Application.Interfaces;
+using MovieRentalSystem.NET.Application.Query;
 using MovieRentalSystem.NET.WebApi.Models.Requests.MoviePhysicalCopies;
 using MovieRentalSystem.NET.WebApi.Models.Responses;
 
@@ -7,22 +9,15 @@ namespace MovieRentalSystem.NET.WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class MoviePhysicalCopiesController : ControllerBase
+public class MoviePhysicalCopiesController(IMediator mediator) : ControllerBase
 {
-    private readonly IMoviePhysicalCopyService _copyService;
-
-    public MoviePhysicalCopiesController(IMoviePhysicalCopyService copyService)
-    {
-        _copyService = copyService;
-    }
 
     // GET: api/moviePhysicalCopies
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<MoviePhysicalCopyResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<MoviePhysicalCopyResponse>>> GetMoviePhysicalCopies()
     {
-        var copies = await _copyService.GetAllAsync();
-        return Ok(copies);
+        return Ok(await mediator.Send(new GetMoviePhysicalCopyQuery()));
     }
 
     // GET: api/moviePhysicalCopies/{id}/{movieId}
@@ -31,10 +26,10 @@ public class MoviePhysicalCopiesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<MoviePhysicalCopyResponse>> GetMoviePhysicalCopy(int id, int movieId)
     {
-        var result = await _copyService.GetByIdAsync(id, movieId);
+        var result = await mediator.Send(new GetMoviePhysicalCopyByIdQuery { Id = id, MovieId = movieId });
         if (result.IsFailed) 
             return NotFound(result.Errors.First().Message);
-        return Ok(result.Value);
+        return Ok(result);
     }
 
     // POST: api/moviePhysicalCopies
@@ -43,7 +38,11 @@ public class MoviePhysicalCopiesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<MoviePhysicalCopyResponse>> PostMoviePhysicalCopy(CreateMoviePhysicalCopyRequest request)
     {
-        var result = await _copyService.CreateAsync(request);
+        var result = await mediator.Send(new CreateMoviePhysicalCopyCommand
+        {
+            MovieId = request.MovieId,
+            Code = request.Code
+        });
         if (result.IsFailed) 
             return BadRequest(result.Errors.First().Message);
         return CreatedAtAction(
@@ -59,7 +58,12 @@ public class MoviePhysicalCopiesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PutMoviePhysicalCopy(int id, int movieId, UpdateMoviePhysicalCopyRequest request)
     {
-        var result = await _copyService.UpdateAsync(id, movieId, request);
+        var result = await mediator.Send(new UpdateMoviePhysicalCopyCommand
+        {
+            Id = id,
+            MovieId = movieId,
+            Status = request.Status
+        });
         if (result.IsFailed) 
             return NotFound(result.Errors.First().Message);
         return NoContent();
@@ -71,7 +75,7 @@ public class MoviePhysicalCopiesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteMoviePhysicalCopy(int id, int movieId)
     {
-        var result = await _copyService.DeleteAsync(id, movieId);
+        var result = await mediator.Send(new DeleteMoviePhysicalCopyCommand { Id = id, MovieId = movieId });
         if (result.IsFailed)
             return NotFound(result.Errors.First().Message);
         return NoContent();

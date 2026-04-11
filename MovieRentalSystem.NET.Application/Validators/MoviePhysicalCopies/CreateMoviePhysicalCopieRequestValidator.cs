@@ -1,6 +1,8 @@
-﻿namespace MovieRentalSystem.NET.Application.Validators.MoviePhysicalCopies;
+﻿using FluentValidation;
 
-public class CreateMoviePhysicalCopyRequestValidator : AbstractValidator<CreateMoviePhysicalCopyRequest>
+namespace MovieRentalSystem.NET.Application.Validators.MoviePhysicalCopies;
+
+public class CreateMoviePhysicalCopyRequestValidator : AbstractValidator<CreateMoviePhysicalCopyCommand>
 {
     public CreateMoviePhysicalCopyRequestValidator()
     {

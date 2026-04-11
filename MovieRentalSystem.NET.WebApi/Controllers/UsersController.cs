@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using MovieRentalSystem.NET.Application.Query;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Users;
 using MovieRentalSystem.NET.WebApi.Models.Responses;
 
@@ -6,21 +8,14 @@ namespace MovieRentalSystem.NET.WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class UsersController : ControllerBase
+public class UsersController(IMediator mediator) : ControllerBase
 {
-    private readonly IUserService _userService;
-
-    public UsersController(IUserService userService)
-    {
-        _userService = userService;
-    }
-
     // GET: api/users
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<UserResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<UserResponse>>> GetUsers()
     {
-        var users = await _userService.GetAllAsync();
+        var users = await mediator.Send(new GetUserQuery());
         return Ok(users);
     }
 
@@ -30,7 +25,7 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<UserResponse>> GetUser(int id)
     {
-        var result = await _userService.GetByIdAsync(id);
+        var result = await mediator.Send(new GetUserByIdQuery { Id = id });
         if (result.IsFailed)
             return NotFound(result.Errors.First().Message);
         return Ok(result.Value);
@@ -42,7 +37,11 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<UserResponse>> PostUser(CreateUserRequest request)
     {
-        var result = await _userService.CreateAsync(request);
+        var result = await mediator.Send(new CreateUserCommand {
+            Name = request.Name,
+            Email = request.Email,
+            Password = request.Password
+        });
         if (result.IsFailed)
         {
             if (result.Errors.First().Message.Contains("already exists"))
@@ -63,7 +62,11 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PutUser(int id, UpdateUserRequest request)
     {
-        var result = await _userService.UpdateAsync(id, request);
+        var result = await mediator.Send(new UpdateUserCommand {
+            Id = id,
+            Name = request.Name,
+            Email = request.Email
+        });
         if (result.IsFailed)
         {
             if (result.Errors.First().Message.Contains("already exists"))
@@ -80,7 +83,7 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteUser(int id)
     {
-        var result = await _userService.DeleteAsync(id);
+        var result = await mediator.Send(new DeleteUserCommand { Id = id });
         if (result.IsFailed)
             return NotFound(result.Errors.First().Message);
         return NoContent();
