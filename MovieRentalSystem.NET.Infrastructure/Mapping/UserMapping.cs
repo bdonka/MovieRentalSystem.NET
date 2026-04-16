@@ -22,7 +22,8 @@ public static class UserMapping
             Name = user.Name,
             Email = user.Email,
             Role = user.Role,
-            DateRegistered = user.DateRegistered
+            DateRegistered = user.DateRegistered,
+            Rentals = user.Rentals?.Select(r => r.MapToRentalDto()).ToList() ?? new List<RentalDto>()
         };
     }
 

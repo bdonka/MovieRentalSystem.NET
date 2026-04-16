@@ -1,4 +1,5 @@
-﻿using MovieRentalSystem.NET.Domain.Enums;
+﻿using MovieRentalSystem.NET.Domain.Entities;
+using MovieRentalSystem.NET.Domain.Enums;
 
 namespace MovieRentalSystem.NET.Application.Dtos;
 

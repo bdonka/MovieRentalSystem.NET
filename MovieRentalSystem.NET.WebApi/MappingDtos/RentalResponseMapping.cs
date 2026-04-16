@@ -17,7 +17,7 @@ public static class RentalResponseMapping
             DueDate = rental.DueDate,
             ReturnDate = rental.ReturnDate,
             TotalPrice = rental.TotalPrice,
-            Status = rental.Status
+            Status = rental.Status.ToString()
         };
     }
 }

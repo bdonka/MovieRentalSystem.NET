@@ -18,7 +18,7 @@ public class GenreService : IGenreService
     public async Task<IEnumerable<GenreDto>> GetAllAsync()
     {
         var genres = await _context.Genres.ToListAsync();
-        return genres.Select(g => g.MapToGenreDto());
+        return genres.Select(g => g.MapToGenreDto()).ToList();
     }
     public async Task<Result<GenreDto>> GetByIdAsync(int id)
     {

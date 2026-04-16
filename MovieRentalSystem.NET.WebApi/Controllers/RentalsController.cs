@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using MovieRentalSystem.NET.Application.Query;
-using MovieRentalSystem.NET.Domain.Enums;
+using MovieRentalSystem.NET.WebApi.MappingDtos;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Rentals;
 using MovieRentalSystem.NET.WebApi.Models.Responses;
 
@@ -55,7 +55,7 @@ public class RentalsController(IMediator mediator) : ControllerBase
         return CreatedAtAction(
             nameof(GetRental),
             new { id = result.Value.Id },
-            result.Value);
+            result.Value.MapToRentalResponse());
     }
 
     // PUT: api/rentals/5

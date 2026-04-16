@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Application.Query;
+using MovieRentalSystem.NET.WebApi.MappingDtos;
 using MovieRentalSystem.NET.WebApi.Models.Requests.MoviePhysicalCopies;
 using MovieRentalSystem.NET.WebApi.Models.Responses;
 
@@ -17,7 +18,8 @@ public class MoviePhysicalCopiesController(IMediator mediator) : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<MoviePhysicalCopyResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<MoviePhysicalCopyResponse>>> GetMoviePhysicalCopies()
     {
-        return Ok(await mediator.Send(new GetMoviePhysicalCopyQuery()));
+        var result = await mediator.Send(new GetMoviePhysicalCopyQuery());
+        return Ok(result.Select(r => r.MapToMoviePhysicalCopyResponse()).ToList());
     }
 
     // GET: api/moviePhysicalCopies/{id}/{movieId}
@@ -48,7 +50,7 @@ public class MoviePhysicalCopiesController(IMediator mediator) : ControllerBase
         return CreatedAtAction(
             nameof(GetMoviePhysicalCopy),
             new { id = result.Value.Id, movieId = result.Value.MovieId },
-            result.Value);
+            result.Value.MapToMoviePhysicalCopyResponse());
     }
 
     // PUT: api/moviePhysicalCopies/{id}/{movieId}

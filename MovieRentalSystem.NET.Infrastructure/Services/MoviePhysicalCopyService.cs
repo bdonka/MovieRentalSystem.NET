@@ -18,13 +18,15 @@ public class MoviePhysicalCopyService : IMoviePhysicalCopyService
 
     public async Task<IEnumerable<MoviePhysicalCopyDto>> GetAllAsync()
     {
-        var copies = await _context.MoviePhysicalCopies.ToListAsync();
-        return copies.Select(c => c.MapToMoviePhysicalCopyDto());
+        var copies = await _context.MoviePhysicalCopies
+            .Include(m => m.Movie)
+            .ToListAsync();
+        return copies.Select(c => c.MapToMoviePhysicalCopyDto()).ToList();
     }
 
     public async Task<Result<MoviePhysicalCopyDto>> GetByIdAsync(int id, int movieId)
     {
-        var copy = await _context.MoviePhysicalCopies.FirstOrDefaultAsync(c => c.Id == id && c.MovieId == movieId);
+        var copy = await _context.MoviePhysicalCopies.Include(m => m.Movie).FirstOrDefaultAsync(c => c.Id == id && c.MovieId == movieId);
         if (copy == null) 
             return Result.Fail<MoviePhysicalCopyDto>($"Movie physical copy with Id {id} for MovieId {movieId} not found.");
         return Result.Ok(copy.MapToMoviePhysicalCopyDto());
@@ -33,10 +35,10 @@ public class MoviePhysicalCopyService : IMoviePhysicalCopyService
     public async Task<Result<MoviePhysicalCopyDto>> CreateAsync(MoviePhysicalCopyDto request)
     {
         if (!await _context.Movies.AnyAsync(m => m.Id == request.MovieId))
-            Result.Fail<MoviePhysicalCopyDto>($"Movie with Id {request.MovieId} does not exist.");
+            return Result.Fail<MoviePhysicalCopyDto>($"Movie with Id {request.MovieId} does not exist.");
 
         if (await _context.MoviePhysicalCopies.AnyAsync(c => c.Code == request.Code))
-            Result.Fail<MoviePhysicalCopyDto>($"Code '{request.Code}' is already used.");
+            return Result.Fail<MoviePhysicalCopyDto>($"Code '{request.Code}' is already used.");
 
         var copy = new MoviePhysicalCopy
         {
@@ -46,7 +48,8 @@ public class MoviePhysicalCopyService : IMoviePhysicalCopyService
         _context.MoviePhysicalCopies.Add(copy);
         await _context.SaveChangesAsync();
 
-        return Result.Ok(copy.MapToMoviePhysicalCopyDto());
+        var result = await GetByIdAsync(copy.Id, copy.MovieId);
+        return result;
     }
 
     public async Task<Result> UpdateAsync(int id, int movieId, MoviePhysicalCopyDto request)

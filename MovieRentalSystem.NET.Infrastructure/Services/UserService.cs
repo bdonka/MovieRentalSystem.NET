@@ -20,13 +20,14 @@ public class UserService : IUserService
 
     public async Task<IEnumerable<UserDto>> GetAllAsync()
     {
-        var users = await _context.Users.ToListAsync();
-        return users.Select(u => u.MapToUserDto());
+        var users = await _context.Users.Include(u => u.Rentals).ToListAsync();
+        var result = users.Select(u => u.MapToUserDto()).ToList();
+        return result;
     }
 
     public async Task<Result<UserDto>> GetByIdAsync(int id)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+        var user = await _context.Users.Include(u => u.Rentals).FirstOrDefaultAsync(u => u.Id == id);
         if (user == null) 
             return Result.Fail<UserDto>($"User with ID {id} not found.");
         return Result.Ok(user.MapToUserDto());

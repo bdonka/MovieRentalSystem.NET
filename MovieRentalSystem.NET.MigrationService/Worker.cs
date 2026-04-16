@@ -1,7 +1,8 @@
-using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using MovieRentalSystem.NET.Domain.Entities;
+using MovieRentalSystem.NET.Domain.Enums;
 using MovieRentalSystem.NET.Infrastructure.Data;
+using System.Diagnostics;
 
 namespace MovieRentalSystem.NET.MigrationService;
 
@@ -64,7 +65,13 @@ public class Worker(
                     Title = "The Matrix",
                     Description = "Sci-fi classic",
                     ReleaseYear = 1999,
-                    RentalPrice = 9.99m
+                    RentalPrice = 9.99m,
+                    PhysicalCopies = [new MoviePhysicalCopy {
+                        Code = "123321"
+                    }],
+                    Genres = [new Genre {
+                        Name = "comedy"
+                    }]
                 };
 
                 await dbContext.Movies.AddAsync(movie, cancellationToken);

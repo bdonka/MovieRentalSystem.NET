@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using MovieRentalSystem.NET.Application.Query;
+using MovieRentalSystem.NET.WebApi.MappingDtos;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Movies;
 using MovieRentalSystem.NET.WebApi.Models.Responses;
 
@@ -22,8 +23,8 @@ public class MoviesController : ControllerBase
     public async Task<ActionResult<IEnumerable<MovieResponse>>> GetMovies()
     {
         var movies = await _mediator.Send(new GetMovieQuery());
-        return Ok(movies);
-    }
+        return Ok(movies.Select(m => m.MapToMovieResponse()).ToList());
+    }   
 
     // GET: api/movies/5
     [HttpGet("{id}")]
@@ -34,7 +35,7 @@ public class MoviesController : ControllerBase
         var result = await _mediator.Send(new GetMovieByIdQuery(id));
         if (result.IsFailed)
             return NotFound(result.Errors.First().Message);
-        return Ok(result.Value);
+        return Ok(result.Value.MapToMovieResponse());
     }
 
     // POST: api/movies

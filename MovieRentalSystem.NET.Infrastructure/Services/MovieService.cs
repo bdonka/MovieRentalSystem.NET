@@ -20,14 +20,19 @@ public class MovieService : IMovieService
     {
         var movies = await _context.Movies
             .Include(m => m.Genres)
+            .Include(m => m.PhysicalCopies)
             .ToListAsync();
-        return movies.Select(m => m.MapToMovieDto());
+
+        var result = movies.Select(m => m.MapToMovieDto()).ToList();
+
+        return result;
     }
 
     public async Task<Result<MovieDto>> GetByIdAsync(int id)
     {
         var movie = await _context.Movies
             .Include(m => m.Genres)
+            .Include(m => m.PhysicalCopies)
             .FirstOrDefaultAsync(m => m.Id == id);
         if (movie == null) 
             return Result.Fail<MovieDto>($"Movie with ID {id} not found.");
@@ -86,8 +91,6 @@ public class MovieService : IMovieService
         return Result.Ok();
     }
 
-
-
     public async Task<Result<IEnumerable<GenreDto>>> GetGenresAsync(int movieId)
     {
         var movie = await _context.Movies.Include(m => m.Genres).FirstOrDefaultAsync(m => m.Id == movieId);
@@ -97,8 +100,9 @@ public class MovieService : IMovieService
             return Result.Fail<IEnumerable<GenreDto>>($"Movie with Id {movieId} not found.");
         }
 
-        var genres = movie.Genres.ToList().Select(g => g.MapToGenreDto());
-        return Result.Ok(genres);
+        var genres = movie.Genres.Select(g => g.MapToGenreDto()).ToList();
+
+        return Result.Ok<IEnumerable<GenreDto>>(genres);
     }
 
     public async Task<Result> AssignGenreAsync(int movieId, int genreId) 

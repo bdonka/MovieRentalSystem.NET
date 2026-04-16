@@ -7,7 +7,7 @@
         public string Description { get; set; } = null!;
         public int ReleaseYear { get; set; }
         public decimal RentalPrice { get; set; }
-        public List<Genre> Genres { get; } = [];
-        public List<MoviePhysicalCopy> PhysicalCopies { get; } = [];
+        public List<Genre> Genres { get; set; } = [];
+        public List<MoviePhysicalCopy> PhysicalCopies { get; set; } = [];
     }
 }

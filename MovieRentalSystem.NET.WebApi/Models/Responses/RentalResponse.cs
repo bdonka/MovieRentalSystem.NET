@@ -12,5 +12,5 @@ public class RentalResponse
     public DateTime? DueDate { get; set; }
     public DateTime? ReturnDate { get; set; }
     public decimal TotalPrice { get; set; }
-    public RentalStatus Status { get; set; } = RentalStatus.Preparing;
+    public string Status { get; set; } = null!;
 }

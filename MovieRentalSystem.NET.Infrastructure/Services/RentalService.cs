@@ -19,13 +19,19 @@ public class RentalService : IRentalService
 
     public async Task<IEnumerable<RentalDto>> GetAllAsync()
     {
-        var rentals = await _context.Rentals.ToListAsync();
-        return rentals.Select(r => r.MapToRentalDto());
+        var rentals = await _context.Rentals
+            .Include(r => r.User)
+            .Include(r => r.MoviePhysicalCopy)
+            .ToListAsync();
+        return rentals.Select(r => r.MapToRentalDto()).ToList();
     }
 
     public async Task<Result<RentalDto>> GetByIdAsync(int id)
     {
-        var rental = await _context.Rentals.FirstOrDefaultAsync(r => r.Id == id);
+        var rental = await _context.Rentals
+            .Include(r => r.User)
+            .Include(r => r.MoviePhysicalCopy)
+            .FirstOrDefaultAsync(r => r.Id == id);
         if (rental == null)
             return Result.Fail($"Rental with ID {id} not found.");
         return Result.Ok(rental.MapToRentalDto());
@@ -49,7 +55,9 @@ public class RentalService : IRentalService
 
         _context.Rentals.Add(rental);
         await _context.SaveChangesAsync();
-        return Result.Ok(rental.MapToRentalDto());
+
+        var result = await GetByIdAsync(rental.Id);
+        return result;
     }
 
     public async Task<Result> UpdateAsync(int id, RentalDto request)
