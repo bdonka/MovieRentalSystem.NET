@@ -24,7 +24,7 @@ public static class MovieResponseMapping
                 Id = m.Id,
                 MovieId = m.MovieId,
                 Code = m.Code,
-                Status = m.Status.ToString()
+                Status = m.Status
             }).ToList()
         };
     }

@@ -1,4 +1,5 @@
 ﻿using MovieRentalSystem.NET.Application.Dtos;
+using MovieRentalSystem.NET.Domain.Enums;
 using MovieRentalSystem.NET.WebApi.Models.Responses;
 
 namespace MovieRentalSystem.NET.WebApi.MappingDtos;
@@ -17,7 +18,7 @@ public static class RentalResponseMapping
             DueDate = rental.DueDate,
             ReturnDate = rental.ReturnDate,
             TotalPrice = rental.TotalPrice,
-            Status = rental.Status.ToString()
+            Status = Enum.Parse<RentalStatus>(rental.Status)
         };
     }
 }

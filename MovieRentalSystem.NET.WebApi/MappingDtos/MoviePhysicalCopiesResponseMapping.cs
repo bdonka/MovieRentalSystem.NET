@@ -12,7 +12,7 @@ public static class MoviePhysicalCopiesResponseMapping
             Id = copy.Id,
             MovieId = copy.MovieId,
             Code = copy.Code,
-            Status = copy.Status.ToString(),
+            Status = copy.Status,
             Movie = new MovieResponse
             {
                 Id = copy.Movie.Id,

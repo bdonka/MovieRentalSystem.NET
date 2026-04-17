@@ -22,6 +22,7 @@ public class RentalService : IRentalService
         var rentals = await _context.Rentals
             .Include(r => r.User)
             .Include(r => r.MoviePhysicalCopy)
+            .ThenInclude(m => m.Movie)
             .ToListAsync();
         return rentals.Select(r => r.MapToRentalDto()).ToList();
     }
@@ -31,6 +32,7 @@ public class RentalService : IRentalService
         var rental = await _context.Rentals
             .Include(r => r.User)
             .Include(r => r.MoviePhysicalCopy)
+            .ThenInclude(m => m.Movie)
             .FirstOrDefaultAsync(r => r.Id == id);
         if (rental == null)
             return Result.Fail($"Rental with ID {id} not found.");
@@ -70,7 +72,7 @@ public class RentalService : IRentalService
         rental.DueDate = request.DueDate;
         rental.ReturnDate = request.ReturnDate;
         rental.TotalPrice = request.TotalPrice;
-        rental.Status = request.Status;
+        rental.Status = Enum.Parse<RentalStatus>(request.Status);
 
         if (request.ReturnDate != null)
         {

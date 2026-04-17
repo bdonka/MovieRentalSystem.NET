@@ -20,7 +20,11 @@ public class UserService : IUserService
 
     public async Task<IEnumerable<UserDto>> GetAllAsync()
     {
-        var users = await _context.Users.Include(u => u.Rentals).ToListAsync();
+        var users = await _context.Users
+            .Include(u => u.Rentals)
+            .ThenInclude(r => r.MoviePhysicalCopy)
+            .ThenInclude(m => m.Movie)
+            .ToListAsync();
         var result = users.Select(u => u.MapToUserDto()).ToList();
         return result;
     }

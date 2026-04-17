@@ -1,12 +1,17 @@
 using FluentValidation;
+using MovieRentalSystem.NET.Infrastructure.InfrastructureDependencies;
 using Scalar.AspNetCore;
 using System.Reflection.Metadata;
-using MovieRentalSystem.NET.Infrastructure.InfrastructureDependencies;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    }); ;
 
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(
