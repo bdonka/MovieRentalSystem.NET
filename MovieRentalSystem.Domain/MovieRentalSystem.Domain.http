@@ -1,6 +1,0 @@
-@MovieRentalSystem.Domain_HostAddress = http://localhost:5097
-
-GET {{MovieRentalSystem.Domain_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
