@@ -11,15 +11,7 @@ public static class MoviePhysicalCopyMapping
         {
             Id = copy.Id,
             MovieId = copy.MovieId,
-            Code = copy.Code,
-            Movie = new MovieDto
-            {
-                Id = copy.Movie.Id,
-                Title = copy.Movie.Title,
-                Description = copy.Movie.Description,
-                ReleaseYear = copy.Movie.ReleaseYear,
-                RentalPrice = copy.Movie.RentalPrice
-            }
+            Code = copy.Code
         };
     }
 

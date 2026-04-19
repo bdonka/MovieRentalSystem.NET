@@ -15,11 +15,6 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Resul
         DeleteUserCommand request, CancellationToken cancellationToken)
     {
         var result = await _userService.DeleteAsync(request.Id);
-        if (result.IsFailed)
-        {
-            throw new ApplicationException(result.Errors.First().Message);
-        }
-
         return result;
     }
 }

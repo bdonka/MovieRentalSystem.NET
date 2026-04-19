@@ -1,8 +1,9 @@
 ﻿using FluentValidation;
+using MovieRentalSystem.NET.WebApi.Models.Requests.Rentals;
 
 namespace MovieRentalSystem.NET.Application.Validators.Rentals;
 
-public class CreateRentalRequestValidator : AbstractValidator<CreateRentalCommand>
+public class CreateRentalRequestValidator : AbstractValidator<CreateRentalRequest>
 {
     public CreateRentalRequestValidator()
     {

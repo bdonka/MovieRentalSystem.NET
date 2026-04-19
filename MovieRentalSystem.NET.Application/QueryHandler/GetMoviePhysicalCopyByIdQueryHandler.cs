@@ -16,6 +16,6 @@ public class GetMoviePhysicalCopyByIdQueryHandler : IRequestHandler<GetMoviePhys
     public async Task<Result<MoviePhysicalCopyDto>> Handle(
         GetMoviePhysicalCopyByIdQuery request, CancellationToken cancellationToken)
     {
-        return await _moviePhysicalCopyService.GetByIdAsync(request.Id, request.MovieId);
+        return await _moviePhysicalCopyService.GetByIdAsync(request.Id);
     }
 }

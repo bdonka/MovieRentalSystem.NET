@@ -15,11 +15,6 @@ public class DeleteMovieCommandHandler : IRequestHandler<DeleteMovieCommand, Res
         DeleteMovieCommand request, CancellationToken cancellationToken)
     {
         var result = await _movieService.DeleteAsync(request.Id);
-        if (result.IsFailed)
-        {
-            throw new ApplicationException(result.Errors.First().Message);
-        }
-
         return result;
     }
 }

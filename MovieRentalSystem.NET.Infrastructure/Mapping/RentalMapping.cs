@@ -31,21 +31,13 @@ public static class RentalMapping
                 MovieId = rental.MoviePhysicalCopy.MovieId,
                 Code = rental.MoviePhysicalCopy.Code,
                 Status = rental.MoviePhysicalCopy.Status,
-                Movie = new MovieDto()
-                {
-                    Id = rental.MoviePhysicalCopy.Movie.Id,
-                    Title = rental.MoviePhysicalCopy.Movie.Title,
-                    Description = rental.MoviePhysicalCopy.Movie.Description,
-                    ReleaseYear = rental.MoviePhysicalCopy.Movie.ReleaseYear,
-                    RentalPrice = rental.MoviePhysicalCopy.Movie.RentalPrice
-                }
             },
             OrderDate = rental.OrderDate,
             RentalStartDate = rental.RentalStartDate,
             DueDate = rental.DueDate,
             ReturnDate = rental.ReturnDate,
             TotalPrice = rental.TotalPrice,
-            Status = rental.Status.ToString()
+            Status = rental.Status
         };
     }
 
@@ -61,7 +53,7 @@ public static class RentalMapping
             DueDate = rental.DueDate,
             ReturnDate = rental.ReturnDate,
             TotalPrice = rental.TotalPrice,
-            Status = Enum.Parse<RentalStatus>(rental.Status)
+            Status = rental.Status
         };
     }
 }

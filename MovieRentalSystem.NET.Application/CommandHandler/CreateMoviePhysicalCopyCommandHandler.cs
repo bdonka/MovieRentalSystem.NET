@@ -21,12 +21,6 @@ public class CreateMoviePhysicalCopyCommandHandler : IRequestHandler<CreateMovie
             Code = request.Code
         };
         var result = await _moviePhysicalCopyService.CreateAsync(createRequest);
-
-        if (result.IsFailed)
-        {
-            throw new ApplicationException(result.Errors.First().Message);
-        }
-
         return result;
     }
 }

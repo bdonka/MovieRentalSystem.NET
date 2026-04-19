@@ -22,12 +22,6 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Resul
             Password = request.Password
         };
         var result = await _userService.CreateAsync(createRequest);
-
-        if (result.IsFailed)
-        {
-            throw new ApplicationException(result.Errors.First().Message);
-        }
-
         return result;
     }
 }

@@ -23,12 +23,6 @@ public class CreateRentalCommandHandler : IRequestHandler<CreateRentalCommand, R
             DueDate = request.DueDate
         };
         var result = await _rentalService.CreateAsync(createRequest);
-
-        if (result.IsFailed)
-        {
-            throw new ApplicationException(result.Errors.First().Message);
-        }
-
         return result;
     }
 }

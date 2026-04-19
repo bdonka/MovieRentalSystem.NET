@@ -14,12 +14,7 @@ public class DeleteMoviePhysicalCopyCommandHandler : IRequestHandler<DeleteMovie
     public async Task<Result> Handle(
         DeleteMoviePhysicalCopyCommand request, CancellationToken cancellationToken)
     {
-        var result = await _moviePhysicalCopyService.DeleteAsync(request.Id, request.MovieId);
-        if (result.IsFailed)
-        {
-            throw new ApplicationException(result.Errors.First().Message);
-        }
-
+        var result = await _moviePhysicalCopyService.DeleteAsync(request.Id);
         return result;
     }
 }

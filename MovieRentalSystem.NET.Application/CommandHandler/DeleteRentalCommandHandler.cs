@@ -15,11 +15,6 @@ public class DeleteRentalCommandHandler : IRequestHandler<DeleteRentalCommand, R
         DeleteRentalCommand request, CancellationToken cancellationToken)
     {
         var result = await _rentalService.DeleteAsync(request.Id);
-        if (result.IsFailed)
-        {
-            throw new ApplicationException(result.Errors.First().Message);
-        }
-
         return result;
     }
 }

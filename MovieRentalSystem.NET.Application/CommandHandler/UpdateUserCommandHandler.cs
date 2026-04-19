@@ -21,11 +21,6 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Resul
             Email = request.Email,
         };
         var result = await _userService.UpdateAsync(request.Id, updateRequest);
-        if (result.IsFailed)
-        {
-            throw new ApplicationException(result.Errors.First().Message);
-        }
-
         return result;
     }
 }

@@ -15,11 +15,6 @@ public class DeleteGenreCommandHandler : IRequestHandler<DeleteGenreCommand, Res
         DeleteGenreCommand request, CancellationToken cancellationToken)
     {
         var result = await _genreService.DeleteAsync(request.Id);
-        if (result.IsFailed)
-        {
-            throw new ApplicationException(result.Errors.First().Message);
-        }
-
         return result;
     }
 }

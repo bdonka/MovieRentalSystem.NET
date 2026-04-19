@@ -1,5 +1,4 @@
-﻿using MovieRentalSystem.NET.Domain.Entities;
-using MovieRentalSystem.NET.Domain.Enums;
+﻿using MovieRentalSystem.NET.Domain.Enums;
 
 namespace MovieRentalSystem.NET.Application.Dtos;
 
@@ -15,5 +14,5 @@ public class RentalDto
     public DateTime? DueDate { get; set; }
     public DateTime? ReturnDate { get; set; }
     public decimal TotalPrice { get; set; }
-    public string Status { get; set; } = null!;
+    public RentalStatus Status { get; set; } = RentalStatus.Preparing;
 }

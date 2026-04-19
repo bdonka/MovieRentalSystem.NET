@@ -8,6 +8,5 @@ public class GetMoviePhysicalCopyByIdQuery
 : IRequest<Result<MoviePhysicalCopyDto>>
 {
     public int Id { get; set; }
-    public int MovieId { get; set; }
 }
 

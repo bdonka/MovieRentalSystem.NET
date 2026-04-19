@@ -15,11 +15,6 @@ public class RemoveMovieGenreCommandHandler : IRequestHandler<RemoveMovieGenreCo
         RemoveMovieGenreCommand request, CancellationToken cancellationToken)
     {
         var result = await _movieService.RemoveGenreAsync(request.MovieId, request.GenreId);
-        if (result.IsFailed)
-        {
-            throw new ApplicationException(result.Errors.First().Message);
-        }
-
         return result;
     }
 }

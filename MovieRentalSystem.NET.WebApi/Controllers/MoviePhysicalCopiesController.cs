@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Application.Query;
 using MovieRentalSystem.NET.WebApi.MappingDtos;
 using MovieRentalSystem.NET.WebApi.Models.Requests.MoviePhysicalCopies;
@@ -26,9 +25,9 @@ public class MoviePhysicalCopiesController(IMediator mediator) : ControllerBase
     [HttpGet("{id}/{movieId}")]
     [ProducesResponseType(typeof(MoviePhysicalCopyResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<MoviePhysicalCopyResponse>> GetMoviePhysicalCopy(int id, int movieId)
+    public async Task<ActionResult<MoviePhysicalCopyResponse>> GetMoviePhysicalCopy(int id)
     {
-        var result = await mediator.Send(new GetMoviePhysicalCopyByIdQuery { Id = id, MovieId = movieId });
+        var result = await mediator.Send(new GetMoviePhysicalCopyByIdQuery { Id = id });
         if (result.IsFailed) 
             return NotFound(result.Errors.First().Message);
         return Ok(result);
@@ -49,7 +48,7 @@ public class MoviePhysicalCopiesController(IMediator mediator) : ControllerBase
             return BadRequest(result.Errors.First().Message);
         return CreatedAtAction(
             nameof(GetMoviePhysicalCopy),
-            new { id = result.Value.Id, movieId = result.Value.MovieId },
+            new { id = result.Value.Id },
             result.Value.MapToMoviePhysicalCopyResponse());
     }
 
@@ -75,9 +74,9 @@ public class MoviePhysicalCopiesController(IMediator mediator) : ControllerBase
     [HttpDelete("{id}/{movieId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteMoviePhysicalCopy(int id, int movieId)
+    public async Task<IActionResult> DeleteMoviePhysicalCopy(int id)
     {
-        var result = await mediator.Send(new DeleteMoviePhysicalCopyCommand { Id = id, MovieId = movieId });
+        var result = await mediator.Send(new DeleteMoviePhysicalCopyCommand { Id = id});
         if (result.IsFailed)
             return NotFound(result.Errors.First().Message);
         return NoContent();

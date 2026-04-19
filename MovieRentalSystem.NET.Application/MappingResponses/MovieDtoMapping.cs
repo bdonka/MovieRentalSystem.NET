@@ -16,8 +16,8 @@ public static class MovieDtoMapping
             RentalPrice = movie.RentalPrice,
 
             Genres = movie.Genres?
-            .Select(g => g.MapToGenreDto())
-            .ToList() ?? new List<GenreDto>()
+                .Select(g => g.MapToGenreDto())
+                .ToList() ?? new List<GenreDto>()
         };
     }
 }

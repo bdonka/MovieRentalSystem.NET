@@ -21,14 +21,9 @@ public class UpdateRentalCommandHandler : IRequestHandler<UpdateRentalCommand, R
             DueDate = request.DueDate,
             ReturnDate = request.ReturnDate,
             TotalPrice = request.TotalPrice,
-            Status = request.Status.ToString()
+            Status = request.Status
         };
         var result = await _rentalService.UpdateAsync(request.Id, updateRequest);
-        if (result.IsFailed)
-        {
-            throw new ApplicationException(result.Errors.First().Message);
-        }
-
         return result;
     }
 }

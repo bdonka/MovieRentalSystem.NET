@@ -11,8 +11,6 @@ namespace MovieRentalSystem.NET.Application.Interfaces
         Task<Result> UpdateAsync(int id, MovieDto request);
         Task<Result> DeleteAsync(int id);
 
-
-        Task<Result<IEnumerable<GenreDto>>> GetGenresAsync(int movieId);
         Task<Result> AssignGenreAsync(int movieId, int genreId);
         Task<Result> RemoveGenreAsync(int movieId, int genreId);
     }

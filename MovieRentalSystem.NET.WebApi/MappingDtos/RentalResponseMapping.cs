@@ -18,7 +18,7 @@ public static class RentalResponseMapping
             DueDate = rental.DueDate,
             ReturnDate = rental.ReturnDate,
             TotalPrice = rental.TotalPrice,
-            Status = Enum.Parse<RentalStatus>(rental.Status)
+            Status = rental.Status.ToString()
         };
     }
 }

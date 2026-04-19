@@ -23,11 +23,6 @@ public class UpdateMovieCommandHandler : IRequestHandler<UpdateMovieCommand, Res
             RentalPrice = request.RentalPrice,
         };
         var result = await _movieService.UpdateAsync(request.Id, updateRequest);
-        if (result.IsFailed)
-        {
-            throw new ApplicationException(result.Errors.First().Message);
-        }
-
         return result;
     }
 }

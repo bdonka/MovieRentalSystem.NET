@@ -23,12 +23,6 @@ public class CreateMovieCommandHandler : IRequestHandler<CreateMovieCommand, Res
             RentalPrice = request.RentalPrice,
         };
         var result = await _movieService.CreateAsync(createRequest);
-
-        if (result.IsFailed)
-        {
-            throw new ApplicationException(result.Errors.First().Message);
-        }
-
         return result;
     }
 }

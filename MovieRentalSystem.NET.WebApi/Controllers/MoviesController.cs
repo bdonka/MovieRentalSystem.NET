@@ -9,20 +9,14 @@ namespace MovieRentalSystem.NET.WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class MoviesController : ControllerBase
+public class MoviesController(IMediator mediator) : ControllerBase
 {
-    private readonly IMediator _mediator;
-    public MoviesController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
     // GET: api/movies
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<MovieResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<MovieResponse>>> GetMovies()
     {
-        var movies = await _mediator.Send(new GetMovieQuery());
+        var movies = await mediator.Send(new GetMovieQuery());
         return Ok(movies.Select(m => m.MapToMovieResponse()).ToList());
     }   
 
@@ -32,7 +26,7 @@ public class MoviesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<MovieResponse>> GetMovie(int id)
     {
-        var result = await _mediator.Send(new GetMovieByIdQuery(id));
+        var result = await mediator.Send(new GetMovieByIdQuery(id));
         if (result.IsFailed)
             return NotFound(result.Errors.First().Message);
         return Ok(result.Value.MapToMovieResponse());
@@ -44,7 +38,7 @@ public class MoviesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<MovieResponse>> PostMovie(CreateMovieRequest request)
     {
-        var result = await _mediator.Send(new CreateMovieCommand(
+        var result = await mediator.Send(new CreateMovieCommand(
             request.Title,
             request.Description,
             request.ReleaseYear,
@@ -70,7 +64,7 @@ public class MoviesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PutMovie(int id, UpdateMovieRequest request)
     {
-        var result = await _mediator.Send(new UpdateMovieCommand(
+        var result = await mediator.Send(new UpdateMovieCommand(
             id,
             request.Title,
             request.Description,
@@ -97,7 +91,7 @@ public class MoviesController : ControllerBase
     public async Task<IActionResult> DeleteMovie(int id)
     {
         var command = new DeleteMovieCommand { Id = id };
-        var result = await _mediator.Send(command);
+        var result = await mediator.Send(command);
         if (result.IsFailed)
             return NotFound(result.Errors.First().Message);
         return NoContent();
@@ -110,7 +104,7 @@ public class MoviesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IEnumerable<GenreResponse>>> GetGenres(int movieId)
     {
-        var result = await _mediator.Send(new GetMovieGenresQuery { MovieId = movieId });
+        var result = await mediator.Send(new GetMovieGenresQuery { MovieId = movieId });
         if (result.IsFailed)
             return NotFound(result.Errors.First().Message);
         return Ok(result.Value);
@@ -126,7 +120,7 @@ public class MoviesController : ControllerBase
             MovieId = movieId,
             GenreId = genreId
         };
-        var result = await _mediator.Send(command);
+        var result = await mediator.Send(command);
         if (result.IsFailed)
             return NotFound(result.Errors.First().Message);
         return NoContent();
@@ -143,7 +137,7 @@ public class MoviesController : ControllerBase
             MovieId = movieId,
             GenreId = genreId
         };
-        var result = await _mediator.Send(command);
+        var result = await mediator.Send(command);
         if (result.IsFailed)
             return NotFound(result.Errors.First().Message);
         return NoContent();

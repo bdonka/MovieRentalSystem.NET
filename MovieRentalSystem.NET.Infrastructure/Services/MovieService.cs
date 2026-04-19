@@ -91,20 +91,6 @@ public class MovieService : IMovieService
         return Result.Ok();
     }
 
-    public async Task<Result<IEnumerable<GenreDto>>> GetGenresAsync(int movieId)
-    {
-        var movie = await _context.Movies.Include(m => m.Genres).FirstOrDefaultAsync(m => m.Id == movieId);
-
-        if (movie == null)
-        {
-            return Result.Fail<IEnumerable<GenreDto>>($"Movie with Id {movieId} not found.");
-        }
-
-        var genres = movie.Genres.Select(g => g.MapToGenreDto()).ToList();
-
-        return Result.Ok<IEnumerable<GenreDto>>(genres);
-    }
-
     public async Task<Result> AssignGenreAsync(int movieId, int genreId) 
     { 
         var movie = await _context.Movies.Include(m => m.Genres).FirstOrDefaultAsync(m => m.Id == movieId);

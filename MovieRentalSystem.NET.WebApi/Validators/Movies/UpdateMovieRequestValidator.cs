@@ -1,8 +1,9 @@
 ﻿using FluentValidation;
+using MovieRentalSystem.NET.WebApi.Models.Requests.Movies;
 
 namespace MovieRentalSystem.NET.Application.Validators.Movies;
 
-public class UpdateMovieRequestValidator : AbstractValidator<UpdateMovieCommand>
+public class UpdateMovieRequestValidator : AbstractValidator<UpdateMovieRequest>
 {
     public UpdateMovieRequestValidator()
     {

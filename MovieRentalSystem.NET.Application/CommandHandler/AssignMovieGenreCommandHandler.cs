@@ -15,11 +15,6 @@ public class AssignMovieGenreCommandHandler : IRequestHandler<AssignMovieGenreCo
         AssignMovieGenreCommand request, CancellationToken cancellationToken)
     {
         var result = await _movieService.AssignGenreAsync(request.MovieId, request.GenreId);
-        if (result.IsFailed)
-        {
-            throw new ApplicationException(result.Errors.First().Message);
-        }
-
         return result;
     }
 }

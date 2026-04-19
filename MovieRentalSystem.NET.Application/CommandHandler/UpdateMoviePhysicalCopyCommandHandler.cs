@@ -19,12 +19,7 @@ public class UpdateMoviePhysicalCopyCommandHandler : IRequestHandler<UpdateMovie
         {
             MovieId = request.MovieId,
         };
-        var result = await _moviePhysicalCopyService.UpdateAsync(request.Id, request.MovieId, updateRequest);
-        if (result.IsFailed)
-        {
-            throw new ApplicationException(result.Errors.First().Message);
-        }
-
+        var result = await _moviePhysicalCopyService.UpdateAsync(request.Id, updateRequest);
         return result;
     }
 }

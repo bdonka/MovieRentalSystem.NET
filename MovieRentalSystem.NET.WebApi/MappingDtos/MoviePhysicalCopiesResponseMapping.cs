@@ -12,15 +12,7 @@ public static class MoviePhysicalCopiesResponseMapping
             Id = copy.Id,
             MovieId = copy.MovieId,
             Code = copy.Code,
-            Status = copy.Status,
-            Movie = new MovieResponse
-            {
-                Id = copy.Movie.Id,
-                Title = copy.Movie.Title,
-                Description = copy.Movie.Description,
-                ReleaseYear = copy.Movie.ReleaseYear,
-                RentalPrice = copy.Movie.RentalPrice
-            }
+            Status = copy.Status.ToString()
         };
     }
 }

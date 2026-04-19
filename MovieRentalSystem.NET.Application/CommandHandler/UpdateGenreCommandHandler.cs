@@ -20,11 +20,6 @@ public class UpdateGenreCommandHandler : IRequestHandler<UpdateGenreCommand, Res
             Name = request.Name
         };
         var result = await _genreService.UpdateAsync(request.Id, updateRequest);
-        if (result.IsFailed)
-        {
-            throw new ApplicationException(result.Errors.First().Message);
-        }
-
         return result;
     }
 }

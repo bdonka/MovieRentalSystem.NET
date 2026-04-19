@@ -19,12 +19,6 @@ public class CreateGenreCommandHandler : IRequestHandler<CreateGenreCommand, Res
             Name = request.Name
         };
         var result = await _genreService.CreateAsync(createRequest);
-
-        if (result.IsFailed)
-        {
-            throw new ApplicationException(result.Errors.First().Message);
-        }
-
         return result;
     }
 }

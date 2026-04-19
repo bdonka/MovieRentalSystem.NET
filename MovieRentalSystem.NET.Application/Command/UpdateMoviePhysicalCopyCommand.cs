@@ -1,6 +1,7 @@
 ﻿using FluentResults;
 using MediatR;
 using MovieRentalSystem.NET.Domain.Enums;
+
 public class UpdateMoviePhysicalCopyCommand : IRequest<Result>
 {
     public required int Id { get; set; }
