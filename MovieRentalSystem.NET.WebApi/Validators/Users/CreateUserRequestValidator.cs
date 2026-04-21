@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Users;
 
-namespace MovieRentalSystem.NET.Application.Validators.Users;
+namespace MovieRentalSystem.NET.WebApi.Validators.Users;
 
 public class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
 {

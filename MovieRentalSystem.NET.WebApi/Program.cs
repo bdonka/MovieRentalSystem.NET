@@ -20,8 +20,7 @@ builder.Services.AddInfrastructureDependencies(builder.Configuration);
 
 builder.Services.AddOpenApi();
 
-builder.Services.AddValidatorsFromAssemblyContaining<AssemblyReference>();
-
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 var app = builder.Build();
 app.MapDefaultEndpoints();
 
