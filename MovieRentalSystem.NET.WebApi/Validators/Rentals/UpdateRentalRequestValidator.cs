@@ -1,7 +1,5 @@
 ﻿using FluentValidation;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Rentals;
-using MovieRentalSystem.NET.WebApi.Enums;
-using System;
 
 namespace MovieRentalSystem.NET.WebApi.Validators.Rentals;
 

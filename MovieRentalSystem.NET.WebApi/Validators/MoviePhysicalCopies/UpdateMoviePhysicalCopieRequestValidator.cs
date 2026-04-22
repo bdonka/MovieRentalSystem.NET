@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using MovieRentalSystem.NET.WebApi.Models.Requests.MoviePhysicalCopies;
-using MovieRentalSystem.NET.WebApi.Enums;
 
 namespace MovieRentalSystem.NET.WebApi.Validators.MoviePhysicalCopies;
 

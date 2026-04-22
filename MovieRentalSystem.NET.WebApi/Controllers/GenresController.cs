@@ -1,28 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using MovieRentalSystem.NET.Application.Query;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Genres;
 using MovieRentalSystem.NET.WebApi.Models.Responses;
-using MovieRentalSystem.NET.WebApi.Services.Interfaces;
 
 namespace MovieRentalSystem.NET.WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class GenresController : ControllerBase
+public class GenresController(IMediator mediator) : ControllerBase
 {
-    private readonly IGenreService _genreService;
-
-    public GenresController(IGenreService genreService)
-    {
-        _genreService = genreService;
-    }
-
     // GET: api/genres
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<GenreResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<GenreResponse>>> GetGenres()
     {
-        var genres = await _genreService.GetAllAsync();
-        return Ok(genres);
+        return Ok(await mediator.Send(new GetGenreQuery()));
     }
 
     // GET: api/genres/5
@@ -31,9 +24,15 @@ public class GenresController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<GenreResponse>> GetGenre(int id)
     {
-        var genre = await _genreService.GetByIdAsync(id);
-        if (genre == null) return NotFound();
-        return Ok(genre);
+        var result = await mediator.Send(new GetGenreByIdQuery
+        {
+            Id = id
+        });
+
+        if (result.IsFailed)
+            return NotFound(result.Errors.First().Message);
+
+        return Ok(result.Value);
     }
 
 
@@ -43,8 +42,18 @@ public class GenresController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<GenreResponse>> PostGenre(CreateGenreRequest request)
     {
-        var genre = await _genreService.CreateAsync(request);
-        return CreatedAtAction(nameof(GetGenre), new { id = genre.Id }, genre);
+        var result = await mediator.Send(new CreateGenreCommand()
+        {
+            Name = request.Name
+        });
+        if (result.IsFailed)
+        {
+            if (result.Errors.First().Message.Contains("already exists"))
+                return Conflict(result.Errors.First().Message);
+
+            return BadRequest(result.Errors.First().Message);
+        }
+        return CreatedAtAction(nameof(GetGenre), new { id = result.Value.Id }, result.Value);
     }
 
 
@@ -55,8 +64,21 @@ public class GenresController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PutGenre(int id, UpdateGenreRequest request)
     {
-        var updated = await _genreService.UpdateAsync(id, request);
-        if (!updated) return NotFound();
+        var result = await mediator.Send(new UpdateGenreCommand
+        {
+            Id = id,
+            Name = request.Name
+        });
+        if (result.IsFailed)
+        {
+            if (result.Errors.First().Message.Contains("not found"))
+                return NotFound(result.Errors.First().Message);
+
+            if (result.Errors.First().Message.Contains("already exists"))
+                return Conflict(result.Errors.First().Message);
+
+            return BadRequest(result.Errors.First().Message);
+        }
         return NoContent();
     }
 
@@ -67,8 +89,13 @@ public class GenresController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteGenre(int id)
     {
-        var deleted = await _genreService.DeleteAsync(id);
-        if(!deleted) return NotFound();
+        var result = await mediator.Send(new DeleteGenreCommand { Id = id });
+        if (result.IsFailed)
+        {
+            if (result.Errors.First().Message.Contains("not found"))
+                return NotFound(result.Errors.First().Message);
+            return BadRequest(result.Errors.First().Message);
+        }
         return NoContent();
     }
 }

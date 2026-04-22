@@ -1,4 +1,4 @@
-﻿using MovieRentalSystem.NET.WebApi.Enums;
+﻿using MovieRentalSystem.NET.Domain.Enums;
 
 namespace MovieRentalSystem.NET.WebApi.Models.Requests.MoviePhysicalCopies;
 

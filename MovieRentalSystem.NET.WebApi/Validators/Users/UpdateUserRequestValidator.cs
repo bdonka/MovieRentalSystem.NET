@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Users;
-
 namespace MovieRentalSystem.NET.WebApi.Validators.Users;
 
 public class UpdateUserRequestValidator : AbstractValidator<UpdateUserRequest>

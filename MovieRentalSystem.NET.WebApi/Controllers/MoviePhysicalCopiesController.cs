@@ -1,39 +1,36 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using MovieRentalSystem.NET.Application.Query;
+using MovieRentalSystem.NET.WebApi.MappingDtos;
 using MovieRentalSystem.NET.WebApi.Models.Requests.MoviePhysicalCopies;
 using MovieRentalSystem.NET.WebApi.Models.Responses;
-using MovieRentalSystem.NET.WebApi.Services.Interfaces;
 
 namespace MovieRentalSystem.NET.WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class MoviePhysicalCopiesController : ControllerBase
+public class MoviePhysicalCopiesController(IMediator mediator) : ControllerBase
 {
-    private readonly IMoviePhysicalCopyService _copyService;
-
-    public MoviePhysicalCopiesController(IMoviePhysicalCopyService copyService)
-    {
-        _copyService = copyService;
-    }
 
     // GET: api/moviePhysicalCopies
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<MoviePhysicalCopyResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<MoviePhysicalCopyResponse>>> GetMoviePhysicalCopies()
     {
-        var copies = await _copyService.GetAllAsync();
-        return Ok(copies);
+        var result = await mediator.Send(new GetMoviePhysicalCopyQuery());
+        return Ok(result.Select(r => r.MapToMoviePhysicalCopyResponse()).ToList());
     }
 
     // GET: api/moviePhysicalCopies/{id}/{movieId}
     [HttpGet("{id}/{movieId}")]
     [ProducesResponseType(typeof(MoviePhysicalCopyResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<MoviePhysicalCopyResponse>> GetMoviePhysicalCopy(int id, int movieId)
+    public async Task<ActionResult<MoviePhysicalCopyResponse>> GetMoviePhysicalCopy(int id)
     {
-        var copy = await _copyService.GetByIdAsync(id, movieId);
-        if (copy == null) return NotFound();
-        return Ok(copy);
+        var result = await mediator.Send(new GetMoviePhysicalCopyByIdQuery { Id = id });
+        if (result.IsFailed) 
+            return NotFound(result.Errors.First().Message);
+        return Ok(result);
     }
 
     // POST: api/moviePhysicalCopies
@@ -42,11 +39,17 @@ public class MoviePhysicalCopiesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<MoviePhysicalCopyResponse>> PostMoviePhysicalCopy(CreateMoviePhysicalCopyRequest request)
     {
-        var copy = await _copyService.CreateAsync(request);
+        var result = await mediator.Send(new CreateMoviePhysicalCopyCommand
+        {
+            MovieId = request.MovieId,
+            Code = request.Code
+        });
+        if (result.IsFailed) 
+            return BadRequest(result.Errors.First().Message);
         return CreatedAtAction(
             nameof(GetMoviePhysicalCopy),
-            new { id = copy.Id, movieId = copy.MovieId },
-            copy);
+            new { id = result.Value.Id },
+            result.Value.MapToMoviePhysicalCopyResponse());
     }
 
     // PUT: api/moviePhysicalCopies/{id}/{movieId}
@@ -56,8 +59,14 @@ public class MoviePhysicalCopiesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PutMoviePhysicalCopy(int id, int movieId, UpdateMoviePhysicalCopyRequest request)
     {
-        var updated = await _copyService.UpdateAsync(id, movieId, request);
-        if (!updated) return NotFound();
+        var result = await mediator.Send(new UpdateMoviePhysicalCopyCommand
+        {
+            Id = id,
+            MovieId = movieId,
+            Status = request.Status
+        });
+        if (result.IsFailed) 
+            return NotFound(result.Errors.First().Message);
         return NoContent();
     }
 
@@ -65,10 +74,11 @@ public class MoviePhysicalCopiesController : ControllerBase
     [HttpDelete("{id}/{movieId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteMoviePhysicalCopy(int id, int movieId)
+    public async Task<IActionResult> DeleteMoviePhysicalCopy(int id)
     {
-        var deleted = await _copyService.DeleteAsync(id, movieId);
-        if (!deleted) return NotFound();
+        var result = await mediator.Send(new DeleteMoviePhysicalCopyCommand { Id = id});
+        if (result.IsFailed)
+            return NotFound(result.Errors.First().Message);
         return NoContent();
     }
 }

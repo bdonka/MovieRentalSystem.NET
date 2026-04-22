@@ -1,9 +1,18 @@
 <Solution>
+  <Folder Name="/Core/">
+    <Project Path="MovieRentalSystem.NET.Application/MovieRentalSystem.NET.Application.csproj" Id="1d2c7c59-1ac8-4461-b381-04f0c6dae32d" />
+    <Project Path="MovieRentalSystem.NET.Domain/MovieRentalSystem.NET.Domain.csproj" Id="0d830ccc-9100-4ffa-b76d-572664f474ce" />
+  </Folder>
+  <Folder Name="/Infrastructure/">
+    <Project Path="MovieRentalSystem.NET.Infrastructure/MovieRentalSystem.NET.Infrastructure.csproj" Id="5925356f-c585-47c5-835e-1782bf4bfd79" />
+  </Folder>
+  <Folder Name="/Presentation/">
+    <Project Path="MovieRentalSystem.NET.WebApi/MovieRentalSystem.NET.WebApi.csproj" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".gitignore" />
   </Folder>
   <Project Path="MovieRentalSystem.NET.AppHost/MovieRentalSystem.NET.AppHost.csproj" Id="4590134a-5ce5-4c33-93d5-00d161d8c32d" />
   <Project Path="MovieRentalSystem.NET.MigrationService/MovieRentalSystem.NET.MigrationService.csproj" />
   <Project Path="MovieRentalSystem.NET.ServiceDefaults/MovieRentalSystem.NET.ServiceDefaults.csproj" Id="17afac59-0258-4eee-80f6-f65508c16974" />
-  <Project Path="MovieRentalSystem.NET.WebApi/MovieRentalSystem.NET.WebApi.csproj" />
 </Solution>

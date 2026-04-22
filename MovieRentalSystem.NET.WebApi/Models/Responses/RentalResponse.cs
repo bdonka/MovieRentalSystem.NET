@@ -1,7 +1,4 @@
-﻿using MovieRentalSystem.NET.WebApi.Entities;
-using MovieRentalSystem.NET.WebApi.Enums;
-
-namespace MovieRentalSystem.NET.WebApi.Models.Responses;
+﻿namespace MovieRentalSystem.NET.WebApi.Models.Responses;
 
 public class RentalResponse
 {
@@ -13,5 +10,5 @@ public class RentalResponse
     public DateTime? DueDate { get; set; }
     public DateTime? ReturnDate { get; set; }
     public decimal TotalPrice { get; set; }
-    public RentalStatus Status { get; set; } = RentalStatus.Preparing;
+    public string Status { get; set; } = null!;
 }

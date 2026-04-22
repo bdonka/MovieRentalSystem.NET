@@ -1,5 +1,5 @@
+using MovieRentalSystem.NET.Infrastructure.Data;
 using MovieRentalSystem.NET.MigrationService;
-using MovieRentalSystem.NET.WebApi.Data;
 
 var builder = Host.CreateApplicationBuilder(args);
 

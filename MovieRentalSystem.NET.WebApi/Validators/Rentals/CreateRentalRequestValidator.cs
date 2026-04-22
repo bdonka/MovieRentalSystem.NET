@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Rentals;
-using System;
 
 namespace MovieRentalSystem.NET.WebApi.Validators.Rentals;
 

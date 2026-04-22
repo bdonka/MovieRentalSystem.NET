@@ -1,27 +1,26 @@
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
-using MovieRentalSystem.NET.WebApi.Data;
-using MovieRentalSystem.NET.WebApi.Services;
-using MovieRentalSystem.NET.WebApi.Services.Interfaces;
+using MovieRentalSystem.NET.Infrastructure.InfrastructureDependencies;
 using Scalar.AspNetCore;
+using System.Reflection.Metadata;
+using System.Text.Json.Serialization;
+using MovieRentalSystem.NET.Application.ApplicationDependencies;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    }); ;
+
+builder.Services.AddApplicationDependencies();
+
+builder.Services.AddInfrastructureDependencies(builder.Configuration);
 
 builder.Services.AddOpenApi();
 
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
-
-builder.AddSqlServerDbContext<ApplicationDbContext>(connectionName: "sqldata");
-
-builder.Services.AddScoped<IMovieService, MovieService>();
-builder.Services.AddScoped<IGenreService, GenreService>();
-builder.Services.AddScoped<IMoviePhysicalCopyService, MoviePhysicalCopyService>();
-builder.Services.AddScoped<IRentalService, RentalService>();
-builder.Services.AddScoped<IUserService, UserService>();
-
 var app = builder.Build();
 app.MapDefaultEndpoints();
 
