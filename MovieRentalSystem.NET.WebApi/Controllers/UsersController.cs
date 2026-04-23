@@ -81,11 +81,14 @@ public class UsersController(IMediator mediator) : ControllerBase
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> DeleteUser(int id)
     {
         var result = await mediator.Send(new DeleteUserCommand { Id = id });
-        if (result.IsFailed)
+        if (result.IsFailed && result.Errors.First().Message.Contains("not found", StringComparison.OrdinalIgnoreCase))
             return NotFound(result.Errors.First().Message);
+        if (result.IsFailed && result.Errors.First().Message.Contains("has assigned", StringComparison.OrdinalIgnoreCase))
+            return Conflict(result.Errors.First().Message);
         return NoContent();
     }
 }

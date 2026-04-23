@@ -1,20 +1,26 @@
 ﻿using FluentResults;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using MovieRentalSystem.NET.Application.Interfaces;
 
 public class DeleteRentalCommandHandler : IRequestHandler<DeleteRentalCommand, Result>
 {
-    private readonly IRentalService _rentalService;
+    private readonly IDbContext _dbContext;
 
-    public DeleteRentalCommandHandler(IRentalService rentalService)
+    public DeleteRentalCommandHandler(IDbContext dbContext)
     {
-        _rentalService = rentalService;
+        _dbContext = dbContext;
     }
 
     public async Task<Result> Handle(
         DeleteRentalCommand request, CancellationToken cancellationToken)
     {
-        var result = await _rentalService.DeleteAsync(request.Id);
-        return result;
+        var rental = await _dbContext.Rentals.FirstOrDefaultAsync(r => r.Id == request.Id);
+        if (rental == null)
+            return Result.Fail($"Rental with ID {request.Id} not found.");
+
+        _dbContext.Rentals.Remove(rental);
+        await _dbContext.SaveChangesAsync();
+        return Result.Ok();
     }
 }

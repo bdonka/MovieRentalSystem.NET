@@ -1,21 +1,24 @@
 ﻿using FluentResults;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
+using MovieRentalSystem.NET.Application.Mappings;
 using MovieRentalSystem.NET.Application.Query;
-using MovieRentalSystem.NET.Domain.Entities;
-
 public class GetMoviePhysicalCopyByIdQueryHandler : IRequestHandler<GetMoviePhysicalCopyByIdQuery, Result<MoviePhysicalCopyDto>>
 {
-    private readonly IMoviePhysicalCopyService _moviePhysicalCopyService;
-    public GetMoviePhysicalCopyByIdQueryHandler(IMoviePhysicalCopyService moviePhysicalCopyService)
+    private readonly IDbContext _dbContext;
+    public GetMoviePhysicalCopyByIdQueryHandler(IDbContext dbContext)
     {
-        _moviePhysicalCopyService = moviePhysicalCopyService;
+        _dbContext = dbContext;
     }
 
     public async Task<Result<MoviePhysicalCopyDto>> Handle(
         GetMoviePhysicalCopyByIdQuery request, CancellationToken cancellationToken)
     {
-        return await _moviePhysicalCopyService.GetByIdAsync(request.Id);
+        var copy = await _dbContext.MoviePhysicalCopies.Include(m => m.Movie).FirstOrDefaultAsync(c => c.Id == request.Id);
+        if (copy == null)
+            return Result.Fail<MoviePhysicalCopyDto>($"Movie physical copy with Id {request.Id} not found.");
+        return Result.Ok(copy.MapToMoviePhysicalCopyDto());
     }
 }

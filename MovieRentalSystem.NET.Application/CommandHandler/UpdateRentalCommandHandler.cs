@@ -1,29 +1,41 @@
 ﻿using FluentResults;
 using MediatR;
-using MovieRentalSystem.NET.Application.Dtos;
+using Microsoft.EntityFrameworkCore;
 using MovieRentalSystem.NET.Application.Interfaces;
+using MovieRentalSystem.NET.Domain.Enums;
 
 public class UpdateRentalCommandHandler : IRequestHandler<UpdateRentalCommand, Result>
 {
-    private readonly IRentalService _rentalService;
+    private readonly IDbContext _dbContext;
 
-    public UpdateRentalCommandHandler(IRentalService rentalService)
+    public UpdateRentalCommandHandler(IDbContext dbContext)
     {
-        _rentalService = rentalService;
+        _dbContext = dbContext;
     }
 
     public async Task<Result> Handle(
         UpdateRentalCommand request, CancellationToken cancellationToken)
     {
-        var updateRequest = new RentalDto
+        var rental = await _dbContext.Rentals.FirstOrDefaultAsync(r => r.Id == request.Id);
+        if (rental == null)
+            return Result.Fail($"Rental with ID {request.Id} not found.");
+
+        rental.RentalStartDate = request.RentalStartDate;
+        rental.DueDate = request.DueDate;
+        rental.ReturnDate = request.ReturnDate;
+        rental.TotalPrice = request.TotalPrice;
+        rental.Status = Enum.Parse<RentalStatus>(request.Status.ToString());
+
+        if (request.ReturnDate != null)
         {
-            RentalStartDate = request.RentalStartDate,
-            DueDate = request.DueDate,
-            ReturnDate = request.ReturnDate,
-            TotalPrice = request.TotalPrice,
-            Status = request.Status
-        };
-        var result = await _rentalService.UpdateAsync(request.Id, updateRequest);
-        return result;
+            var copy = await _dbContext.MoviePhysicalCopies
+                .FirstOrDefaultAsync(c => c.Id == rental.MoviePhysicalCopyId);
+
+            if (copy != null)
+                copy.Status = MovieCopyStatus.Available;
+        }
+
+        await _dbContext.SaveChangesAsync();
+        return Result.Ok();
     }
 }

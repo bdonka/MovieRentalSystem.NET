@@ -1,26 +1,32 @@
 ﻿using FluentResults;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
 
 public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Result>
 {
-    private readonly IUserService _userService;
+    private readonly IDbContext _dbContext;
 
-    public UpdateUserCommandHandler(IUserService userService)
+    public UpdateUserCommandHandler(IDbContext dbContext)
     {
-        _userService = userService;
+        _dbContext = dbContext;
     }
 
     public async Task<Result> Handle(
         UpdateUserCommand request, CancellationToken cancellationToken)
     {
-        var updateRequest = new UserDto
-        {
-            Name = request.Name,
-            Email = request.Email,
-        };
-        var result = await _userService.UpdateAsync(request.Id, updateRequest);
-        return result;
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == request.Id);
+        if (user == null)
+            return Result.Fail($"User with ID {request.Id} not found.");
+
+        if (await _dbContext.Users.AnyAsync(u => u.Email == request.Email && u.Id != request.Id))
+            return Result.Fail($"User with Email '{request.Email}' already exists.");
+
+        user.Name = request.Name;
+        user.Email = request.Email;
+
+        await _dbContext.SaveChangesAsync();
+        return Result.Ok();
     }
 }

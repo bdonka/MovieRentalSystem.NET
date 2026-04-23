@@ -3,7 +3,7 @@ using MovieRentalSystem.NET.Domain.Entities;
 
 namespace MovieRentalSystem.NET.Application.Mappings;
 
-public static class MoviePhysicalCopyDtoMapping
+public static class MoviePhysicalCopyMapping
 {
     public static MoviePhysicalCopyDto MapToMoviePhysicalCopyDto(this MoviePhysicalCopy copy)
     {
@@ -11,7 +11,8 @@ public static class MoviePhysicalCopyDtoMapping
         {
             Id = copy.Id,
             MovieId = copy.MovieId,
-            Code = copy.Code
+            Code = copy.Code,
+            Status = copy.Status
         };
     }
 }

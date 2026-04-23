@@ -97,19 +97,6 @@ public class MoviesController(IMediator mediator) : ControllerBase
         return NoContent();
     }
 
-
-    // GET: /api/movies/{id}/genres
-    [HttpGet("{movieId}/genres")]
-    [ProducesResponseType(typeof(IEnumerable<GenreResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<IEnumerable<GenreResponse>>> GetGenres(int movieId)
-    {
-        var result = await mediator.Send(new GetMovieGenresQuery { MovieId = movieId });
-        if (result.IsFailed)
-            return NotFound(result.Errors.First().Message);
-        return Ok(result.Value);
-    }
-
     // POST: api/movies/{id}/genres/{id}
     [HttpPost("{movieId}/genres/{genreId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
