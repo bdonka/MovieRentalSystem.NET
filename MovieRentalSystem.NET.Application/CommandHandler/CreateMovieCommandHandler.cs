@@ -34,9 +34,7 @@ public class CreateMovieCommandHandler : IRequestHandler<CreateMovieCommand, Res
         movie = await _dbContext.Movies
             .Include(m => m.Genres)
             .Include(m => m.PhysicalCopies)
-            .FirstOrDefaultAsync(m => m.Id == movie.Id);
-        if (movie == null)
-            return Result.Fail<MovieDto>($"Movie with ID {movie?.Id} not found.");
+            .SingleAsync(m => m.Id == movie.Id);
         return Result.Ok(movie.MapToMovieDto());
     }
 }

@@ -13,13 +13,4 @@ public static class GenreMapping
             Name = genre.Name
         };
     }
-
-    public static Genre MapToGenreEntity(this GenreDto genre)
-    {
-        return new Genre
-        {
-            Id = genre.Id,
-            Name = genre.Name
-        };
-    }
 }

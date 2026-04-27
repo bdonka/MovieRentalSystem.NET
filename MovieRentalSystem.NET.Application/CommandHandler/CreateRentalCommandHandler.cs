@@ -39,9 +39,7 @@ public class CreateRentalCommandHandler : IRequestHandler<CreateRentalCommand, R
             .Include(r => r.User)
             .Include(r => r.MoviePhysicalCopy)
                 .ThenInclude(m => m.Movie)
-            .FirstOrDefaultAsync(r => r.Id == request.UserId);
-        if (rental == null)
-            return Result.Fail($"Rental with ID {request.UserId} not found.");
+            .SingleAsync(r => r.Id == request.UserId);
         return Result.Ok(rental.MapToRentalDto());
     }
 }

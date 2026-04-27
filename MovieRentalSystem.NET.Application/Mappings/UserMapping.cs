@@ -17,16 +17,4 @@ public static class UserMapping
             Rentals = user.Rentals?.Select(r => r.MapToRentalDto()).ToList() ?? new List<RentalDto>()
         };
     }
-
-    public static User MapToUserEntity(this UserDto user)
-    {
-        return new User
-        {
-            Id = user.Id,
-            Name = user.Name,
-            Email = user.Email,
-            Role = user.Role,
-            DateRegistered = user.DateRegistered
-        };
-    }
 }

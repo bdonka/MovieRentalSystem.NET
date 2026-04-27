@@ -19,16 +19,4 @@ public static class MovieMapping
             PhysicalCopies = movie.PhysicalCopies?.Select(g => g.MapToMoviePhysicalCopyDto()).ToList() ?? new List<MoviePhysicalCopyDto>()
         };
     }
-
-    public static Movie MapToMovieEntity(this MovieDto movie)
-    {
-        return new Movie
-        {
-            Id = movie.Id,
-            Title = movie.Title,
-            Description = movie.Description,
-            ReleaseYear = movie.ReleaseYear,
-            RentalPrice = movie.RentalPrice
-        };
-    }
 }
