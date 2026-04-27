@@ -1,20 +1,25 @@
 ﻿using FluentResults;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using MovieRentalSystem.NET.Application.Interfaces;
 
 public class DeleteGenreCommandHandler : IRequestHandler<DeleteGenreCommand, Result>
 {
-    private readonly IGenreService _genreService;
+    private readonly IDbContext _dbContext;
 
-    public DeleteGenreCommandHandler(IGenreService genreService)
+    public DeleteGenreCommandHandler(IDbContext dbContext)
     {
-        _genreService = genreService;
+        _dbContext = dbContext;
     }
 
     public async Task<Result> Handle(
         DeleteGenreCommand request, CancellationToken cancellationToken)
     {
-        var result = await _genreService.DeleteAsync(request.Id);
-        return result;
+        var genre = await _dbContext.Genres.FirstOrDefaultAsync(g => g.Id == request.Id);
+        if (genre == null)
+            return Result.Fail($"Genre with ID {request.Id} not found.");
+        _dbContext.Genres.Remove(genre);
+        await _dbContext.SaveChangesAsync();
+        return Result.Ok();
     }
 }

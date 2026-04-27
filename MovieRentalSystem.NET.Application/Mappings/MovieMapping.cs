@@ -1,9 +1,10 @@
 ﻿using MovieRentalSystem.NET.Application.Dtos;
+using MovieRentalSystem.NET.Application.Mappings;
 using MovieRentalSystem.NET.Domain.Entities;
 
 namespace MovieRentalSystem.NET.Application.Mappings;
 
-public static class MovieDtoMapping
+public static class MovieMapping
 {
     public static MovieDto MapToMovieDto(this Movie movie)
     {
@@ -14,10 +15,8 @@ public static class MovieDtoMapping
             Description = movie.Description,
             ReleaseYear = movie.ReleaseYear,
             RentalPrice = movie.RentalPrice,
-
-            Genres = movie.Genres?
-                .Select(g => g.MapToGenreDto())
-                .ToList() ?? new List<GenreDto>()
+            Genres = movie.Genres?.Select(g => g.MapToGenreDto()).ToList() ?? new List<GenreDto>(),
+            PhysicalCopies = movie.PhysicalCopies?.Select(g => g.MapToMoviePhysicalCopyDto()).ToList() ?? new List<MoviePhysicalCopyDto>()
         };
     }
 }

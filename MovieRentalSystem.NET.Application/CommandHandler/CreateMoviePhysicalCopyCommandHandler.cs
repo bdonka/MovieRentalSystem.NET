@@ -1,26 +1,39 @@
 ﻿using FluentResults;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
+using MovieRentalSystem.NET.Application.Mappings;
+using MovieRentalSystem.NET.Domain.Entities;
 
 public class CreateMoviePhysicalCopyCommandHandler : IRequestHandler<CreateMoviePhysicalCopyCommand, Result<MoviePhysicalCopyDto>>
 {
-    private readonly IMoviePhysicalCopyService _moviePhysicalCopyService;
+    private readonly IDbContext _dbContext;
 
-    public CreateMoviePhysicalCopyCommandHandler(IMoviePhysicalCopyService moviePhysicalCopyService)
+    public CreateMoviePhysicalCopyCommandHandler(IDbContext dbContext)
     {
-        _moviePhysicalCopyService = moviePhysicalCopyService;
+        _dbContext = dbContext;
     }
 
     public async Task<Result<MoviePhysicalCopyDto>> Handle(
         CreateMoviePhysicalCopyCommand request, CancellationToken cancellationToken)
     {
-        var createRequest = new MoviePhysicalCopyDto
+        if (await _dbContext.MoviePhysicalCopies.AnyAsync(c => c.Code == request.Code))
+        {
+            return Result.Fail<MoviePhysicalCopyDto>($"Code '{request.Code}' is already used.");
+        }
+
+        var copy = new MoviePhysicalCopy
         {
             MovieId = request.MovieId,
             Code = request.Code
         };
-        var result = await _moviePhysicalCopyService.CreateAsync(createRequest);
-        return result;
+
+        _dbContext.MoviePhysicalCopies.Add(copy);
+        await _dbContext.SaveChangesAsync();
+
+        copy = await _dbContext.MoviePhysicalCopies.Include(m => m.Movie).SingleAsync(c => c.Id == copy.Id);
+
+        return Result.Ok(copy.MapToMoviePhysicalCopyDto());
     }
 }

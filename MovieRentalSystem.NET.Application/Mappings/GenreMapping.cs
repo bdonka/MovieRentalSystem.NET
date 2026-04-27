@@ -3,7 +3,7 @@ using MovieRentalSystem.NET.Domain.Entities;
 
 namespace MovieRentalSystem.NET.Application.Mappings;
 
-public static class GenreDtoMapping
+public static class GenreMapping
 {
     public static GenreDto MapToGenreDto(this Genre genre)
     {
@@ -13,5 +13,4 @@ public static class GenreDtoMapping
             Name = genre.Name
         };
     }
-
 }

@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Domain.Entities;
 
 namespace MovieRentalSystem.NET.Infrastructure.Data;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : DbContext,IDbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 

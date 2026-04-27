@@ -21,8 +21,8 @@ public class MoviePhysicalCopiesController(IMediator mediator) : ControllerBase
         return Ok(result.Select(r => r.MapToMoviePhysicalCopyResponse()).ToList());
     }
 
-    // GET: api/moviePhysicalCopies/{id}/{movieId}
-    [HttpGet("{id}/{movieId}")]
+    // GET: api/moviePhysicalCopies/{id}
+    [HttpGet("{id}")]
     [ProducesResponseType(typeof(MoviePhysicalCopyResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<MoviePhysicalCopyResponse>> GetMoviePhysicalCopy(int id)
