@@ -1,11 +1,20 @@
 using FluentValidation;
+using MovieRentalSystem.NET.Application.ApplicationDependencies;
 using MovieRentalSystem.NET.Infrastructure.InfrastructureDependencies;
 using Scalar.AspNetCore;
-using System.Reflection.Metadata;
+using Serilog;
 using System.Text.Json.Serialization;
-using MovieRentalSystem.NET.Application.ApplicationDependencies;
 
 var builder = WebApplication.CreateBuilder(args);
+
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .WriteTo.Console()
+    .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
 builder.AddServiceDefaults();
 
 builder.Services.AddControllers()
@@ -31,5 +40,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapControllers();
+
+app.MapGet("/", () => "Hello World");
 
 app.Run();
