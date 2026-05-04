@@ -5,25 +5,35 @@ using MovieRentalSystem.NET.Infrastructure.InfrastructureDependencies;
 using MovieRentalSystem.NET.WebApi.Middlewares;
 using Scalar.AspNetCore;
 using Serilog;
+using Serilog.Events;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpLogging(options =>
 {
-    options.LoggingFields = HttpLoggingFields.Request | HttpLoggingFields.Response;
+    options.LoggingFields =
+        HttpLoggingFields.RequestPath |
+        HttpLoggingFields.RequestHeaders |
+        HttpLoggingFields.RequestBody |
+        HttpLoggingFields.ResponseStatusCode |
+        HttpLoggingFields.ResponseHeaders |
+        HttpLoggingFields.ResponseBody;
+
+    options.RequestBodyLogLimit = 4096;
+    options.ResponseBodyLogLimit = 4096;
 });
 
-//Log.Logger = new LoggerConfiguration()
-//    .ReadFrom.Configuration(builder.Configuration)
-//    .WriteTo.Console()
-//    .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day)
-//    .CreateLogger();
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day)
+    .MinimumLevel.Information()
+    .MinimumLevel.Override(
+        "Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware",
+        LogEventLevel.Information)
+    .CreateLogger();
 
-builder.Host.UseSerilog((context, services, configuration) => configuration
-    .ReadFrom.Configuration(context.Configuration)
-    .ReadFrom.Services(services)
-    .Enrich.FromLogContext());
+builder.Services.AddSerilog();
 
 builder.AddServiceDefaults();
 
@@ -49,15 +59,9 @@ builder.Services.AddScoped<ResponseTimeMiddleware>();
 
 var app = builder.Build();
 
-app.UseSerilogRequestLogging(options =>
-{
-    options.MessageTemplate =
-        "HTTP {Method} {Path} => {StatusCode} in {Elapsed} ms";
-});
-
 app.UseExceptionHandler();
 
-app.UseMiddleware<RequestResponseLoggingMiddleware>();
+app.UseHttpLogging();
 
 app.UseMiddleware<ResponseTimeMiddleware>();
 
