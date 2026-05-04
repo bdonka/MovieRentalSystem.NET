@@ -1,19 +1,39 @@
 using FluentValidation;
+using Microsoft.AspNetCore.HttpLogging;
 using MovieRentalSystem.NET.Application.ApplicationDependencies;
 using MovieRentalSystem.NET.Infrastructure.InfrastructureDependencies;
+using MovieRentalSystem.NET.WebApi.Middlewares;
 using Scalar.AspNetCore;
 using Serilog;
+using Serilog.Events;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddHttpLogging(options =>
+{
+    options.LoggingFields =
+        HttpLoggingFields.RequestPath |
+        HttpLoggingFields.RequestHeaders |
+        HttpLoggingFields.RequestBody |
+        HttpLoggingFields.ResponseStatusCode |
+        HttpLoggingFields.ResponseHeaders |
+        HttpLoggingFields.ResponseBody;
+
+    options.RequestBodyLogLimit = 4096;
+    options.ResponseBodyLogLimit = 4096;
+});
+
 Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
     .WriteTo.Console()
     .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day)
+    .MinimumLevel.Information()
+    .MinimumLevel.Override(
+        "Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware",
+        LogEventLevel.Information)
     .CreateLogger();
 
-builder.Host.UseSerilog();
+builder.Services.AddSerilog();
 
 builder.AddServiceDefaults();
 
@@ -21,7 +41,7 @@ builder.Services.AddControllers()
     .AddJsonOptions(o =>
     {
         o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    }); ;
+    });
 
 builder.Services.AddApplicationDependencies();
 
@@ -30,7 +50,21 @@ builder.Services.AddInfrastructureDependencies(builder.Configuration);
 builder.Services.AddOpenApi();
 
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+builder.Services.AddProblemDetails();
+
+builder.Services.AddScoped<ResponseTimeMiddleware>();
+
 var app = builder.Build();
+
+app.UseExceptionHandler();
+
+app.UseHttpLogging();
+
+app.UseMiddleware<ResponseTimeMiddleware>();
+
 app.MapDefaultEndpoints();
 
 if (app.Environment.IsDevelopment())
