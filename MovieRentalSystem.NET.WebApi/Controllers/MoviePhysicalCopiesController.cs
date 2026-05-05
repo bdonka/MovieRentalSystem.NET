@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using MovieRentalSystem.NET.Application.Common;
 using MovieRentalSystem.NET.Application.Query;
 using MovieRentalSystem.NET.WebApi.MappingDtos;
 using MovieRentalSystem.NET.WebApi.Models.Requests.MoviePhysicalCopies;
@@ -15,10 +16,18 @@ public class MoviePhysicalCopiesController(IMediator mediator) : ControllerBase
     // GET: api/moviePhysicalCopies
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<MoviePhysicalCopyResponse>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<MoviePhysicalCopyResponse>>> GetMoviePhysicalCopies()
+    public async Task<ActionResult<IEnumerable<MoviePhysicalCopyResponse>>> GetMoviePhysicalCopies([FromQuery] GetMoviePhysicalCopiesRequest request)
     {
-        var result = await mediator.Send(new GetMoviePhysicalCopyQuery());
-        return Ok(result.Select(r => r.MapToMoviePhysicalCopyResponse()).ToList());
+        var result = await mediator.Send(new GetMoviePhysicalCopyQuery
+        {
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize
+        });
+        return Ok(new PagedResponse<MoviePhysicalCopyResponse>(
+            result.Data.Select(r => r.MapToMoviePhysicalCopyResponse()).ToList(),
+            result.PageNumber,
+            result.PageSize,
+            result.TotalRecords));
     }
 
     // GET: api/moviePhysicalCopies/{id}

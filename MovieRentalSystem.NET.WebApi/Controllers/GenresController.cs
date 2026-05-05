@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MovieRentalSystem.NET.Application.Query;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Genres;
 using MovieRentalSystem.NET.WebApi.Models.Responses;
+using MovieRentalSystem.NET.WebApi.Pagination;
 
 namespace MovieRentalSystem.NET.WebApi.Controllers;
 
@@ -13,9 +14,14 @@ public class GenresController(IMediator mediator) : ControllerBase
     // GET: api/genres
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<GenreResponse>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<GenreResponse>>> GetGenres()
+    public async Task<ActionResult<IEnumerable<GenreResponse>>> GetGenres([FromQuery] GetGenresRequest request) 
     {
-        return Ok(await mediator.Send(new GetGenreQuery()));
+        return Ok(await mediator.Send(new GetGenreQuery
+        {
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize
+        }
+        ));
     }
 
     // GET: api/genres/5

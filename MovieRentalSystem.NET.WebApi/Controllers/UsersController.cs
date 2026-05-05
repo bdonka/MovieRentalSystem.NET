@@ -13,9 +13,14 @@ public class UsersController(IMediator mediator) : ControllerBase
     // GET: api/users
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<UserResponse>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<UserResponse>>> GetUsers()
+    public async Task<ActionResult<IEnumerable<UserResponse>>> GetUsers([FromQuery] GetUsersRequest request)
     {
-        var users = await mediator.Send(new GetUserQuery());
+        var users = await mediator.Send(new GetUserQuery
+        {
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize,
+
+        });
         return Ok(users);
     }
 
