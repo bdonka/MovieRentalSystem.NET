@@ -2,7 +2,7 @@
 
 namespace MovieRentalSystem.NET.WebApi.Models.Requests.Genres
 {
-    public class GetGenresRequest : PaginationParameters
+    public class GetGenresRequest : PagedRequest
     {
     }
 }

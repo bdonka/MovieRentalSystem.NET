@@ -20,19 +20,16 @@ public class GetMoviePhysicalCopyQueryHandler : IRequestHandler<GetMoviePhysical
     public async Task<PagedResponse<MoviePhysicalCopyDto>> Handle(
         GetMoviePhysicalCopyQuery request, CancellationToken cancellationToken)
     {
-        var pageNumber = request.PageNumber;
-        var pageSize = request.PageSize;
-
         _logger.LogInformation("Getting all movie physical copies");
         var copies = await _dbContext.MoviePhysicalCopies
             .Include(m => m.Movie)
             .AsQueryable()
-            .ApplyPagination(pageNumber, pageSize)
+            .ApplyPagination(request.PageNumber, request.PageSize)
             .ToListAsync();
         var totalRecords = await _dbContext.MoviePhysicalCopies.CountAsync();
 
         _logger.LogInformation("Retrieved {Count} movie physical copies", copies.Count);
         var result = copies.Select(c => c.MapToMoviePhysicalCopyDto()).ToList();
-        return new PagedResponse<MoviePhysicalCopyDto>(result, pageNumber, pageSize, totalRecords);
+        return new PagedResponse<MoviePhysicalCopyDto>(result, request.PageNumber, request.PageSize, totalRecords);
     }
 }

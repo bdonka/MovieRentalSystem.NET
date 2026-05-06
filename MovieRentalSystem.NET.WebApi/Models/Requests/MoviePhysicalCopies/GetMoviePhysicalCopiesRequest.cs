@@ -2,7 +2,7 @@
 
 namespace MovieRentalSystem.NET.WebApi.Models.Requests.MoviePhysicalCopies
 {
-    public class GetMoviePhysicalCopiesRequest : PaginationParameters
+    public class GetMoviePhysicalCopiesRequest : PagedRequest
     {
     }
 }

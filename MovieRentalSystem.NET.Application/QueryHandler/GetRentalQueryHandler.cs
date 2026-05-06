@@ -20,22 +20,22 @@ public class GetRentalQueryHandler : IRequestHandler<GetRentalQuery, PagedRespon
     public async Task<PagedResponse<RentalDto>> Handle(
         GetRentalQuery request, CancellationToken cancellationToken)
     {
-        var pageNumber = request.PageNumber;
-        var pageSize = request.PageSize;
-
         _logger.LogInformation("Getting all rentals");
-        var rentals = await _dbContext.Rentals
+        var query = _dbContext.Rentals
             .Include(r => r.User)
             .Include(r => r.MoviePhysicalCopy)
                 .ThenInclude(m => m.Movie)
-            .AsQueryable()
-            .ApplyPagination(pageNumber, pageSize)
-            .ToListAsync();
+            .AsQueryable();
+
         var totalRecords = await _dbContext.Rentals.CountAsync();
+
+        var rentals = await query
+            .ApplyPagination(request.PageNumber, request.PageSize)
+            .ToListAsync();
 
         var results = rentals.Select(r => r.MapToRentalDto()).ToList();
         _logger.LogInformation("Retrieved {Count} rentals", results.Count);
 
-        return new PagedResponse<RentalDto>(results, pageNumber, pageSize, totalRecords);
+        return new PagedResponse<RentalDto>(results, request.PageNumber, request.PageSize, totalRecords);
     }
 }

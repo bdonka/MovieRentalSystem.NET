@@ -1,6 +1,6 @@
 ﻿namespace MovieRentalSystem.NET.Application.Common
 {
-    public static class QuerybleExtensions
+    public static class QueryableExtensions
     {
         public static IQueryable<T> ApplyPagination<T>(this IQueryable<T> query, int pageNumber, int pageSize)
         {

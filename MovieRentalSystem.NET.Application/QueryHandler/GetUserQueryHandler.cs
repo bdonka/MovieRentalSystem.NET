@@ -20,20 +20,17 @@ public class GetUserQueryHandler : IRequestHandler<GetUserQuery, PagedResponse<U
     public async Task<PagedResponse<UserDto>> Handle(
         GetUserQuery request, CancellationToken cancellationToken)
     {
-        var pageNumber = request.PageNumber;
-        var pageSize = request.PageSize;
-
         _logger.LogInformation("Getting all users");
         var users = await _dbContext.Users
                     .Include(u => u.Rentals)
                     .ThenInclude(r => r.MoviePhysicalCopy)
                     .ThenInclude(m => m.Movie)
                     .AsQueryable()
-                    .ApplyPagination(pageNumber, pageSize)
+                    .ApplyPagination(request.PageNumber, request.PageSize)
                     .ToListAsync();
         var totalRecords = await _dbContext.Users.CountAsync();
         var results = users.Select(u => u.MapToUserDto()).ToList();
         _logger.LogInformation("Retrieved {UserCount} users", results.Count);
-        return new PagedResponse<UserDto>(results, pageNumber, pageSize, totalRecords);
+        return new PagedResponse<UserDto>(results, request.PageNumber, request.PageSize, totalRecords);
     }
 }
