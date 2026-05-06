@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MovieRentalSystem.NET.Application.Common;
@@ -20,17 +21,26 @@ public class GetUserQueryHandler : IRequestHandler<GetUserQuery, PagedResponse<U
     public async Task<PagedResponse<UserDto>> Handle(
         GetUserQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Getting all users");
-        var users = await _dbContext.Users
+        _logger.LogInformation("Getting all users with PageNumber={PageNumber}, PageSize={PageSize}", request.PageNumber, request.PageSize);
+        var query = _dbContext.Users
                     .Include(u => u.Rentals)
                     .ThenInclude(r => r.MoviePhysicalCopy)
                     .ThenInclude(m => m.Movie)
-                    .AsQueryable()
+                    .AsQueryable();
+
+        var totalRecords = await query.CountAsync();
+
+        var users = await query
                     .ApplyPagination(request.PageNumber, request.PageSize)
                     .ToListAsync();
-        var totalRecords = await _dbContext.Users.CountAsync();
+
         var results = users.Select(u => u.MapToUserDto()).ToList();
-        _logger.LogInformation("Retrieved {UserCount} users", results.Count);
+        _logger.LogInformation("Retrieved {Count} users (PageNumber={PageNumber}, PageSize={PageSize}, TotalRecords={TotalRecords})",
+            results.Count,
+            request.PageNumber,
+            request.PageSize,
+            totalRecords);
+
         return new PagedResponse<UserDto>(results, request.PageNumber, request.PageSize, totalRecords);
     }
 }

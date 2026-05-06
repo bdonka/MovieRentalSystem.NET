@@ -20,16 +20,23 @@ public class GetMoviePhysicalCopyQueryHandler : IRequestHandler<GetMoviePhysical
     public async Task<PagedResponse<MoviePhysicalCopyDto>> Handle(
         GetMoviePhysicalCopyQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Getting all movie physical copies");
-        var copies = await _dbContext.MoviePhysicalCopies
+        _logger.LogInformation("Getting all movie physical copies with PageNumber={PageNumber}, PageSize={PageSize}", request.PageNumber, request.PageSize);
+        var query = _dbContext.MoviePhysicalCopies
             .Include(m => m.Movie)
-            .AsQueryable()
+            .AsQueryable();
+
+        var totalRecords = await query.CountAsync();
+
+        var copies = await query
             .ApplyPagination(request.PageNumber, request.PageSize)
             .ToListAsync();
-        var totalRecords = await _dbContext.MoviePhysicalCopies.CountAsync();
 
-        _logger.LogInformation("Retrieved {Count} movie physical copies", copies.Count);
-        var result = copies.Select(c => c.MapToMoviePhysicalCopyDto()).ToList();
-        return new PagedResponse<MoviePhysicalCopyDto>(result, request.PageNumber, request.PageSize, totalRecords);
+        var results = copies.Select(c => c.MapToMoviePhysicalCopyDto()).ToList();
+        _logger.LogInformation("Retrieved { Count} movie physical copies (PageNumber ={ PageNumber}, PageSize ={ PageSize}, TotalRecords ={ TotalRecords})",
+            results.Count,
+            request.PageNumber,
+            request.PageSize,
+            totalRecords);
+        return new PagedResponse<MoviePhysicalCopyDto>(results, request.PageNumber, request.PageSize, totalRecords);
     }
 }

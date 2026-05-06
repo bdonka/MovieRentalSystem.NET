@@ -20,18 +20,25 @@ public class GetMovieQueryHandler : IRequestHandler<GetMovieQuery, PagedResponse
     public async Task<PagedResponse<MovieDto>> Handle(
         GetMovieQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Getting all movies");
-        var movies = await _dbContext.Movies
+        _logger.LogInformation("Getting all movies with PageNumber={PageNumber}, PageSize={PageSize}", request.PageNumber, request.PageSize);
+        var query = _dbContext.Movies
             .Include(m => m.Genres)
             .Include(m => m.PhysicalCopies)
-            .AsQueryable()
+            .AsQueryable();
+
+        var totalRecords = await query.CountAsync();
+
+        var movies = await query
             .ApplyPagination(request.PageNumber, request.PageSize)
             .ToListAsync();
-        var totalRecords = await _dbContext.Movies.CountAsync();
 
-        var result = movies.Select(m => m.MapToMovieDto()).ToList();
-        _logger.LogInformation("Movies got successfully, count: {Count}", result.Count);
+        var results = movies.Select(m => m.MapToMovieDto()).ToList();
+        _logger.LogInformation("Retrieved {Count} genres (PageNumber={PageNumber}, PageSize={PageSize}, TotalRecords={TotalRecords})",
+            results.Count,
+            request.PageNumber,
+            request.PageSize,
+            totalRecords);
 
-        return new PagedResponse<MovieDto>(result, request.PageNumber, request.PageSize, totalRecords);
+        return new PagedResponse<MovieDto>(results, request.PageNumber, request.PageSize, totalRecords);
     }
 }
