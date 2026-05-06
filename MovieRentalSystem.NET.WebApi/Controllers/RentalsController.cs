@@ -14,9 +14,13 @@ public class RentalsController(IMediator mediator) : ControllerBase
     // GET: api/rentals
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<RentalResponse>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<RentalResponse>>> GetRentals()
+    public async Task<ActionResult<IEnumerable<RentalResponse>>> GetRentals([FromQuery] GetRentalsRequest request)
     {
-        var rentals = await mediator.Send(new GetRentalQuery());
+        var rentals = await mediator.Send(new GetRentalQuery
+        {
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize,
+        });
         return Ok(rentals);
     }
 

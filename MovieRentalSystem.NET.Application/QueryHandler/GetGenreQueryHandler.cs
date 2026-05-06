@@ -1,12 +1,13 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MovieRentalSystem.NET.Application.Common;
 using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Application.Mappings;
 using MovieRentalSystem.NET.Application.Query;
 
-public class GetGenreQueryHandler : IRequestHandler<GetGenreQuery, IEnumerable<GenreDto>>
+public class GetGenreQueryHandler : IRequestHandler<GetGenreQuery, PagedResponse<GenreDto>>
 {
     private readonly IDbContext _dbContext;
     private readonly ILogger<GetGenreQueryHandler> _logger;
@@ -16,12 +17,26 @@ public class GetGenreQueryHandler : IRequestHandler<GetGenreQuery, IEnumerable<G
         _logger = logger;
     }
 
-    public async Task<IEnumerable<GenreDto>> Handle(
+    public async Task<PagedResponse<GenreDto>> Handle(
         GetGenreQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Getting all genres");
-        var genres = await _dbContext.Genres.ToListAsync();
-        _logger.LogInformation("Genres got successfully");
-        return genres.Select(g => g.MapToGenreDto()).ToList();
+        _logger.LogInformation("Getting all genres with PageNumber={PageNumber}, PageSize={PageSize}", request.PageNumber, request.PageSize);
+        var query = _dbContext.Genres
+            .AsQueryable();
+
+        var totalRecords = await query.CountAsync();
+
+        var genres = await query
+            .ApplyPagination(request.PageNumber, request.PageSize)
+            .ToListAsync();
+
+        var results = genres.Select(g => g.MapToGenreDto()).ToList();
+
+        _logger.LogInformation("Retrieved {Count} genres (PageNumber={PageNumber}, PageSize={PageSize}, TotalRecords={TotalRecords})",
+            results.Count,
+            request.PageNumber,
+            request.PageSize,
+            totalRecords);
+        return new PagedResponse<GenreDto>(results, request.PageNumber, request.PageSize, totalRecords);
     }
 }
