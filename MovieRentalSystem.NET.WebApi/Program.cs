@@ -28,13 +28,14 @@ Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
     .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware", LogEventLevel.Information)
     .Enrich.FromLogContext()
-    .WriteTo.Console(new Serilog.Formatting.Compact.RenderedCompactJsonFormatter())
+    .WriteTo.Console()
     .WriteTo.OpenTelemetry()
     .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
-builder.Host.UseSerilog();
+builder.Services.AddSerilog();
 
 builder.AddServiceDefaults();
 
@@ -60,8 +61,6 @@ builder.Services.AddScoped<ResponseTimeMiddleware>();
 
 
 var app = builder.Build();
-
-app.UseSerilogRequestLogging();
 
 app.UseExceptionHandler();
 
