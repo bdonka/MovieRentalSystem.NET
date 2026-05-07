@@ -25,15 +25,16 @@ builder.Services.AddHttpLogging(options =>
 });
 
 Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
+    .MinimumLevel.Debug()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .WriteTo.Console(new Serilog.Formatting.Compact.RenderedCompactJsonFormatter())
+    .WriteTo.OpenTelemetry()
     .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day)
-    .MinimumLevel.Information()
-    .MinimumLevel.Override(
-        "Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware",
-        LogEventLevel.Information)
     .CreateLogger();
 
-builder.Services.AddSerilog();
+builder.Host.UseSerilog();
 
 builder.AddServiceDefaults();
 
@@ -57,7 +58,10 @@ builder.Services.AddProblemDetails();
 
 builder.Services.AddScoped<ResponseTimeMiddleware>();
 
+
 var app = builder.Build();
+
+app.UseSerilogRequestLogging();
 
 app.UseExceptionHandler();
 
@@ -74,7 +78,5 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapControllers();
-
-app.MapGet("/", () => "Hello World");
 
 app.Run();
