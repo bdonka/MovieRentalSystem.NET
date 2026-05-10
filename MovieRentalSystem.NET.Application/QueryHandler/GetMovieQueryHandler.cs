@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MovieRentalSystem.NET.Application.Common;
@@ -7,7 +8,7 @@ using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Application.Mappings;
 using MovieRentalSystem.NET.Application.Query;
 
-public class GetMovieQueryHandler : IRequestHandler<GetMovieQuery, PagedResponse<MovieDto>>
+public class GetMovieQueryHandler : IRequestHandler<GetMovieQuery, Result<PagedResponse<MovieDto>>>
 {
     private readonly IDbContext _dbContext;
     private readonly ILogger<GetMovieQueryHandler> _logger;
@@ -17,7 +18,7 @@ public class GetMovieQueryHandler : IRequestHandler<GetMovieQuery, PagedResponse
         _logger = logger;
     }
 
-    public async Task<PagedResponse<MovieDto>> Handle(
+    public async Task<Result<PagedResponse<MovieDto>>> Handle(
         GetMovieQuery request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Getting all movies with PageNumber={PageNumber}, PageSize={PageSize}", request.PageNumber, request.PageSize);
@@ -39,6 +40,9 @@ public class GetMovieQueryHandler : IRequestHandler<GetMovieQuery, PagedResponse
             request.PageSize,
             totalRecords);
 
-        return new PagedResponse<MovieDto>(results, request.PageNumber, request.PageSize, totalRecords);
+        return Result.Ok(
+            new PagedResponse<MovieDto>(results, request.PageNumber, request.PageSize, totalRecords
+            )
+        );
     }
 }

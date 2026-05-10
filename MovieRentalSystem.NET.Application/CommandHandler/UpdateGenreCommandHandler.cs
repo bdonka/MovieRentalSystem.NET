@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Interfaces;
 
 public class UpdateGenreCommandHandler : IRequestHandler<UpdateGenreCommand, Result>
@@ -23,13 +24,13 @@ public class UpdateGenreCommandHandler : IRequestHandler<UpdateGenreCommand, Res
         if (genre == null)
         {
             _logger.LogWarning("Genre {GenreId} not found", request.Id);
-            return Result.Fail($"Genre {request.Id} not found.");
+            return Result.Fail(new GenreNotFoundError(request.Id));
         }
 
         if (await _dbContext.Genres.AnyAsync(g => g.Name == request.Name && g.Id != request.Id))
         {
             _logger.LogWarning("Genre {GenreName} already exists", request.Name);
-            return Result.Fail($"Genre '{request.Name}' already exists.");
+            return Result.Fail(new GenreAlreadyExistsError(request.Name));
         }
         genre.Name = request.Name;
         await _dbContext.SaveChangesAsync();

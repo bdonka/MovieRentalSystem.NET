@@ -1,65 +1,56 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using MovieRentalSystem.NET.Application.Common;
+using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Query;
+using MovieRentalSystem.NET.WebApi.Common;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Genres;
-using MovieRentalSystem.NET.WebApi.Models.Responses;
-using MovieRentalSystem.NET.WebApi.Pagination;
 
 namespace MovieRentalSystem.NET.WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class GenresController(IMediator mediator) : ControllerBase
+public class GenresController(IMediator mediator) : ResultsControllerBase
 {
     // GET: api/genres
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<GenreResponse>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<GenreResponse>>> GetGenres([FromQuery] GetGenresRequest request) 
+    [ProducesResponseType(typeof(PagedResponse<GenreDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResponse<GenreDto>>> GetGenres([FromQuery] GetGenresRequest request) 
     {
-        return Ok(await mediator.Send(new GetGenreQuery
+        var result = await mediator.Send(new GetGenreQuery
         {
             PageNumber = request.PageNumber,
             PageSize = request.PageSize
-        }
-        ));
+        });
+        return ToOkOrErrorResponse(result);
     }
 
     // GET: api/genres/5
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(GenreResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(GenreDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<GenreResponse>> GetGenre(int id)
+    public async Task<ActionResult<GenreDto>> GetGenre(int id)
     {
         var result = await mediator.Send(new GetGenreByIdQuery
         {
             Id = id
         });
-
-        if (result.IsFailed)
-            return NotFound(result.Errors.First().Message);
-
-        return Ok(result.Value);
+        return ToOkOrErrorResponse(result);
     }
 
 
     // POST: api/genres
     [HttpPost]
-    [ProducesResponseType(typeof(GenreResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(GenreDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<GenreResponse>> PostGenre(CreateGenreRequest request)
+    public async Task<ActionResult<GenreDto>> PostGenre(CreateGenreRequest request)
     {
         var result = await mediator.Send(new CreateGenreCommand()
         {
             Name = request.Name
         });
-        if (result.IsFailed)
-        {
-            if (result.Errors.First().Message.Contains("already exists"))
-                return Conflict(result.Errors.First().Message);
 
-            return BadRequest(result.Errors.First().Message);
-        }
-        return CreatedAtAction(nameof(GetGenre), new { id = result.Value.Id }, result.Value);
+        return ToCreatedAtActionOrErrorResponse(nameof(GetGenre), new { id = result.Value.Id }, result);
     }
 
 
@@ -75,17 +66,8 @@ public class GenresController(IMediator mediator) : ControllerBase
             Id = id,
             Name = request.Name
         });
-        if (result.IsFailed)
-        {
-            if (result.Errors.First().Message.Contains("not found"))
-                return NotFound(result.Errors.First().Message);
 
-            if (result.Errors.First().Message.Contains("already exists"))
-                return Conflict(result.Errors.First().Message);
-
-            return BadRequest(result.Errors.First().Message);
-        }
-        return NoContent();
+        return ToNoContentOrErrorResponse(result);
     }
 
 
@@ -96,12 +78,6 @@ public class GenresController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> DeleteGenre(int id)
     {
         var result = await mediator.Send(new DeleteGenreCommand { Id = id });
-        if (result.IsFailed)
-        {
-            if (result.Errors.First().Message.Contains("not found"))
-                return NotFound(result.Errors.First().Message);
-            return BadRequest(result.Errors.First().Message);
-        }
-        return NoContent();
+        return ToNoContentOrErrorResponse(result);
     }
 }

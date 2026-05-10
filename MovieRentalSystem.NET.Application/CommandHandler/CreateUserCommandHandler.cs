@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Application.Mappings;
@@ -28,7 +29,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Resul
         if (await _dbContext.Users.AnyAsync(u => u.Email == request.Email))
         {
             _logger.LogWarning("User already exists with email: {UserEmail}", request.Email);
-            return Result.Fail<UserDto>($"User with Email '{request.Email}' already exists.");
+            return Result.Fail<UserDto>(new UserAlreadyExistsError(request.Email));
         }
 
         var user = new User

@@ -1,6 +1,10 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using MovieRentalSystem.NET.Application.Common;
+using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Query;
+using MovieRentalSystem.NET.WebApi.Common;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Users;
 using MovieRentalSystem.NET.WebApi.Models.Responses;
 
@@ -8,56 +12,47 @@ namespace MovieRentalSystem.NET.WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class UsersController(IMediator mediator) : ControllerBase
+public class UsersController(IMediator mediator) : ResultsControllerBase
 {
     // GET: api/users
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<UserResponse>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<UserResponse>>> GetUsers([FromQuery] GetUsersRequest request)
+    [ProducesResponseType(typeof(PagedResponse<UserDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResponse<UserDto>>> GetUsers([FromQuery] GetUsersRequest request)
     {
-        var users = await mediator.Send(new GetUserQuery
+        var result = await mediator.Send(new GetUserQuery
         {
             PageNumber = request.PageNumber,
             PageSize = request.PageSize,
 
         });
-        return Ok(users);
+        return ToOkOrErrorResponse(result);
     }
 
     // GET: api/users/5
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<UserResponse>> GetUser(int id)
+    public async Task<ActionResult<UserDto>> GetUser(int id)
     {
         var result = await mediator.Send(new GetUserByIdQuery { Id = id });
-        if (result.IsFailed)
-            return NotFound(result.Errors.First().Message);
-        return Ok(result.Value);
+        return ToOkOrErrorResponse(result);
     }
 
     // POST: api/users
     [HttpPost]
-    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<UserResponse>> PostUser(CreateUserRequest request)
+    public async Task<ActionResult<UserDto>> PostUser(CreateUserRequest request)
     {
         var result = await mediator.Send(new CreateUserCommand {
             Name = request.Name,
             Email = request.Email,
             Password = request.Password
         });
-        if (result.IsFailed)
-        {
-            if (result.Errors.First().Message.Contains("already exists"))
-                return Conflict(result.Errors.First().Message);
-
-            return BadRequest(result.Errors.First().Message);
-        }
-        return CreatedAtAction(
+        return ToCreatedAtActionOrErrorResponse(
             nameof(GetUser),
             new { id = result.Value.Id },
-            result.Value);
+            result);
     }
 
     // PUT: api/users/5
@@ -72,14 +67,7 @@ public class UsersController(IMediator mediator) : ControllerBase
             Name = request.Name,
             Email = request.Email
         });
-        if (result.IsFailed)
-        {
-            if (result.Errors.First().Message.Contains("already exists"))
-                return Conflict(result.Errors.First().Message);
-
-            return BadRequest(result.Errors.First().Message);
-        }
-        return NoContent();
+        return ToNoContentOrErrorResponse(result);
     }
 
     // DELETE: api/users/5
@@ -90,10 +78,6 @@ public class UsersController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> DeleteUser(int id)
     {
         var result = await mediator.Send(new DeleteUserCommand { Id = id });
-        if (result.IsFailed && result.Errors.First().Message.Contains("not found", StringComparison.OrdinalIgnoreCase))
-            return NotFound(result.Errors.First().Message);
-        if (result.IsFailed && result.Errors.First().Message.Contains("has assigned", StringComparison.OrdinalIgnoreCase))
-            return Conflict(result.Errors.First().Message);
-        return NoContent();
+        return ToNoContentOrErrorResponse(result);
     }
 }

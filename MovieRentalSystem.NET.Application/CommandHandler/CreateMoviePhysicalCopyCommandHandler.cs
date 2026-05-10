@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Application.Mappings;
@@ -26,7 +27,7 @@ public class CreateMoviePhysicalCopyCommandHandler : IRequestHandler<CreateMovie
         if (await _dbContext.MoviePhysicalCopies.AnyAsync(c => c.Code == request.Code))
         {
             _logger.LogWarning("MoviePhysicalCopy already exists with code: {Code}", request.Code);
-            return Result.Fail<MoviePhysicalCopyDto>($"Code '{request.Code}' is already used.");
+            return Result.Fail<MoviePhysicalCopyDto>(new MoviePhysicalCopyAlreadyExistsError(request.Code));
         }
 
         var copy = new MoviePhysicalCopy

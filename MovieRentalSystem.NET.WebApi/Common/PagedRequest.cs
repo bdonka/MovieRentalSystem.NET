@@ -1,4 +1,4 @@
-﻿namespace MovieRentalSystem.NET.WebApi.Pagination
+﻿namespace MovieRentalSystem.NET.WebApi.Common
 {
     public class PagedRequest
     {

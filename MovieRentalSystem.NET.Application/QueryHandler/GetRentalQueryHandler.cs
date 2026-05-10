@@ -8,7 +8,7 @@ using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Application.Mappings;
 using MovieRentalSystem.NET.Application.Query;
 
-public class GetRentalQueryHandler : IRequestHandler<GetRentalQuery, PagedResponse<RentalDto>>
+public class GetRentalQueryHandler : IRequestHandler<GetRentalQuery, Result<PagedResponse<RentalDto>>>
 {
     private readonly IDbContext _dbContext;
     private readonly ILogger<GetRentalQueryHandler> _logger;
@@ -18,7 +18,7 @@ public class GetRentalQueryHandler : IRequestHandler<GetRentalQuery, PagedRespon
         _logger = logger;
     }
 
-    public async Task<PagedResponse<RentalDto>> Handle(
+    public async Task<Result<PagedResponse<RentalDto>>> Handle(
         GetRentalQuery request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Getting all rentals with PageNumber={PageNumber}, PageSize={PageSize}", request.PageNumber, request.PageSize);
@@ -41,6 +41,9 @@ public class GetRentalQueryHandler : IRequestHandler<GetRentalQuery, PagedRespon
             request.PageSize,
             totalRecords);
 
-        return new PagedResponse<RentalDto>(results, request.PageNumber, request.PageSize, totalRecords);
+        return Result.Ok(
+            new PagedResponse<RentalDto>(results, request.PageNumber, request.PageSize, totalRecords
+            )
+        );
     }
 }

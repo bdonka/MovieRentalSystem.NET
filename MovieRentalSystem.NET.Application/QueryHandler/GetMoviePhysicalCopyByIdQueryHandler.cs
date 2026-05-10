@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Application.Mappings;
@@ -25,7 +26,7 @@ public class GetMoviePhysicalCopyByIdQueryHandler : IRequestHandler<GetMoviePhys
         if (copy == null)
         {
             _logger.LogWarning("Movie physical copy {CopyId} not found", request.Id);
-            return Result.Fail<MoviePhysicalCopyDto>($"Movie physical copy with Id {request.Id} not found.");
+            return Result.Fail<MoviePhysicalCopyDto>(new MoviePhysicalCopyNotFoundError(request.Id));
         }
         _logger.LogInformation("Movie physical copy {CopyId} retrieved successfully", request.Id);
         return Result.Ok(copy.MapToMoviePhysicalCopyDto());

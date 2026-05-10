@@ -1,6 +1,9 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using MovieRentalSystem.NET.Application.Common;
+using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Query;
+using MovieRentalSystem.NET.WebApi.Common;
 using MovieRentalSystem.NET.WebApi.MappingDtos;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Rentals;
 using MovieRentalSystem.NET.WebApi.Models.Responses;
@@ -9,31 +12,29 @@ namespace MovieRentalSystem.NET.WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class RentalsController(IMediator mediator) : ControllerBase
+public class RentalsController(IMediator mediator) : ResultsControllerBase
 {
     // GET: api/rentals
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<RentalResponse>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<RentalResponse>>> GetRentals([FromQuery] GetRentalsRequest request)
+    [ProducesResponseType(typeof(PagedResponse<RentalDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResponse<RentalDto>>> GetRentals([FromQuery] GetRentalsRequest request)
     {
-        var rentals = await mediator.Send(new GetRentalQuery
+        var result = await mediator.Send(new GetRentalQuery
         {
             PageNumber = request.PageNumber,
             PageSize = request.PageSize,
         });
-        return Ok(rentals);
+        return ToOkOrErrorResponse(result);
     }
 
     // GET: api/rentals/5
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(RentalResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(RentalDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<RentalResponse>> GetRental(int id)
+    public async Task<ActionResult<RentalDto>> GetRental(int id)
     {
         var result = await mediator.Send(new GetRentalByIdQuery { Id = id });
-        if (result.IsFailed)
-            return NotFound(result.Errors.First().Message);
-        return Ok(result.Value);
+        return ToOkOrErrorResponse(result);
     }
 
     // POST: api/rentals
@@ -49,17 +50,10 @@ public class RentalsController(IMediator mediator) : ControllerBase
             RentalStartDate = request.RentalStartDate,
             DueDate = request.DueDate
         });
-        if (result.IsFailed)
-        {
-            if (result.Errors.First().Message.Contains("already rented"))
-                return Conflict(result.Errors.First().Message);
-
-            return BadRequest(result.Errors.First().Message);
-        }
-        return CreatedAtAction(
+        return ToCreatedAtActionOrErrorResponse(
             nameof(GetRental),
             new { id = result.Value.Id },
-            result.Value.MapToRentalResponse());
+            result.Map(r => r.MapToRentalResponse()));
     }
 
     // PUT: api/rentals/5
@@ -78,14 +72,7 @@ public class RentalsController(IMediator mediator) : ControllerBase
             TotalPrice = request.TotalPrice,
             Status = request.Status
         });
-        if (result.IsFailed)
-        {
-            if (result.Errors.First().Message.Contains("already rented"))
-                return Conflict(result.Errors.First().Message);
-
-            return BadRequest(result.Errors.First().Message);
-        }
-        return NoContent();
+        return ToNoContentOrErrorResponse(result);
     }
 
     // DELETE: api/rentals/5
@@ -95,8 +82,6 @@ public class RentalsController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> DeleteRental(int id)
     {
         var result = await mediator.Send(new DeleteRentalCommand { Id = id });
-        if (result.IsFailed)
-            return NotFound(result.Errors.First().Message);
-        return NoContent();
+        return ToNoContentOrErrorResponse(result);
     }
 }

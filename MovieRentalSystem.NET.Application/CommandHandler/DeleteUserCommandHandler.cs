@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Interfaces;
 
 public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Result>
@@ -24,12 +25,12 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Resul
         if (user == null)
         {
             _logger.LogWarning("User {UserId} not found", request.Id);
-            return Result.Fail($"User {request.Id} not found.");
+            return Result.Fail(new UserNotFoundError(request.Id));
         }
         if (user.Rentals.Count != 0)
         {
             _logger.LogWarning("User {UserId} has assigned 1 or more rentals", request.Id);
-            return Result.Fail($"User has assigned 1 or more rentals.");
+            return Result.Fail(new UserHasAssignedRentalsError(request.Id));
         }
         _dbContext.Users.Remove(user);
         await _dbContext.SaveChangesAsync();

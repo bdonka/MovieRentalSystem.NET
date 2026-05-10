@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
 
@@ -25,13 +26,13 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Resul
         if (user == null)
         {
             _logger.LogWarning("User {UserId} not found", request.Id);
-            return Result.Fail($"User {request.Id} not found.");
+            return Result.Fail(new UserNotFoundError(request.Id));
         }
 
         if (await _dbContext.Users.AnyAsync(u => u.Email == request.Email && u.Id != request.Id))
         {
             _logger.LogWarning("User with Email: {UserEmail} already exists", request.Email);
-            return Result.Fail($"User with Email '{request.Email}' already exists.");
+            return Result.Fail(new UserAlreadyExistsError(request.Email));
         }
 
         user.Name = request.Name;

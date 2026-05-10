@@ -1,4 +1,4 @@
-﻿using MovieRentalSystem.NET.WebApi.Pagination;
+﻿using MovieRentalSystem.NET.WebApi.Common;
 
 namespace MovieRentalSystem.NET.WebApi.Models.Requests.Movies
 {
