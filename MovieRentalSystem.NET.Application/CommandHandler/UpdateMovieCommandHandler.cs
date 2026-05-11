@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Interfaces;
 
 public class UpdateMovieCommandHandler : IRequestHandler<UpdateMovieCommand, Result>
@@ -23,13 +24,13 @@ public class UpdateMovieCommandHandler : IRequestHandler<UpdateMovieCommand, Res
         if (movie == null)
         {
             _logger.LogInformation("Movie {MovieId} not found", request.Id);
-            return Result.Fail($"Movie {request.Id} not found.");
+            return Result.Fail(new MovieNotFoundError(request.Id));
         }
 
         if (await _dbContext.Movies.AnyAsync(m => m.Title == request.Title && m.Id != request.Id))
         {
             _logger.LogInformation("Movie {MovieTitle} already exists", request.Title);
-            return Result.Fail($"Movie '{request.Title}' already exists.");
+            return Result.Fail(new MovieAlreadyExistsError(request.Title));
         }
 
         movie.Title = request.Title;

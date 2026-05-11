@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Application.Mappings;
@@ -26,7 +27,7 @@ public class CreateMovieCommandHandler : IRequestHandler<CreateMovieCommand, Res
         if (await _dbContext.Movies.AnyAsync(m => m.Title == request.Title))
         {
             _logger.LogWarning("Movie already exists {MovieTitle}", request.Title);
-            return Result.Fail<MovieDto>($"Movie '{request.Title}' already exists.");
+            return Result.Fail<MovieDto>(new MovieAlreadyExistsError(request.Title));
         }
 
         var movie = new Movie

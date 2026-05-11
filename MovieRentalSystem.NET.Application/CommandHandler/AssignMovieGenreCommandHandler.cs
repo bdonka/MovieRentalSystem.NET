@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Interfaces;
 public class AssignMovieGenreCommandHandler : IRequestHandler<AssignMovieGenreCommand, Result>
 {
@@ -23,7 +24,7 @@ public class AssignMovieGenreCommandHandler : IRequestHandler<AssignMovieGenreCo
         if (movie == null)
         {
             _logger.LogWarning("Movie {MovieId} not found", request.MovieId);
-            return Result.Fail($"Movie {request.MovieId} not found.");
+            return Result.Fail(new MovieNotFoundError(request.MovieId));
         }
          
         var genre = await _dbContext.Genres.FirstOrDefaultAsync(g => g.Id == request.GenreId);
@@ -31,7 +32,7 @@ public class AssignMovieGenreCommandHandler : IRequestHandler<AssignMovieGenreCo
         if (genre == null)
         {
             _logger.LogWarning("Genre {GenreId} not found", request.GenreId);
-            return Result.Fail($"Genre {request.GenreId} not found.");
+            return Result.Fail(new GenreNotFoundError(request.GenreId));
         }
 
         if (!movie.Genres.Any(g => g.Id == request.GenreId))
@@ -41,7 +42,7 @@ public class AssignMovieGenreCommandHandler : IRequestHandler<AssignMovieGenreCo
         else
         {
             _logger.LogWarning("Genre already assigned {GenreId} to movie {MovieId}", request.GenreId, request.MovieId);
-            return Result.Fail("Genre already assigned to movie.");
+            return Result.Fail(new GenreAlreadyAssignedToMovieError(request.MovieId, request.GenreId));
         }
 
         await _dbContext.SaveChangesAsync();

@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Interfaces;
 public class RemoveMovieGenreCommandHandler : IRequestHandler<RemoveMovieGenreCommand, Result>
 {
@@ -25,13 +26,13 @@ public class RemoveMovieGenreCommandHandler : IRequestHandler<RemoveMovieGenreCo
         if (movie == null)
         {
             _logger.LogWarning("Movie {MovieId} not found", request.MovieId);
-            return Result.Fail($"Movie {request.MovieId} not found.");
+            return Result.Fail(new MovieNotFoundError(request.MovieId));
         }
 
         if (genre == null)
         {
             _logger.LogWarning("Genre {GenreId} not found", request.GenreId);
-            return Result.Fail($"Genre {request.GenreId} not found.");
+            return Result.Fail(new GenreNotFoundError(request.GenreId));
         }
 
         if (movie.Genres.Contains(genre))

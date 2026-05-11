@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Interfaces;
 
 public class UpdateMoviePhysicalCopyCommandHandler : IRequestHandler<UpdateMoviePhysicalCopyCommand, Result>
@@ -24,7 +25,7 @@ public class UpdateMoviePhysicalCopyCommandHandler : IRequestHandler<UpdateMovie
         if (copy == null)
         {
             _logger.LogWarning("Movie physical copy{CopyId} not found", request.Id);
-            return Result.Fail($"Movie physical copy {request.Id} not found.");
+            return Result.Fail(new MoviePhysicalCopyNotFoundError(request.Id));
         }
 
         copy.Status = request.Status;

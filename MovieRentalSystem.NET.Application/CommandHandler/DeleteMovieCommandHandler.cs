@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Interfaces;
 
 public class DeleteMovieCommandHandler : IRequestHandler<DeleteMovieCommand, Result>
@@ -24,7 +25,7 @@ public class DeleteMovieCommandHandler : IRequestHandler<DeleteMovieCommand, Res
         if (movie == null)
         {
             _logger.LogWarning("Movie {MovieId} not found", request.Id);
-            return Result.Fail($"Movie {request.Id} not found.");
+            return Result.Fail(new MovieNotFoundError(request.Id));
         }
 
         _dbContext.Movies.Remove(movie);

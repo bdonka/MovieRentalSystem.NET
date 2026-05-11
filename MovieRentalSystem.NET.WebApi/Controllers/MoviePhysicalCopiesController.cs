@@ -1,7 +1,9 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using MovieRentalSystem.NET.Application.Common;
+using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Query;
+using MovieRentalSystem.NET.WebApi.Common;
 using MovieRentalSystem.NET.WebApi.MappingDtos;
 using MovieRentalSystem.NET.WebApi.Models.Requests.MoviePhysicalCopies;
 using MovieRentalSystem.NET.WebApi.Models.Responses;
@@ -10,36 +12,30 @@ namespace MovieRentalSystem.NET.WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class MoviePhysicalCopiesController(IMediator mediator) : ControllerBase
+public class MoviePhysicalCopiesController(IMediator mediator) : ResultsControllerBase
 {
 
     // GET: api/moviePhysicalCopies
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<MoviePhysicalCopyResponse>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<MoviePhysicalCopyResponse>>> GetMoviePhysicalCopies([FromQuery] GetMoviePhysicalCopiesRequest request)
+    [ProducesResponseType(typeof(PagedResponse<MoviePhysicalCopyDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResponse<MoviePhysicalCopyDto>>> GetMoviePhysicalCopies([FromQuery] GetMoviePhysicalCopiesRequest request)
     {
         var result = await mediator.Send(new GetMoviePhysicalCopyQuery
         {
             PageNumber = request.PageNumber,
             PageSize = request.PageSize
         });
-        return Ok(new PagedResponse<MoviePhysicalCopyResponse>(
-            result.Data.Select(r => r.MapToMoviePhysicalCopyResponse()).ToList(),
-            result.PageNumber,
-            result.PageSize,
-            result.TotalRecords));
+        return Ok(result);
     }
 
     // GET: api/moviePhysicalCopies/{id}
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(MoviePhysicalCopyResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(MoviePhysicalCopyDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<MoviePhysicalCopyResponse>> GetMoviePhysicalCopy(int id)
+    public async Task<ActionResult<MoviePhysicalCopyDto>> GetMoviePhysicalCopy(int id)
     {
         var result = await mediator.Send(new GetMoviePhysicalCopyByIdQuery { Id = id });
-        if (result.IsFailed) 
-            return NotFound(result.Errors.First().Message);
-        return Ok(result);
+        return ToOkOrErrorResponse(result);
     }
 
     // POST: api/moviePhysicalCopies
@@ -53,12 +49,10 @@ public class MoviePhysicalCopiesController(IMediator mediator) : ControllerBase
             MovieId = request.MovieId,
             Code = request.Code
         });
-        if (result.IsFailed) 
-            return BadRequest(result.Errors.First().Message);
-        return CreatedAtAction(
+        return ToCreatedAtActionOrErrorResponse(
             nameof(GetMoviePhysicalCopy),
-            new { id = result.Value.Id },
-            result.Value.MapToMoviePhysicalCopyResponse());
+            new { id = result.IsSuccess ? result.Value.Id : 0 },
+            result.Map(r => r.MapToMoviePhysicalCopyResponse()));
     }
 
     // PUT: api/moviePhysicalCopies/{id}/{movieId}
@@ -74,9 +68,7 @@ public class MoviePhysicalCopiesController(IMediator mediator) : ControllerBase
             MovieId = movieId,
             Status = request.Status
         });
-        if (result.IsFailed) 
-            return NotFound(result.Errors.First().Message);
-        return NoContent();
+        return ToNoContentOrErrorResponse(result);
     }
 
     // DELETE: api/moviePhysicalCopies/{id}/{movieId}
@@ -86,8 +78,6 @@ public class MoviePhysicalCopiesController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> DeleteMoviePhysicalCopy(int id)
     {
         var result = await mediator.Send(new DeleteMoviePhysicalCopyCommand { Id = id});
-        if (result.IsFailed)
-            return NotFound(result.Errors.First().Message);
-        return NoContent();
+        return ToNoContentOrErrorResponse(result);
     }
 }

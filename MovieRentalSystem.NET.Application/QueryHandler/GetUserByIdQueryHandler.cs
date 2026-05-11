@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Application.Mappings;
@@ -25,7 +26,7 @@ public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, Result<
         if (user == null)
         {
             _logger.LogWarning("User {UserId} not found", request.Id);
-            return Result.Fail<UserDto>($"User with ID {request.Id} not found.");
+            return Result.Fail<UserDto>(new UserNotFoundError(request.Id));
         }
 
         _logger.LogInformation("User {UserId} retrieved successfully", request.Id);

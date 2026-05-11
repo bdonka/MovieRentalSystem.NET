@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Application.Mappings;
@@ -25,7 +26,7 @@ public class GetGenreByIdQueryHandler : IRequestHandler<GetGenreByIdQuery, Resul
         if (genre == null)
         {
             _logger.LogWarning("Genre {GenreId} not found", request.Id);
-            return Result.Fail<GenreDto>($"Genre {request.Id} not found.");
+            return Result.Fail<GenreDto>(new GenreNotFoundError(request.Id));
         }
 
         _logger.LogInformation("Genre {GenreId} got successfully", request.Id);

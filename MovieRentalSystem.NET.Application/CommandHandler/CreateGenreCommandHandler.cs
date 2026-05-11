@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Application.Mappings;
@@ -25,7 +26,7 @@ public class CreateGenreCommandHandler : IRequestHandler<CreateGenreCommand, Res
         if (await _dbContext.Genres.AnyAsync(g => g.Name == request.Name))
         {
             _logger.LogWarning("Genre already exists {GenreName}", request.Name);
-            return Result.Fail<GenreDto>($"Genre '{request.Name}' already exists.");
+            return Result.Fail<GenreDto>(new GenreAlreadyExistsError(request.Name));
         }
 
 

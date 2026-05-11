@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using FluentResults;
+using MediatR;
 using MovieRentalSystem.NET.Application.Common;
 using MovieRentalSystem.NET.Application.Dtos;
 

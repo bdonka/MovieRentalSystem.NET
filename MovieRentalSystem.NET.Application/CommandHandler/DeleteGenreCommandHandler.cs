@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Interfaces;
 
 public class DeleteGenreCommandHandler : IRequestHandler<DeleteGenreCommand, Result>
@@ -24,7 +25,7 @@ public class DeleteGenreCommandHandler : IRequestHandler<DeleteGenreCommand, Res
         if (genre == null)
         {
             _logger.LogWarning("Genre {GenreId} not found", request.Id);
-            return Result.Fail($"Genre {request.Id} not found.");
+            return Result.Fail(new GenreNotFoundError(request.Id));
         }
         _dbContext.Genres.Remove(genre);
         await _dbContext.SaveChangesAsync();

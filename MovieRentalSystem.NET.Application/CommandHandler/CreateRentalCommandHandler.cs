@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Application.Mappings;
@@ -25,13 +26,13 @@ public class CreateRentalCommandHandler : IRequestHandler<CreateRentalCommand, R
         if (!await _dbContext.Users.AnyAsync(u => u.Id == request.UserId))
         {
             _logger.LogWarning("User {UserId} does not exist.", request.UserId);
-            return Result.Fail<RentalDto>($"User {request.UserId} does not exist.");
+            return Result.Fail<RentalDto>(new UserNotFoundError(request.UserId));
         }
 
         if (!await _dbContext.MoviePhysicalCopies.AnyAsync(c => c.Id == request.MoviePhysicalCopyId))
         {
             _logger.LogWarning("MoviePhysicalCopy {MoviePhysicalCopyId} does not exist.", request.MoviePhysicalCopyId);
-            return Result.Fail<RentalDto>($"MoviePhysicalCopy {request.MoviePhysicalCopyId} does not exist.");
+            return Result.Fail<RentalDto>(new MoviePhysicalCopyNotFoundError(request.MoviePhysicalCopyId));
         }
 
         var rental = new Rental
