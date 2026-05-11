@@ -15,4 +15,6 @@ var api = builder.AddProject<Projects.MovieRentalSystem_NET_WebApi>("api")
     .WithReference(migrations)
     .WaitForCompletion(migrations);
 
+builder.AddProject<Projects.MovieRentalSystem_NET_MVC>("movierentalsystem-net-mvc");
+
 builder.Build().Run();

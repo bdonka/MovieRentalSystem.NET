@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\MovieRentalSystem.NET.MVC\MovieRentalSystem.NET.MVC.csproj" />
     <ProjectReference Include="..\MovieRentalSystem.NET.MigrationService\MovieRentalSystem.NET.MigrationService.csproj" />
     <ProjectReference Include="..\MovieRentalSystem.NET.WebApi\MovieRentalSystem.NET.WebApi.csproj" />
   </ItemGroup>
