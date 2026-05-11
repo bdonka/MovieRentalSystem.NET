@@ -25,7 +25,7 @@ public class MoviePhysicalCopiesController(IMediator mediator) : ResultsControll
             PageNumber = request.PageNumber,
             PageSize = request.PageSize
         });
-        return ToOkOrErrorResponse(result);
+        return Ok(result);
     }
 
     // GET: api/moviePhysicalCopies/{id}

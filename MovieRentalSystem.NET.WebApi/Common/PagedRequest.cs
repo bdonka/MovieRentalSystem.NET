@@ -1,39 +1,38 @@
-﻿namespace MovieRentalSystem.NET.WebApi.Common
+﻿namespace MovieRentalSystem.NET.WebApi.Common;
+
+public class PagedRequest
 {
-    public class PagedRequest
+    const int MaxPageSize = 50;
+    private const int DefaultPageSize = 10;
+    private const int DefaultPageNumber = 1;
+    private int _pageNumber = DefaultPageNumber;
+    private int _pageSize = DefaultPageSize;
+
+    public int PageNumber
     {
-        const int MaxPageSize = 50;
-        private const int DefaultPageSize = 10;
-        private const int DefaultPageNumber = 1;
-        private int _pageNumber = DefaultPageNumber;
-        private int _pageSize = DefaultPageSize;
+        get => _pageNumber;
+        set => _pageNumber = value < 1 ? DefaultPageNumber : value;
+    }
 
-        public int PageNumber
+    public int PageSize
+    {
+        get
         {
-            get => _pageNumber;
-            set => _pageNumber = value < 1 ? DefaultPageNumber : value;
+            return _pageSize;
         }
-
-        public int PageSize
+        set
         {
-            get
+            if (value < 1)
             {
-                return _pageSize;
+                _pageSize = DefaultPageSize;
             }
-            set
+            else if (value > MaxPageSize)
             {
-                if (value < 1)
-                {
-                    _pageSize = DefaultPageSize;
-                }
-                else if (value > MaxPageSize)
-                {
-                    _pageSize = MaxPageSize;
-                }
-                else
-                {
-                    _pageSize = value;
-                }
+                _pageSize = MaxPageSize;
+            }
+            else
+            {
+                _pageSize = value;
             }
         }
     }

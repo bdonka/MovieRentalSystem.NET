@@ -24,7 +24,7 @@ public class RentalsController(IMediator mediator) : ResultsControllerBase
             PageNumber = request.PageNumber,
             PageSize = request.PageSize,
         });
-        return ToOkOrErrorResponse(result);
+        return Ok(result);
     }
 
     // GET: api/rentals/5

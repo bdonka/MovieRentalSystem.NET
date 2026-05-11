@@ -22,7 +22,7 @@ public class GenresController(IMediator mediator) : ResultsControllerBase
             PageNumber = request.PageNumber,
             PageSize = request.PageSize
         });
-        return ToOkOrErrorResponse(result);
+        return Ok(result);
     }
 
     // GET: api/genres/5

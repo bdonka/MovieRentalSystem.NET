@@ -8,7 +8,7 @@ using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Application.Mappings;
 using MovieRentalSystem.NET.Application.Query;
 
-public class GetGenreQueryHandler : IRequestHandler<GetGenreQuery, Result<PagedResponse<GenreDto>>>
+public class GetGenreQueryHandler : IRequestHandler<GetGenreQuery, PagedResponse<GenreDto>>
 {
     private readonly IDbContext _dbContext;
     private readonly ILogger<GetGenreQueryHandler> _logger;
@@ -18,7 +18,7 @@ public class GetGenreQueryHandler : IRequestHandler<GetGenreQuery, Result<PagedR
         _logger = logger;
     }
 
-    public async Task<Result<PagedResponse<GenreDto>>> Handle(
+    public async Task<PagedResponse<GenreDto>> Handle(
         GetGenreQuery request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Getting all genres with PageNumber={PageNumber}, PageSize={PageSize}", request.PageNumber, request.PageSize);
@@ -38,9 +38,6 @@ public class GetGenreQueryHandler : IRequestHandler<GetGenreQuery, Result<PagedR
             request.PageNumber,
             request.PageSize,
             totalRecords);
-        return Result.Ok(
-            new PagedResponse<GenreDto>(results, request.PageNumber, request.PageSize, totalRecords
-            )
-        );
+        return new PagedResponse<GenreDto>(results, request.PageNumber, request.PageSize, totalRecords);
     }
 }

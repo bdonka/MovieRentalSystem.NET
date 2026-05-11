@@ -6,7 +6,7 @@ using MovieRentalSystem.NET.Application.Dtos;
 namespace MovieRentalSystem.NET.Application.Query;
 
 public class GetMovieQuery
-: PagedQuery, IRequest<Result<PagedResponse<MovieDto>>>
+: PagedQuery, IRequest<PagedResponse<MovieDto>>
 {
 }
 

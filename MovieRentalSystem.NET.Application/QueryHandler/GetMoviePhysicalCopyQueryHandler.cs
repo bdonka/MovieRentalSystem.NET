@@ -8,7 +8,7 @@ using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Application.Mappings;
 using MovieRentalSystem.NET.Application.Query;
 
-public class GetMoviePhysicalCopyQueryHandler : IRequestHandler<GetMoviePhysicalCopyQuery, Result<PagedResponse<MoviePhysicalCopyDto>>>
+public class GetMoviePhysicalCopyQueryHandler : IRequestHandler<GetMoviePhysicalCopyQuery, PagedResponse<MoviePhysicalCopyDto>>
 {
     private readonly IDbContext _dbContext;
     private readonly ILogger<GetMoviePhysicalCopyQueryHandler> _logger;
@@ -18,7 +18,7 @@ public class GetMoviePhysicalCopyQueryHandler : IRequestHandler<GetMoviePhysical
         _logger = logger;
     }
 
-    public async Task<Result<PagedResponse<MoviePhysicalCopyDto>>> Handle(
+    public async Task<PagedResponse<MoviePhysicalCopyDto>> Handle(
         GetMoviePhysicalCopyQuery request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Getting all movie physical copies with PageNumber={PageNumber}, PageSize={PageSize}", request.PageNumber, request.PageSize);
@@ -38,9 +38,6 @@ public class GetMoviePhysicalCopyQueryHandler : IRequestHandler<GetMoviePhysical
             request.PageNumber,
             request.PageSize,
             totalRecords);
-        return Result.Ok(
-            new PagedResponse<MoviePhysicalCopyDto>(results, request.PageNumber, request.PageSize, totalRecords
-            )
-        );
+        return new PagedResponse<MoviePhysicalCopyDto>(results, request.PageNumber, request.PageSize, totalRecords);
     }
 }

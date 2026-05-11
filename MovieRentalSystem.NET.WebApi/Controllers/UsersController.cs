@@ -25,7 +25,7 @@ public class UsersController(IMediator mediator) : ResultsControllerBase
             PageSize = request.PageSize,
 
         });
-        return ToOkOrErrorResponse(result);
+        return Ok(result);
     }
 
     // GET: api/users/5

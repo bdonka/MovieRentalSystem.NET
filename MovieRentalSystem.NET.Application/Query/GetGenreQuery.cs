@@ -1,12 +1,11 @@
-﻿using FluentResults;
-using MediatR;
+﻿using MediatR;
 using MovieRentalSystem.NET.Application.Common;
 using MovieRentalSystem.NET.Application.Dtos;
 
 namespace MovieRentalSystem.NET.Application.Query;
 
 public class GetGenreQuery
-: PagedQuery, IRequest<Result<PagedResponse<GenreDto>>>
+: PagedQuery, IRequest<PagedResponse<GenreDto>>
 {
 
 }
