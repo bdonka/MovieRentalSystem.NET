@@ -6,7 +6,6 @@ using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Query;
 using MovieRentalSystem.NET.WebApi.Common;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Users;
-using MovieRentalSystem.NET.WebApi.Models.Responses;
 
 namespace MovieRentalSystem.NET.WebApi.Controllers;
 

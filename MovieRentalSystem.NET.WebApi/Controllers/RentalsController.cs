@@ -4,9 +4,7 @@ using MovieRentalSystem.NET.Application.Common;
 using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Query;
 using MovieRentalSystem.NET.WebApi.Common;
-using MovieRentalSystem.NET.WebApi.MappingDtos;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Rentals;
-using MovieRentalSystem.NET.WebApi.Models.Responses;
 
 namespace MovieRentalSystem.NET.WebApi.Controllers;
 
@@ -39,9 +37,9 @@ public class RentalsController(IMediator mediator) : ResultsControllerBase
 
     // POST: api/rentals
     [HttpPost]
-    [ProducesResponseType(typeof(RentalResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(RentalDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<RentalResponse>> PostRental(CreateRentalRequest request)
+    public async Task<ActionResult<RentalDto>> PostRental(CreateRentalRequest request)
     {
         var result = await mediator.Send(new CreateRentalCommand
         {
@@ -53,7 +51,7 @@ public class RentalsController(IMediator mediator) : ResultsControllerBase
         return ToCreatedAtActionOrErrorResponse(
             nameof(GetRental),
             new { id = result.Value.Id },
-            result.Map(r => r.MapToRentalResponse()));
+            result);
     }
 
     // PUT: api/rentals/5

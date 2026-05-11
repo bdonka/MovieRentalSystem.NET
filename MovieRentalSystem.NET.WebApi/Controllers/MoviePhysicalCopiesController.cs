@@ -4,9 +4,7 @@ using MovieRentalSystem.NET.Application.Common;
 using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Query;
 using MovieRentalSystem.NET.WebApi.Common;
-using MovieRentalSystem.NET.WebApi.MappingDtos;
 using MovieRentalSystem.NET.WebApi.Models.Requests.MoviePhysicalCopies;
-using MovieRentalSystem.NET.WebApi.Models.Responses;
 
 namespace MovieRentalSystem.NET.WebApi.Controllers;
 
@@ -40,9 +38,9 @@ public class MoviePhysicalCopiesController(IMediator mediator) : ResultsControll
 
     // POST: api/moviePhysicalCopies
     [HttpPost]
-    [ProducesResponseType(typeof(MoviePhysicalCopyResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(MoviePhysicalCopyDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<MoviePhysicalCopyResponse>> PostMoviePhysicalCopy(CreateMoviePhysicalCopyRequest request)
+    public async Task<ActionResult<MoviePhysicalCopyDto>> PostMoviePhysicalCopy(CreateMoviePhysicalCopyRequest request)
     {
         var result = await mediator.Send(new CreateMoviePhysicalCopyCommand
         {
@@ -52,7 +50,7 @@ public class MoviePhysicalCopiesController(IMediator mediator) : ResultsControll
         return ToCreatedAtActionOrErrorResponse(
             nameof(GetMoviePhysicalCopy),
             new { id = result.IsSuccess ? result.Value.Id : 0 },
-            result.Map(r => r.MapToMoviePhysicalCopyResponse()));
+            result);
     }
 
     // PUT: api/moviePhysicalCopies/{id}/{movieId}
