@@ -7,7 +7,7 @@ public class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
 {
     public CreateUserRequestValidator()
     {
-        RuleFor(x => x.Name)
+        RuleFor(x => x.UserName)
             .NotEmpty().WithMessage("Name is required")
             .MaximumLength(100).WithMessage("Name must not exceed 100 characters");
 

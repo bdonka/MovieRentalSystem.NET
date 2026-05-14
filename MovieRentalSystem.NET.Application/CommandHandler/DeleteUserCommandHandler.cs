@@ -1,17 +1,21 @@
 ﻿using FluentResults;
 using MediatR;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Interfaces;
+using MovieRentalSystem.NET.Domain.Entities;
 
 public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Result>
 {
+    private readonly UserManager<User> _userManager;
     private readonly IDbContext _dbContext;
     private readonly ILogger<DeleteUserCommandHandler> _logger;
 
-    public DeleteUserCommandHandler(IDbContext dbContext, ILogger<DeleteUserCommandHandler> logger)
+    public DeleteUserCommandHandler(UserManager<User> userManager, IDbContext dbContext, ILogger<DeleteUserCommandHandler> logger)
     {
+        _userManager = userManager;
         _dbContext = dbContext;
         _logger = logger;
     }
@@ -21,19 +25,26 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Resul
     {
         _logger.LogInformation("Deleting user {UserId}", request.Id);
 
-        var user = await _dbContext.Users.Include(u => u.Rentals).FirstOrDefaultAsync(u => u.Id == request.Id);
+        var user = await _userManager.FindByIdAsync(request.Id);
         if (user == null)
         {
             _logger.LogWarning("User {UserId} not found", request.Id);
             return Result.Fail(new UserNotFoundError(request.Id));
         }
-        if (user.Rentals.Count != 0)
+
+        var hasRentals = await _dbContext.Rentals
+            .AnyAsync(r => r.UserId == user.Id, cancellationToken);
+
+        if (hasRentals)
         {
-            _logger.LogWarning("User {UserId} has assigned 1 or more rentals", request.Id);
+            _logger.LogWarning(
+                "User {UserId} has assigned rentals",
+                request.Id);
+
             return Result.Fail(new UserHasAssignedRentalsError(request.Id));
         }
-        _dbContext.Users.Remove(user);
-        await _dbContext.SaveChangesAsync();
+
+        var result = await _userManager.DeleteAsync(user);
 
         _logger.LogInformation("User {UserId} deleted successfully", request.Id);
         return Result.Ok();

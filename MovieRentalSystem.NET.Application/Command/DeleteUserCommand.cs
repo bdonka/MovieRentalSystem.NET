@@ -3,5 +3,5 @@ using MediatR;
 
 public class DeleteUserCommand : IRequest<Result>
 {
-    public required int Id { get; set; }
+    public required string Id { get; set; } = null!;
 }

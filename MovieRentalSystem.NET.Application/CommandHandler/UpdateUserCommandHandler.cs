@@ -1,19 +1,18 @@
 ﻿using FluentResults;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using MovieRentalSystem.NET.Application.Common.Errors;
-using MovieRentalSystem.NET.Application.Dtos;
-using MovieRentalSystem.NET.Application.Interfaces;
+using MovieRentalSystem.NET.Domain.Entities;
 
 public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Result>
 {
-    private readonly IDbContext _dbContext;
+    private readonly UserManager<User> _userManager;
     private readonly ILogger<UpdateUserCommandHandler> _logger;
 
-    public UpdateUserCommandHandler(IDbContext dbContext, ILogger<UpdateUserCommandHandler> logger)
+    public UpdateUserCommandHandler(UserManager<User> userManager, ILogger<UpdateUserCommandHandler> logger)
     {
-        _dbContext = dbContext;
+        _userManager = userManager;
         _logger = logger;
     }
 
@@ -22,23 +21,25 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Resul
     {
         _logger.LogInformation("User {UserId} updated", request.Id);
 
-        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == request.Id);
+        var user = await _userManager.FindByIdAsync(request.Id);
         if (user == null)
         {
             _logger.LogWarning("User {UserId} not found", request.Id);
             return Result.Fail(new UserNotFoundError(request.Id));
         }
 
-        if (await _dbContext.Users.AnyAsync(u => u.Email == request.Email && u.Id != request.Id))
+        var existingUser = await _userManager.FindByEmailAsync(request.Email);
+
+        if (existingUser is not null && existingUser.Id != request.Id)
         {
             _logger.LogWarning("User with Email: {UserEmail} already exists", request.Email);
             return Result.Fail(new UserAlreadyExistsError(request.Email));
         }
 
-        user.Name = request.Name;
+        user.UserName = request.UserName;
         user.Email = request.Email;
 
-        await _dbContext.SaveChangesAsync();
+        await _userManager.UpdateAsync(user);
         _logger.LogInformation("User {UserId} updated successfully", request.Id);
         return Result.Ok();
     }

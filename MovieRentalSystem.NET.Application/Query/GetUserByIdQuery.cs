@@ -7,6 +7,6 @@ namespace MovieRentalSystem.NET.Application.Query;
 public class GetUserByIdQuery
 : IRequest<Result<UserDto>>
 {
-    public int Id { get; set; }
+    public string Id { get; set; } = null!;
 }
 

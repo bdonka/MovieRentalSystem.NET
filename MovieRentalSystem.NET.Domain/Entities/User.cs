@@ -1,10 +1,8 @@
-﻿namespace MovieRentalSystem.NET.Domain.Entities;
-public class User
+﻿using Microsoft.AspNetCore.Identity;
+
+namespace MovieRentalSystem.NET.Domain.Entities;
+public class User : IdentityUser
 {
-    public int Id { get; set; }
-    public string Name { get; set; } = null!;
-    public string? Email { get; set; } = null;
-    public string? Role { get; set; } = "User";
     public DateTime DateRegistered { get; set; } = DateTime.UtcNow;
     public List<Rental> Rentals { get; set; } = new();
 }
