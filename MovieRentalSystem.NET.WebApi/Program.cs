@@ -14,7 +14,7 @@ using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddIdentityCore<User>(options => options.SignIn.RequireConfirmedAccount = false)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+    .AddEntityFrameworkStores<ApplicationDbContext>().AddSignInManager<SignInManager<User>>();
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
@@ -104,6 +104,8 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 builder.Services.AddScoped<ResponseTimeMiddleware>();
+
+builder.Services.AddAuthentication().AddCookie("Identity.Application");
 
 
 var app = builder.Build();
