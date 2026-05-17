@@ -1,10 +1,8 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MovieRentalSystem.NET.Application.Common;
 using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Application.Query;
-using MovieRentalSystem.NET.Domain.Entities;
 using MovieRentalSystem.NET.WebApi.Common;
 using MovieRentalSystem.NET.WebApi.Models.Requests.Users;
 
@@ -12,41 +10,8 @@ namespace MovieRentalSystem.NET.WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class UsersController(IMediator mediator, UserManager<User> userManager, SignInManager<User> signInManager) : ResultsControllerBase
+public class UsersController(IMediator mediator) : ResultsControllerBase
 {
-    //POST Register
-    [HttpPost("register")]
-    [ProducesResponseType(typeof(UserDto), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult> Register(RegisterRequest request)
-    {
-        var user = new User
-        {
-            UserName = request.UserName,
-            Email = request.Email
-        };
-        var result = await userManager.CreateAsync(user, request.Password);
-        if (result.Succeeded)
-        {
-            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, null);
-        }
-        return BadRequest(result.Errors);
-    }
-
-    //POST singInManager
-    [HttpPost("login")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult> Login(LoginRequest request)
-    {
-        var result = await signInManager.PasswordSignInAsync(request.Email, request.Password, isPersistent: request.RememberMe, lockoutOnFailure: false);
-        if (result.Succeeded)
-        {
-            return Ok();
-        }
-        return Unauthorized();
-    }
-
     // GET: api/users
     [HttpGet]
     [ProducesResponseType(typeof(PagedResponse<UserDto>), StatusCodes.Status200OK)]
