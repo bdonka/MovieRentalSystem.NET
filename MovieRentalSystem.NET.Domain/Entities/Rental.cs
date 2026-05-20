@@ -5,7 +5,7 @@ namespace MovieRentalSystem.NET.Domain.Entities
     public class Rental
     {
         public int Id { get; set; }
-        public required string UserId { get; set; } // string by Identity
+        public required string UserId { get; set; }
         public User User { get; set; } = null!;
         public int MoviePhysicalCopyId { get; set; }
         public MoviePhysicalCopy MoviePhysicalCopy { get; set; } = null!;

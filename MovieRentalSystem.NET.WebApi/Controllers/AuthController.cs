@@ -11,15 +11,13 @@ namespace MovieRentalSystem.NET.WebApi.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private readonly UserManager<User> userManager;
-    private readonly SignInManager<User> signInManager;
+    private readonly UserManager<User> _userManager;
+    private readonly SignInManager<User> _signInManager;
 
-    public AuthController(
-        UserManager<User> userManager,
-        SignInManager<User> signInManager)
+    public AuthController(UserManager<User> userManager, SignInManager<User> signInManager)
     {
-        this.userManager = userManager;
-        this.signInManager = signInManager;
+        _userManager = userManager;
+        _signInManager = signInManager;
     }
 
     // POST: /auth/register
@@ -33,7 +31,7 @@ public class AuthController : ControllerBase
             Email = request.Email
         };
 
-        var result = await userManager.CreateAsync(user, request.Password);
+        var result = await _userManager.CreateAsync(user, request.Password);
 
         if (!result.Succeeded)
         {
@@ -48,14 +46,14 @@ public class AuthController : ControllerBase
     [AllowAnonymous]
     public async Task<ActionResult> Login(LoginRequest request)
     {
-        var user = await userManager.FindByEmailAsync(request.Email);
+        var user = await _userManager.FindByEmailAsync(request.Email);
 
         if (user is null)
         {
             return Unauthorized();
         }
 
-        var result = await signInManager.PasswordSignInAsync(
+        var result = await _signInManager.PasswordSignInAsync(
             user.UserName!,
             request.Password,
             request.RememberMe,
@@ -74,7 +72,7 @@ public class AuthController : ControllerBase
     [Authorize]
     public async Task<ActionResult> Logout()
     {
-        await signInManager.SignOutAsync();
+        await _signInManager.SignOutAsync();
         return Ok();
     }
 
@@ -83,7 +81,7 @@ public class AuthController : ControllerBase
     [Authorize]
     public async Task<ActionResult<UserDto>> Me()
     {
-        var user = await userManager.GetUserAsync(User);
+        var user = await _userManager.GetUserAsync(User);
 
         if (user is null)
         {

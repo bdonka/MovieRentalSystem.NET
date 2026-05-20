@@ -18,8 +18,6 @@ public class ApplicationDbContext : IdentityDbContext<User>, IDbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        modelBuilder.Ignore<IdentityPasskeyData>();
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 
