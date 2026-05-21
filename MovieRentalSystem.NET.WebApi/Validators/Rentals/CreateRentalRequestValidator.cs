@@ -8,7 +8,7 @@ public class CreateRentalRequestValidator : AbstractValidator<CreateRentalReques
     public CreateRentalRequestValidator()
     {
         RuleFor(x => x.UserId)
-            .GreaterThan(0).WithMessage("UserId must be greater than 0");
+            .NotEmpty().WithMessage("UserId is required");
 
         RuleFor(x => x.MoviePhysicalCopyId)
             .GreaterThan(0).WithMessage("MoviePhysicalCopyId must be greater than 0");

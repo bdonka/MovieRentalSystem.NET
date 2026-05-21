@@ -2,7 +2,7 @@
 
 public class CreateRentalRequest
 {
-    public int UserId { get; set; }
+    public required string UserId { get; set; }
     public int MoviePhysicalCopyId { get; set; }
     public DateTime? RentalStartDate { get; set; }
     public DateTime? DueDate { get; set; }

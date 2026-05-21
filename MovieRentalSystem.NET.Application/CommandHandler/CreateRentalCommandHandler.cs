@@ -50,7 +50,7 @@ public class CreateRentalCommandHandler : IRequestHandler<CreateRentalCommand, R
             .Include(r => r.User)
             .Include(r => r.MoviePhysicalCopy)
                 .ThenInclude(m => m.Movie)
-            .SingleAsync(r => r.Id == request.UserId);
+            .SingleAsync(r => r.Id == rental.Id);
 
         _logger.LogInformation("Rental {RentalId} created successfully", rental.Id);
         return Result.Ok(rental.MapToRentalDto());

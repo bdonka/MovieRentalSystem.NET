@@ -1,6 +1,9 @@
 using FluentValidation;
 using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.AspNetCore.Identity;
 using MovieRentalSystem.NET.Application.ApplicationDependencies;
+using MovieRentalSystem.NET.Domain.Entities;
+using MovieRentalSystem.NET.Infrastructure.Data;
 using MovieRentalSystem.NET.Infrastructure.InfrastructureDependencies;
 using MovieRentalSystem.NET.WebApi.Middlewares;
 using Scalar.AspNetCore;
@@ -9,6 +12,34 @@ using Serilog.Events;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddIdentityCore<User>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = false;
+    options.User.RequireUniqueEmail = false;
+})
+.AddSignInManager<SignInManager<User>>()
+.AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
+    .AddCookie(IdentityConstants.ApplicationScheme, options =>
+    {
+        options.Cookie.HttpOnly = true;
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+        options.SlidingExpiration = true;
+
+        options.Events.OnRedirectToLogin = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return Task.CompletedTask;
+        };
+
+        options.Events.OnRedirectToAccessDenied = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return Task.CompletedTask;
+        };
+    });
 
 builder.Services.AddHttpLogging(options =>
 {
@@ -28,7 +59,9 @@ Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
     .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-    .MinimumLevel.Override("Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware", LogEventLevel.Information)
+    .MinimumLevel.Override(
+        "Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware",
+        LogEventLevel.Information)
     .Enrich.FromLogContext()
     .WriteTo.Console()
     .WriteTo.OpenTelemetry()
@@ -40,9 +73,10 @@ builder.Services.AddSerilog();
 builder.AddServiceDefaults();
 
 builder.Services.AddControllers()
-    .AddJsonOptions(o =>
+    .AddJsonOptions(options =>
     {
-        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter());
     });
 
 builder.Services.AddApplicationDependencies();
@@ -59,7 +93,6 @@ builder.Services.AddProblemDetails();
 
 builder.Services.AddScoped<ResponseTimeMiddleware>();
 
-
 var app = builder.Build();
 
 app.UseExceptionHandler();
@@ -75,6 +108,10 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
+
+app.UseAuthentication();
+
+app.UseAuthorization();
 
 app.MapControllers();
 

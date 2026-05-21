@@ -1,10 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Domain.Entities;
 
 namespace MovieRentalSystem.NET.Infrastructure.Data;
 
-public class ApplicationDbContext : DbContext,IDbContext
+public class ApplicationDbContext : IdentityDbContext<User>, IDbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
@@ -12,13 +14,11 @@ public class ApplicationDbContext : DbContext,IDbContext
     public DbSet<Movie> Movies => Set<Movie>();
     public DbSet<MoviePhysicalCopy> MoviePhysicalCopies => Set<MoviePhysicalCopy>();
     public DbSet<Rental> Rentals => Set<Rental>();
-    public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 
 }
-
-

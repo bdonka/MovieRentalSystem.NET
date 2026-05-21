@@ -1,5 +1,4 @@
-﻿using FluentResults;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using MovieRentalSystem.NET.Application.Common;
 using MovieRentalSystem.NET.Application.Dtos;
@@ -31,7 +30,7 @@ public class UsersController(IMediator mediator) : ResultsControllerBase
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<UserDto>> GetUser(int id)
+    public async Task<ActionResult<UserDto>> GetUser(string id)
     {
         var result = await mediator.Send(new GetUserByIdQuery { Id = id });
         return ToOkOrErrorResponse(result);
@@ -43,8 +42,9 @@ public class UsersController(IMediator mediator) : ResultsControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<UserDto>> PostUser(CreateUserRequest request)
     {
-        var result = await mediator.Send(new CreateUserCommand {
-            Name = request.Name,
+        var result = await mediator.Send(new CreateUserCommand
+        {
+            UserName = request.UserName,
             Email = request.Email,
             Password = request.Password
         });
@@ -59,11 +59,12 @@ public class UsersController(IMediator mediator) : ResultsControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> PutUser(int id, UpdateUserRequest request)
+    public async Task<IActionResult> PutUser(string id, UpdateUserRequest request)
     {
-        var result = await mediator.Send(new UpdateUserCommand {
+        var result = await mediator.Send(new UpdateUserCommand
+        {
             Id = id,
-            Name = request.Name,
+            UserName = request.UserName,
             Email = request.Email
         });
         return ToNoContentOrErrorResponse(result);
@@ -74,7 +75,7 @@ public class UsersController(IMediator mediator) : ResultsControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> DeleteUser(int id)
+    public async Task<IActionResult> DeleteUser(string id)
     {
         var result = await mediator.Send(new DeleteUserCommand { Id = id });
         return ToNoContentOrErrorResponse(result);

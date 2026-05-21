@@ -9,10 +9,10 @@ public static class UserMapping
     {
         return new UserDto
         {
-            Id = user.Id,
-            Name = user.Name,
+            //Id = user.Id,
+            //Name = user.Name,
             Email = user.Email,
-            Role = user.Role,
+            //Role = user.Role,
             DateRegistered = user.DateRegistered,
             Rentals = user.Rentals?.Select(r => r.MapToRentalDto()).ToList() ?? new List<RentalDto>()
         };
@@ -22,10 +22,10 @@ public static class UserMapping
     {
         return new User
         {
-            Id = user.Id,
-            Name = user.Name,
+            //Id = user.Id,
+            //Name = user.Name,
             Email = user.Email,
-            Role = user.Role,
+            //Role = user.Role,
             DateRegistered = user.DateRegistered
         };
     }

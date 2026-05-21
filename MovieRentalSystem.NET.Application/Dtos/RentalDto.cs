@@ -5,7 +5,7 @@ namespace MovieRentalSystem.NET.Application.Dtos;
 public class RentalDto
 {
     public int Id { get; set; }
-    public int UserId { get; set; }
+    public required string UserId { get; set; }
     public int MoviePhysicalCopyId { get; set; }
     public MoviePhysicalCopyDto MoviePhysicalCopy { get; set; } = null!;
     public DateTime OrderDate { get; set; } = DateTime.UtcNow;

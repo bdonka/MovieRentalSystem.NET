@@ -10,9 +10,8 @@ public static class UserMapping
         return new UserDto
         {
             Id = user.Id,
-            Name = user.Name,
+            UserName = user.UserName!,
             Email = user.Email,
-            Role = user.Role,
             DateRegistered = user.DateRegistered,
             Rentals = user.Rentals?.Select(r => r.MapToRentalDto()).ToList() ?? new List<RentalDto>()
         };
