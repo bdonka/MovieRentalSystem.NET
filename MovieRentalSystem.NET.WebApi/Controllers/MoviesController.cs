@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MovieRentalSystem.NET.Application.Common;
 using MovieRentalSystem.NET.Application.Dtos;
@@ -14,6 +15,7 @@ public class MoviesController(IMediator mediator) : ResultsControllerBase
 {
     // GET: api/movies
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(PagedResponse<MovieDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResponse<MovieDto>>> GetMovies([FromQuery] GetMoviesRequest request)
     {
@@ -27,6 +29,7 @@ public class MoviesController(IMediator mediator) : ResultsControllerBase
 
     // GET: api/movies/5
     [HttpGet("{id}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(MovieDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<MovieDto>> GetMovie(int id)
@@ -37,6 +40,7 @@ public class MoviesController(IMediator mediator) : ResultsControllerBase
 
     // POST: api/movies
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(MovieDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<MovieDto>> PostMovie(CreateMovieRequest request)
@@ -56,6 +60,7 @@ public class MoviesController(IMediator mediator) : ResultsControllerBase
 
     // PUT : api/movies/5
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -72,6 +77,7 @@ public class MoviesController(IMediator mediator) : ResultsControllerBase
 
     // DELETE: api/movies/5
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteMovie(int id)
@@ -82,6 +88,7 @@ public class MoviesController(IMediator mediator) : ResultsControllerBase
 
     // POST: api/movies/{id}/genres/{id}
     [HttpPost("{movieId}/genres/{genreId}")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> AssignGenre(int movieId, int genreId)
     {
@@ -96,6 +103,7 @@ public class MoviesController(IMediator mediator) : ResultsControllerBase
 
     // DELETE: api/movies/{id}/genres/{id}
     [HttpDelete("{movieId}/genres/{genreId}")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> RemoveGenre(int movieId, int genreId)

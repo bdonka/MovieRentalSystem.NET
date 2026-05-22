@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MovieRentalSystem.NET.Application.Common;
 using MovieRentalSystem.NET.Application.Dtos;
@@ -15,6 +16,7 @@ public class MoviePhysicalCopiesController(IMediator mediator) : ResultsControll
 
     // GET: api/moviePhysicalCopies
     [HttpGet]
+    [Authorize(Roles = "Admin,Worker")]
     [ProducesResponseType(typeof(PagedResponse<MoviePhysicalCopyDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResponse<MoviePhysicalCopyDto>>> GetMoviePhysicalCopies([FromQuery] GetMoviePhysicalCopiesRequest request)
     {
@@ -28,6 +30,7 @@ public class MoviePhysicalCopiesController(IMediator mediator) : ResultsControll
 
     // GET: api/moviePhysicalCopies/{id}
     [HttpGet("{id}")]
+    [Authorize(Roles = "Admin,Worker")]
     [ProducesResponseType(typeof(MoviePhysicalCopyDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<MoviePhysicalCopyDto>> GetMoviePhysicalCopy(int id)
@@ -38,6 +41,7 @@ public class MoviePhysicalCopiesController(IMediator mediator) : ResultsControll
 
     // POST: api/moviePhysicalCopies
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(MoviePhysicalCopyDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<MoviePhysicalCopyDto>> PostMoviePhysicalCopy(CreateMoviePhysicalCopyRequest request)
@@ -55,6 +59,7 @@ public class MoviePhysicalCopiesController(IMediator mediator) : ResultsControll
 
     // PUT: api/moviePhysicalCopies/{id}/{movieId}
     [HttpPut("{id}/{movieId}")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -71,6 +76,7 @@ public class MoviePhysicalCopiesController(IMediator mediator) : ResultsControll
 
     // DELETE: api/moviePhysicalCopies/{id}/{movieId}
     [HttpDelete("{id}/{movieId}")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteMoviePhysicalCopy(int id)
