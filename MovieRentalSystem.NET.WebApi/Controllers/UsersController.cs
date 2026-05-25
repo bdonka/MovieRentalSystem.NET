@@ -11,7 +11,6 @@ namespace MovieRentalSystem.NET.WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Roles = "Admin")]
 public class UsersController(IMediator mediator) : ResultsControllerBase
 {
     // GET: api/users

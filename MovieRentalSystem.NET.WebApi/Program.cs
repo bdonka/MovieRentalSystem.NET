@@ -101,13 +101,7 @@ builder.Services.AddScoped<ResponseTimeMiddleware>();
 
 var app = builder.Build();
 
-await app.SeedRolesAsync();
-
-await app.SeedAdminUserAsync();
-
-await app.SeedWorkerUserAsync();
-
-await app.SeedCustomerUserAsync();
+await app.SeedIdentityAsync();
 
 app.UseExceptionHandler();
 

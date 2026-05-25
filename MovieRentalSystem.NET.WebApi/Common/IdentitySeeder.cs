@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using MovieRentalSystem.NET.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using MovieRentalSystem.NET.Domain.Entities;
 
 namespace MovieRentalSystem.NET.WebApi.Common;
+
 public static class IdentitySeeder
 {
     public static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
     {
-        string[] roles = { "Admin", "Worker" };
+        string[] roles = { "Admin", "Worker", "Customer" };
 
         foreach (var role in roles)
         {
@@ -18,115 +19,35 @@ public static class IdentitySeeder
         }
     }
 
-    public static async Task SeedAdminUserAsync(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
+    public static async Task SeedUsersAsync(
+        UserManager<User> userManager)
     {
-        string adminEmail = "admin@email.com";
-        string adminPassword = "Admin123!";
-
-        if (!await roleManager.RoleExistsAsync("Admin"))
-        {
-            await roleManager.CreateAsync(new IdentityRole("Admin"));
-        }
-
-        if (!await userManager.Users.AnyAsync())
-        {
-            var adminUser = new User
-            {
-                UserName = adminEmail,
-                Email = adminEmail,
-                EmailConfirmed = true
-            };
-
-            var result = await userManager.CreateAsync(adminUser, adminPassword);
-
-            if (result.Succeeded)
-            {
-                await userManager.AddToRoleAsync(adminUser, "Admin");
-            }
-
+        if (await userManager.Users.AnyAsync())
             return;
-        }
 
-        var existingAdmin = await userManager.FindByEmailAsync(adminEmail);
-
-        if (existingAdmin != null)
-        {
-            var roles = await userManager.GetRolesAsync(existingAdmin);
-
-            if (!roles.Contains("Admin"))
-            {
-                await userManager.AddToRoleAsync(existingAdmin, "Admin");
-            }
-            return;
-        }
+        await CreateUser(userManager, "admin@email.com", "Admin123!", "Admin");
+        await CreateUser(userManager, "worker@email.com", "Worker123!", "Worker");
+        await CreateUser(userManager, "customer@email.com", "Customer123!", "Customer");
     }
 
-    public static async Task SeedWorkerUserAsync(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
+    private static async Task CreateUser(
+        UserManager<User> userManager,
+        string email,
+        string password,
+        string role)
     {
-        string workerEmail = "worker@email.com";
-        string workerPassword = "Worker123!";
-
-        if (!await roleManager.RoleExistsAsync("Worker"))
-            await roleManager.CreateAsync(new IdentityRole("Worker"));
-
-        var user = await userManager.FindByEmailAsync(workerEmail);
-
-        if (user == null)
+        var user = new User
         {
-            user = new User
-            {
-                UserName = workerEmail,
-                Email = workerEmail,
-                EmailConfirmed = true
-            };
+            UserName = email,
+            Email = email,
+            EmailConfirmed = true
+        };
 
-            var result = await userManager.CreateAsync(user, workerPassword);
+        var result = await userManager.CreateAsync(user, password);
 
-            if (result.Succeeded)
-            {
-                await userManager.AddToRoleAsync(user, "Worker");
-            }
-        }
-    }
-
-    public static async Task SeedCustomerUserAsync(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
-    {
-        string customerEmail = "customer@email.com";
-        string password = "Customer123!";
-
-        if (!await roleManager.RoleExistsAsync("Customer"))
-            await roleManager.CreateAsync(new IdentityRole("Customer"));
-
-        var user = await userManager.FindByEmailAsync(customerEmail);
-
-        if (user == null)
+        if (result.Succeeded)
         {
-            user = new User
-            {
-                UserName = customerEmail,
-                Email = customerEmail,
-                EmailConfirmed = true
-            };
-
-            var result = await userManager.CreateAsync(user, password);
-
-            if (result.Succeeded)
-            {
-                await userManager.AddToRoleAsync(user, "Customer");
-            }
-
-            return;
-        }
-
-        var roles = await userManager.GetRolesAsync(user);
-
-        var isAdminOrWorker =
-            roles.Contains("Admin") ||
-            roles.Contains("Worker");
-
-        if (!isAdminOrWorker && !roles.Contains("Customer"))
-        {
-            await userManager.AddToRoleAsync(user, "Customer");
+            await userManager.AddToRoleAsync(user, role);
         }
     }
 }

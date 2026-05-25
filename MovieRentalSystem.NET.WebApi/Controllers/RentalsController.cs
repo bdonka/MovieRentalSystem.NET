@@ -40,7 +40,7 @@ public class RentalsController(IMediator mediator) : ResultsControllerBase
 
     // POST: api/rentals
     [HttpPost]
-    [Authorize(Roles = "Admin,Worker,Customer")]
+    [Authorize]
     [ProducesResponseType(typeof(RentalDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<RentalDto>> PostRental(CreateRentalRequest request)
