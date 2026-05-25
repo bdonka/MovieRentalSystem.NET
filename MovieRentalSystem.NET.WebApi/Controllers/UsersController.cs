@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MovieRentalSystem.NET.Application.Common;
 using MovieRentalSystem.NET.Application.Dtos;
@@ -79,5 +80,40 @@ public class UsersController(IMediator mediator) : ResultsControllerBase
     {
         var result = await mediator.Send(new DeleteUserCommand { Id = id });
         return ToNoContentOrErrorResponse(result);
+    }
+
+    // POST: api/users/5/roles/admin
+    [HttpPost("{id}/roles/{role}")]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IActionResult> AssignRole(string id, string role)
+    {
+        var result = await mediator.Send(new AssignUserRoleCommand { Id = id, Role = role });
+
+        if (result.IsFailed)
+            return BadRequest(result.Errors);
+
+        return Ok();
+    }
+
+    // PUT: api/users/5/roles
+    [HttpPut("{id}/roles")]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IActionResult> ReplaceRoles(string id, ReplaceUserRoleRequest request)
+    {
+        var result = await mediator.Send(new ReplaceUserRoleCommand { Id = id, Role = request.Role });
+        if (result.IsFailed)
+            return BadRequest(result.Errors);
+        return Ok();
+    }
+
+    // DELETE: api/users/5/roles/admin
+    [HttpDelete("{id}/roles/{role}")]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IActionResult> RemoveRole(string id, string role)
+    {
+        var result = await mediator.Send(new RemoveUserRoleCommand { Id = id, Role = role });
+        if (result.IsFailed)
+            return BadRequest(result.Errors);
+        return Ok();
     }
 }
