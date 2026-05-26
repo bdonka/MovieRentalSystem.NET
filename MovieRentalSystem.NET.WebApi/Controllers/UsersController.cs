@@ -100,17 +100,6 @@ public class UsersController(IMediator mediator) : ResultsControllerBase
         return Ok();
     }
 
-    // PUT: api/users/5/roles
-    [HttpPut("{id}/roles")]
-    [Authorize(Roles = Roles.Admin)]
-    public async Task<IActionResult> ReplaceRoles(string id, ReplaceUserRoleRequest request)
-    {
-        var result = await mediator.Send(new ReplaceUserRoleCommand { Id = id, Role = request.Role });
-        if (result.IsFailed)
-            return BadRequest(result.Errors);
-        return Ok();
-    }
-
     // DELETE: api/users/5/roles/admin
     [HttpDelete("{id}/roles/{role}")]
     [Authorize(Roles = Roles.Admin)]
