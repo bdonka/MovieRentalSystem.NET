@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MovieRentalSystem.NET.Application.Common;
 using MovieRentalSystem.NET.Application.Dtos;
@@ -14,6 +15,7 @@ public class GenresController(IMediator mediator) : ResultsControllerBase
 {
     // GET: api/genres
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(PagedResponse<GenreDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResponse<GenreDto>>> GetGenres([FromQuery] GetGenresRequest request) 
     {
@@ -27,6 +29,7 @@ public class GenresController(IMediator mediator) : ResultsControllerBase
 
     // GET: api/genres/5
     [HttpGet("{id}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(GenreDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<GenreDto>> GetGenre(int id)
@@ -41,6 +44,7 @@ public class GenresController(IMediator mediator) : ResultsControllerBase
 
     // POST: api/genres
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(GenreDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<GenreDto>> PostGenre(CreateGenreRequest request)
@@ -56,6 +60,7 @@ public class GenresController(IMediator mediator) : ResultsControllerBase
 
     // PUT : api/genres/5
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -73,6 +78,7 @@ public class GenresController(IMediator mediator) : ResultsControllerBase
 
     // DELETE: api/genres/5
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteGenre(int id)

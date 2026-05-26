@@ -38,6 +38,8 @@ public class AuthController : ControllerBase
             return BadRequest(result.Errors);
         }
 
+        await _userManager.AddToRoleAsync(user, "Customer");
+
         return Ok();
     }
 

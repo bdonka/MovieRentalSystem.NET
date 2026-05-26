@@ -15,6 +15,7 @@ public class UsersController(IMediator mediator) : ResultsControllerBase
 {
     // GET: api/users
     [HttpGet]
+    [Authorize(Roles = "Admin,Worker")]
     [ProducesResponseType(typeof(PagedResponse<UserDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResponse<UserDto>>> GetUsers([FromQuery] GetUsersRequest request)
     {
@@ -29,6 +30,7 @@ public class UsersController(IMediator mediator) : ResultsControllerBase
 
     // GET: api/users/5
     [HttpGet("{id}")]
+    [Authorize(Roles = "Admin,Worker")]
     [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<UserDto>> GetUser(string id)
@@ -39,6 +41,7 @@ public class UsersController(IMediator mediator) : ResultsControllerBase
 
     // POST: api/users
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(UserDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<UserDto>> PostUser(CreateUserRequest request)
@@ -57,6 +60,7 @@ public class UsersController(IMediator mediator) : ResultsControllerBase
 
     // PUT: api/users/5
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -73,6 +77,7 @@ public class UsersController(IMediator mediator) : ResultsControllerBase
 
     // DELETE: api/users/5
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
