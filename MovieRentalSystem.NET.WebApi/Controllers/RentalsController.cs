@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MovieRentalSystem.NET.Application.Common;
 using MovieRentalSystem.NET.Application.Dtos;
@@ -14,6 +15,7 @@ public class RentalsController(IMediator mediator) : ResultsControllerBase
 {
     // GET: api/rentals
     [HttpGet]
+    [Authorize(Roles = "Admin,Worker")]
     [ProducesResponseType(typeof(PagedResponse<RentalDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResponse<RentalDto>>> GetRentals([FromQuery] GetRentalsRequest request)
     {
@@ -27,6 +29,7 @@ public class RentalsController(IMediator mediator) : ResultsControllerBase
 
     // GET: api/rentals/5
     [HttpGet("{id}")]
+    [Authorize(Roles = "Admin,Worker")]
     [ProducesResponseType(typeof(RentalDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<RentalDto>> GetRental(int id)
@@ -37,6 +40,7 @@ public class RentalsController(IMediator mediator) : ResultsControllerBase
 
     // POST: api/rentals
     [HttpPost]
+    [Authorize]
     [ProducesResponseType(typeof(RentalDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<RentalDto>> PostRental(CreateRentalRequest request)
@@ -56,6 +60,7 @@ public class RentalsController(IMediator mediator) : ResultsControllerBase
 
     // PUT: api/rentals/5
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin,Worker")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -75,6 +80,7 @@ public class RentalsController(IMediator mediator) : ResultsControllerBase
 
     // DELETE: api/rentals/5
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteRental(int id)
