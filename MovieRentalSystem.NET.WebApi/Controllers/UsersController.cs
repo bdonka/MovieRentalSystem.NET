@@ -86,4 +86,28 @@ public class UsersController(IMediator mediator) : ResultsControllerBase
         var result = await mediator.Send(new DeleteUserCommand { Id = id });
         return ToNoContentOrErrorResponse(result);
     }
+
+    // POST: api/users/5/roles/admin
+    [HttpPost("{id}/roles/{role}")]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IActionResult> AssignRole(string id, string role)
+    {
+        var result = await mediator.Send(new AssignUserRoleCommand { Id = id, Role = role });
+
+        if (result.IsFailed)
+            return BadRequest(result.Errors);
+
+        return Ok();
+    }
+
+    // DELETE: api/users/5/roles/admin
+    [HttpDelete("{id}/roles/{role}")]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IActionResult> RemoveRole(string id, string role)
+    {
+        var result = await mediator.Send(new RemoveUserRoleCommand { Id = id, Role = role });
+        if (result.IsFailed)
+            return BadRequest(result.Errors);
+        return Ok();
+    }
 }
