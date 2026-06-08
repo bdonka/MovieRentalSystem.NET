@@ -1,10 +1,12 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using MockQueryable;
+using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Interfaces;
+using MovieRentalSystem.NET.Application.Mappings;
 using MovieRentalSystem.NET.Application.Query;
-using MovieRentalSystem.NET.Domain.Entities;
 using MovieRentalSystem.NET.Application.Tests.Common;
+using MovieRentalSystem.NET.Domain.Entities;
 using NSubstitute;
 
 namespace MovieRentalSystem.NET.Application.Tests.QueryHandlers;
@@ -22,30 +24,37 @@ public class GetGenreByIdQueryHandlerTests
         => new(db, Substitute.For<ILogger<GetGenreByIdQueryHandler>>());
 
     [Fact]
-    public async Task Should_Return_Genre_When_Exists()
+    public async Task Handle_ExistingGenreId_ReturnsGenreDto()
     {
+        // Arrange
         var genres = TestData.Genres(5);
         var target = genres.First();
 
         var handler = CreateHandler(CreateDb(genres));
 
+        // Act
         var result = await handler.Handle(
             new GetGenreByIdQuery { Id = target.Id },
             CancellationToken.None);
 
+        // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value.Id.Should().Be(target.Id);
+        result.Value.Should().BeEquivalentTo(target.MapToGenreDto());
     }
 
     [Fact]
-    public async Task Should_Return_Error_When_Not_Found()
+    public async Task Handle_NonExistingGenreId_ReturnsGenreNotFoundError()
     {
+        // Arrange
         var handler = CreateHandler(CreateDb(new List<Genre>()));
 
+        // Act
         var result = await handler.Handle(
             new GetGenreByIdQuery { Id = 999 },
             CancellationToken.None);
 
-        result.IsFailed.Should().BeTrue();
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Errors.Should().ContainSingle(e => e is GenreNotFoundError);
     }
 }

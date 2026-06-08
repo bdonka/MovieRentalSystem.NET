@@ -5,6 +5,7 @@ using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Application.Query;
 using MovieRentalSystem.NET.Domain.Entities;
 using MovieRentalSystem.NET.Application.Tests.Common;
+using MovieRentalSystem.NET.Application.Mappings;
 using NSubstitute;
 
 namespace MovieRentalSystem.NET.Application.Tests.QueryHandlers;
@@ -21,10 +22,14 @@ public class GetGenreQueryHandlerTests
     private static GetGenreQueryHandler CreateHandler(IDbContext db)
         => new(db, Substitute.For<ILogger<GetGenreQueryHandler>>());
 
+
     [Fact]
-    public async Task Should_Return_Paged_Genres()
+    public async Task Handle_ValidPagination_ReturnsPagedGenres()
     {
-        var genres = TestData.Genres(5);
+        // Arrange
+        var genres = TestData.Genres(5)
+            .OrderBy(x => x.Id)
+            .ToList();
 
         var handler = CreateHandler(CreateDbContext(genres));
 
@@ -34,42 +39,54 @@ public class GetGenreQueryHandlerTests
             PageSize = 2
         };
 
+        // Act
         var result = await handler.Handle(query, CancellationToken.None);
 
-        result.Data.Should().HaveCount(2);
+        // Assert
+        result.Data.Should().BeEquivalentTo(
+            genres.Take(2).Select(x => x.MapToGenreDto()),
+            o => o.WithStrictOrdering());
         result.TotalRecords.Should().Be(5);
         result.PageNumber.Should().Be(1);
         result.PageSize.Should().Be(2);
     }
 
     [Fact]
-    public async Task Should_Return_Empty_When_No_Data()
+    public async Task Handle_EmptyDatabase_ReturnsEmptyResult()
     {
+        // Arrange
         var handler = CreateHandler(CreateDbContext(new List<Genre>()));
 
+        // Act
         var result = await handler.Handle(new GetGenreQuery
         {
             PageNumber = 1,
             PageSize = 10
         }, CancellationToken.None);
 
+        // Assert
         result.Data.Should().BeEmpty();
         result.TotalRecords.Should().Be(0);
     }
 
     [Fact]
-    public async Task Should_Apply_Pagination()
+    public async Task Handle_PageNumberTwo_ReturnsCorrectPage()
     {
-        var genres = TestData.Genres(10);
+        // Arrange
+        var genres = TestData.Genres(10)
+            .OrderBy(x => x.Id)
+            .ToList();
 
         var handler = CreateHandler(CreateDbContext(genres));
 
+        // Act
         var result = await handler.Handle(new GetGenreQuery
         {
             PageNumber = 2,
             PageSize = 3
         }, CancellationToken.None);
 
+        // Assert
         result.Data.Should().HaveCount(3);
         result.TotalRecords.Should().Be(10);
     }

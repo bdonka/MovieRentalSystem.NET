@@ -1,9 +1,10 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using MockQueryable;
+using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Interfaces;
-using MovieRentalSystem.NET.Domain.Entities;
 using MovieRentalSystem.NET.Application.Tests.Common;
+using MovieRentalSystem.NET.Domain.Entities;
 using NSubstitute;
 
 namespace MovieRentalSystem.NET.Application.Tests.CommandHandlers;
@@ -23,8 +24,9 @@ public class RemoveMovieGenreCommandHandlerTests
         => new(db, Substitute.For<ILogger<RemoveMovieGenreCommandHandler>>());
 
     [Fact]
-    public async Task Should_Remove_Genre()
+    public async Task Handle_ExistingMovieAndAssignedGenre_RemovesGenreSuccessfully()
     {
+        // Arrange
         var genre = TestData.GenreFaker().Generate();
 
         var movie = new Movie
@@ -39,12 +41,96 @@ public class RemoveMovieGenreCommandHandlerTests
 
         var handler = CreateHandler(db);
 
+        // Act
         var result = await handler.Handle(new RemoveMovieGenreCommand
         {
             MovieId = 1,
             GenreId = genre.Id
         }, CancellationToken.None);
 
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        movie.Genres.Should().NotContain(g => g.Id == genre.Id);
+    }
+
+    [Fact]
+    public async Task Handle_MissingMovie_ReturnsMovieNotFoundError()
+    {
+        // Arrange
+        var genre = TestData.GenreFaker().Generate();
+
+        var db = CreateDb(
+            new List<Movie>(),
+            new List<Genre> { genre });
+
+        var handler = CreateHandler(db);
+
+        // Act
+        var result = await handler.Handle(new RemoveMovieGenreCommand
+        {
+            MovieId = 1,
+            GenreId = genre.Id
+        }, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Errors.Should().ContainSingle(e => e is MovieNotFoundError);
+    }
+
+    [Fact]
+    public async Task Handle_MissingGenre_ReturnsGenreNotFoundError()
+    {
+        // Arrange
+        var movie = new Movie
+        {
+            Id = 1,
+            Genres = new List<Genre>()
+        };
+
+        var db = CreateDb(
+            new List<Movie> { movie },
+            new List<Genre>());
+
+        var handler = CreateHandler(db);
+
+        // Act
+        var result = await handler.Handle(new RemoveMovieGenreCommand
+        {
+            MovieId = 1,
+            GenreId = 999
+        }, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Errors.Should().ContainSingle(e => e is GenreNotFoundError);
+    }
+
+    [Fact]
+    public async Task Handle_MovieWithoutGenreAssignment_ReturnsSuccessWithoutChanges()
+    {
+        // Arrange
+        var genre = TestData.GenreFaker().Generate();
+
+        var movie = new Movie
+        {
+            Id = 1,
+            Genres = new List<Genre>()
+        };
+
+        var db = CreateDb(
+            new List<Movie> { movie },
+            new List<Genre> { genre });
+
+        var handler = CreateHandler(db);
+
+        // Act
+        var result = await handler.Handle(new RemoveMovieGenreCommand
+        {
+            MovieId = 1,
+            GenreId = genre.Id
+        }, CancellationToken.None);
+
+        // Assert
         result.IsSuccess.Should().BeTrue();
         movie.Genres.Should().BeEmpty();
     }

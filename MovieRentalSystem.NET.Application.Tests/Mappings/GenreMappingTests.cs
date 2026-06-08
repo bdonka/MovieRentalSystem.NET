@@ -15,7 +15,7 @@ public class GenreMappingTests
     }
 
     [Fact]
-    public void MapToGenreDtoShouldMapAllFieldsCorrectly()
+    public void MapToGenreDto_ValidGenre_ReturnsCorrectDto()
     {
         // Arrange
         var genre = _genreFaker.Generate();
@@ -24,26 +24,10 @@ public class GenreMappingTests
         var dto = genre.MapToGenreDto();
 
         // Assert
-        dto.Should().NotBeNull();
-
         dto.Should().BeEquivalentTo(new
         {
             genre.Id,
             genre.Name
         });
-    }
-
-    [Fact]
-    public void MapToGenreDtoShouldNotAlterData()
-    {
-        // Arrange
-        var genre = _genreFaker.Generate();
-
-        // Act
-        var dto = genre.MapToGenreDto();
-
-        // Assert
-        dto.Id.Should().Be(genre.Id);
-        dto.Name.Should().Be(genre.Name);
     }
 }
