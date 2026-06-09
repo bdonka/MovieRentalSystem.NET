@@ -1,7 +1,7 @@
 ﻿using Bogus;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using MockQueryable;
+using MockQueryable.NSubstitute;
 using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Domain.Entities;
@@ -14,7 +14,10 @@ public class CreateGenreCommandHandlerTests
     private static IDbContext CreateDb(List<Genre> genres)
     {
         var db = Substitute.For<IDbContext>();
-        db.Genres.Returns(genres.BuildMock());
+
+        var genreDbSet = genres.BuildMockDbSet();
+        db.Genres.Returns(genreDbSet);
+        db.SaveChangesAsync(default).ReturnsForAnyArgs(1);
         return db;
     }
 
@@ -40,8 +43,10 @@ public class CreateGenreCommandHandlerTests
         // Assert
         result.IsSuccess.Should().BeTrue();
 
-        var created = genres.Single();
-        created.Name.Should().Be(command.Name);
+        db.Genres.Received(1).Add(Arg.Is<Genre>(g => g.Name == command.Name));
+
+        await db.Received(1)
+            .SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]

@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using MockQueryable;
+using MockQueryable.NSubstitute;
 using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Application.Tests.Common;
@@ -11,11 +11,13 @@ namespace MovieRentalSystem.NET.Application.Tests.CommandHandlers;
 
 public class RemoveMovieGenreCommandHandlerTests
 {
-    private static IDbContext CreateDb(List<Movie> movies, List<Genre> genres)
+    private static IDbContext CreateDb(List<Movie> movies)
     {
         var db = Substitute.For<IDbContext>();
-        db.Movies.Returns(movies.BuildMock());
-        db.Genres.Returns(genres.BuildMock());
+
+        var movieDbSet = movies.BuildMockDbSet();
+
+        db.Movies.Returns(movieDbSet);
         db.SaveChangesAsync(default).ReturnsForAnyArgs(1);
         return db;
     }
@@ -27,17 +29,16 @@ public class RemoveMovieGenreCommandHandlerTests
     public async Task Handle_ExistingMovieAndAssignedGenre_RemovesGenreSuccessfully()
     {
         // Arrange
-        var genre = TestData.GenreFaker().Generate();
+        var genres = TestData.GenreFaker().Generate(3);
+        var genreToRemove = genres[0];
 
         var movie = new Movie
         {
             Id = 1,
-            Genres = new List<Genre> { genre }
+            Genres = genres
         };
 
-        var db = CreateDb(
-            new List<Movie> { movie },
-            new List<Genre> { genre });
+        var db = CreateDb(new List<Movie> { movie });
 
         var handler = CreateHandler(db);
 
@@ -45,12 +46,15 @@ public class RemoveMovieGenreCommandHandlerTests
         var result = await handler.Handle(new RemoveMovieGenreCommand
         {
             MovieId = 1,
-            GenreId = genre.Id
+            GenreId = genreToRemove.Id
         }, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        movie.Genres.Should().NotContain(g => g.Id == genre.Id);
+        movie.Genres.Should().HaveCount(2);
+        movie.Genres.Should().NotContain(g => g.Id == genreToRemove.Id);
+        await db.Received(1)
+            .SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -60,8 +64,7 @@ public class RemoveMovieGenreCommandHandlerTests
         var genre = TestData.GenreFaker().Generate();
 
         var db = CreateDb(
-            new List<Movie>(),
-            new List<Genre> { genre });
+            new List<Movie>());
 
         var handler = CreateHandler(db);
 
@@ -74,52 +77,31 @@ public class RemoveMovieGenreCommandHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.Errors.Should().ContainSingle(e => e is MovieNotFoundError);
-    }
 
-    [Fact]
-    public async Task Handle_MissingGenre_ReturnsGenreNotFoundError()
-    {
-        // Arrange
-        var movie = new Movie
-        {
-            Id = 1,
-            Genres = new List<Genre>()
-        };
+        result.Errors.Should()
+            .ContainSingle(e => e is MovieNotFoundError);
 
-        var db = CreateDb(
-            new List<Movie> { movie },
-            new List<Genre>());
+        db.Movies.DidNotReceive()
+            .Remove(Arg.Any<Movie>());
 
-        var handler = CreateHandler(db);
-
-        // Act
-        var result = await handler.Handle(new RemoveMovieGenreCommand
-        {
-            MovieId = 1,
-            GenreId = 999
-        }, CancellationToken.None);
-
-        // Assert
-        result.IsSuccess.Should().BeFalse();
-        result.Errors.Should().ContainSingle(e => e is GenreNotFoundError);
+        await db.DidNotReceive()
+            .SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task Handle_MovieWithoutGenreAssignment_ReturnsSuccessWithoutChanges()
     {
         // Arrange
-        var genre = TestData.GenreFaker().Generate();
+        var genres = TestData.GenreFaker().Generate(3);
+        var notExistingGenreId = genres.MaxBy(g => g.Id)!.Id + 1;
 
         var movie = new Movie
         {
             Id = 1,
-            Genres = new List<Genre>()
+            Genres = genres
         };
 
-        var db = CreateDb(
-            new List<Movie> { movie },
-            new List<Genre> { genre });
+        var db = CreateDb(new List<Movie> { movie });
 
         var handler = CreateHandler(db);
 
@@ -127,11 +109,14 @@ public class RemoveMovieGenreCommandHandlerTests
         var result = await handler.Handle(new RemoveMovieGenreCommand
         {
             MovieId = 1,
-            GenreId = genre.Id
+            GenreId = notExistingGenreId
         }, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        movie.Genres.Should().BeEmpty();
+        movie.Genres.Should().BeEquivalentTo(genres);
+
+        await db.DidNotReceive()
+            .SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 }

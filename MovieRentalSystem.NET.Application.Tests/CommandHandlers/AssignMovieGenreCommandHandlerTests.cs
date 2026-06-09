@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using MockQueryable;
+using MockQueryable.NSubstitute;
 using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Application.Tests.Common;
@@ -14,8 +14,12 @@ public class AssignMovieGenreCommandHandlerTests
     private static IDbContext CreateDb(List<Movie> movies, List<Genre> genres)
     {
         var db = Substitute.For<IDbContext>();
-        db.Movies.Returns(movies.BuildMock());
-        db.Genres.Returns(genres.BuildMock());
+
+        var movieDbSet = movies.BuildMockDbSet();
+        var genreDbSet = genres.BuildMockDbSet();
+
+        db.Movies.Returns(movieDbSet);
+        db.Genres.Returns(genreDbSet);
         db.SaveChangesAsync(default).ReturnsForAnyArgs(1);
         return db;
     }

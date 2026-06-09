@@ -23,7 +23,7 @@ public class GenreMappingTests
     }
 
     [Fact]
-    public void Should_Map_Genre_To_GenreDto_Correctly()
+    public void MapToGenreDto_GenreEntity_ReturnsCorrectGenreDto()
     {
         // Arrange
         var genre = _genreFaker.Generate();
@@ -40,7 +40,7 @@ public class GenreMappingTests
     }
 
     [Fact]
-    public void Should_Map_GenreDto_To_Genre_Entity_Correctly()
+    public void MapToGenreEntity_GenreDto_ReturnsCorrectGenreEntity()
     {
         // Arrange
         var genre = _genreFaker.Generate();

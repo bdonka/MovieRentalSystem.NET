@@ -1,12 +1,12 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using MockQueryable;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Application.Query;
 using MovieRentalSystem.NET.Domain.Entities;
 using MovieRentalSystem.NET.Application.Tests.Common;
 using MovieRentalSystem.NET.Application.Mappings;
 using NSubstitute;
+using MockQueryable.NSubstitute;
 
 namespace MovieRentalSystem.NET.Application.Tests.QueryHandlers;
 
@@ -15,7 +15,9 @@ public class GetGenreQueryHandlerTests
     private static IDbContext CreateDbContext(List<Genre> genres)
     {
         var db = Substitute.For<IDbContext>();
-        db.Genres.Returns(genres.BuildMock());
+        var genreDbSet = genres.BuildMockDbSet();
+        db.Genres.Returns(genreDbSet);
+        db.SaveChangesAsync(default).ReturnsForAnyArgs(1);
         return db;
     }
 
