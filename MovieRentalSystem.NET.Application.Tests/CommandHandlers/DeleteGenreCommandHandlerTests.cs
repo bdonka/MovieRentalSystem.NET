@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using MockQueryable;
 using MockQueryable.NSubstitute;
 using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Interfaces;
@@ -16,6 +15,16 @@ public class DeleteGenreCommandHandlerTests
         var db = Substitute.For<IDbContext>();
 
         var genreDbSet = genres.BuildMockDbSet();
+        genreDbSet
+            .When(x => x.Remove(Arg.Any<Genre>()))
+            .Do(call =>
+            {
+                var entity = call.Arg<Genre>();
+
+                var existing = genres.SingleOrDefault(g => g.Id == entity.Id);
+                if (existing != null)
+                    genres.Remove(existing);
+            });
         db.Genres.Returns(genreDbSet);
         db.SaveChangesAsync(default).ReturnsForAnyArgs(1);
         return db;
@@ -43,7 +52,7 @@ public class DeleteGenreCommandHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        db.Genres.Received(1).Remove(Arg.Is<Genre>(g => g.Id == 1));
+        genres.Should().NotContain(g => g.Id == 1);
 
         await db.Received(1)
             .SaveChangesAsync(Arg.Any<CancellationToken>());
@@ -64,7 +73,6 @@ public class DeleteGenreCommandHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.Errors.Should().ContainSingle()
-            .Which.Should().BeOfType<GenreNotFoundError>();
+        result.Errors.Should().ContainSingle().Which.Should().BeOfType<GenreNotFoundError>();
     }
 }

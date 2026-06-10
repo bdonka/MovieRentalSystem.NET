@@ -70,7 +70,7 @@ public class UpdateGenreCommandHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.Errors.Should().ContainSingle(e => e is GenreNotFoundError);
+        result.Errors.Should().ContainSingle().Which.Should().BeOfType<GenreNotFoundError>();
 
         db.DidNotReceive()
             .SaveChangesAsync(Arg.Any<CancellationToken>());
@@ -95,6 +95,6 @@ public class UpdateGenreCommandHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.Errors.Should().ContainSingle(e => e is GenreAlreadyExistsError);
+        result.Errors.Should().ContainSingle().Which.Should().BeOfType<GenreAlreadyExistsError>();
     }
 }

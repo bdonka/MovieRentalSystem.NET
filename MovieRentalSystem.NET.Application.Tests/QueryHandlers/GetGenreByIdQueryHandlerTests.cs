@@ -57,6 +57,6 @@ public class GetGenreByIdQueryHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.Errors.Should().ContainSingle(e => e is GenreNotFoundError);
+        result.Errors.Should().ContainSingle().Which.Should().BeOfType<GenreNotFoundError>();
     }
 }

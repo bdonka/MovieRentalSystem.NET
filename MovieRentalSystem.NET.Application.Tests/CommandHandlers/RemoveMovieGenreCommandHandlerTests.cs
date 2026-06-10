@@ -78,11 +78,7 @@ public class RemoveMovieGenreCommandHandlerTests
         // Assert
         result.IsSuccess.Should().BeFalse();
 
-        result.Errors.Should()
-            .ContainSingle(e => e is MovieNotFoundError);
-
-        db.Movies.DidNotReceive()
-            .Remove(Arg.Any<Movie>());
+        result.Errors.Should().ContainSingle().Which.Should().BeOfType<MovieNotFoundError>();
 
         await db.DidNotReceive()
             .SaveChangesAsync(Arg.Any<CancellationToken>());

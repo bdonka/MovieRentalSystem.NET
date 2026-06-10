@@ -74,7 +74,7 @@ public class AssignMovieGenreCommandHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.Errors.Should().ContainSingle(e => e is MovieNotFoundError);
+        result.Errors.Should().ContainSingle().Which.Should().BeOfType<MovieNotFoundError>();
     }
 
     [Fact]
@@ -98,7 +98,7 @@ public class AssignMovieGenreCommandHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.Errors.Should().ContainSingle(e => e is GenreNotFoundError);
+        result.Errors.Should().ContainSingle().Which.Should().BeOfType<GenreNotFoundError>();
     }
 
     [Fact]
@@ -126,9 +126,8 @@ public class AssignMovieGenreCommandHandlerTests
             GenreId = genre.Id
         }, CancellationToken.None);
 
-
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.Errors.Should().ContainSingle(e => e is GenreAlreadyAssignedToMovieError);
+        result.Errors.Should().ContainSingle().Which.Should().BeOfType<GenreAlreadyAssignedToMovieError>();
     }
 }

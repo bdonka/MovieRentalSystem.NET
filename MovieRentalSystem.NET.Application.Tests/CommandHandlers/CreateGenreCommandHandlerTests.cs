@@ -70,8 +70,7 @@ public class CreateGenreCommandHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.Errors.Should().ContainSingle(e => e is GenreAlreadyExistsError);
-
+        result.Errors.Should().ContainSingle().Which.Should().BeOfType<GenreAlreadyExistsError>();
         genres.Should().ContainSingle(g => g.Name == existingGenre.Name);
     }
 }
