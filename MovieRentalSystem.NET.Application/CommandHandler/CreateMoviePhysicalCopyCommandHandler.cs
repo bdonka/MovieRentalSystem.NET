@@ -37,9 +37,7 @@ public class CreateMoviePhysicalCopyCommandHandler : IRequestHandler<CreateMovie
         };
 
         _dbContext.MoviePhysicalCopies.Add(copy);
-        await _dbContext.SaveChangesAsync();
-
-        copy = await _dbContext.MoviePhysicalCopies.Include(m => m.Movie).SingleAsync(c => c.Id == copy.Id);
+        await _dbContext.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("MoviePhysicalCopy {CopyId} created successfully", copy.Id);
 
