@@ -12,6 +12,10 @@
   <Folder Name="/Solution Items/">
     <File Path=".gitignore" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="MovieRentalSystem.NET.Application.Tests/MovieRentalSystem.NET.Application.Tests.csproj" Id="818e8bf0-de02-4c10-9fc8-0e5738ef6ae3" />
+    <Project Path="MovieRentalSystem.NET.Infrastructure.Tests/MovieRentalSystem.NET.Infrastructure.Tests.csproj" Id="7e81af3f-6b80-4ff0-b32a-90ec7e5b2d0c" />
+  </Folder>
   <Project Path="MovieRentalSystem.NET.AppHost/MovieRentalSystem.NET.AppHost.csproj" Id="4590134a-5ce5-4c33-93d5-00d161d8c32d" />
   <Project Path="MovieRentalSystem.NET.MigrationService/MovieRentalSystem.NET.MigrationService.csproj" />
   <Project Path="MovieRentalSystem.NET.ServiceDefaults/MovieRentalSystem.NET.ServiceDefaults.csproj" Id="17afac59-0258-4eee-80f6-f65508c16974" />

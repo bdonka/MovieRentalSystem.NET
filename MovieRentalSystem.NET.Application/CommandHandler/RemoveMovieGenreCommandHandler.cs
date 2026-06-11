@@ -21,7 +21,6 @@ public class RemoveMovieGenreCommandHandler : IRequestHandler<RemoveMovieGenreCo
         _logger.LogInformation("Removing genre {GenreId} from movie {MovieId}", request.GenreId, request.MovieId);
 
         var movie = await _dbContext.Movies.Include(m => m.Genres).FirstOrDefaultAsync(m => m.Id == request.MovieId);
-        var genre = await _dbContext.Genres.FindAsync(request.GenreId);
 
         if (movie == null)
         {
@@ -29,17 +28,14 @@ public class RemoveMovieGenreCommandHandler : IRequestHandler<RemoveMovieGenreCo
             return Result.Fail(new MovieNotFoundError(request.MovieId));
         }
 
-        if (genre == null)
+        var assignedGenre = movie.Genres.FirstOrDefault(g => g.Id == request.GenreId);
+        if (assignedGenre == null)
         {
-            _logger.LogWarning("Genre {GenreId} not found", request.GenreId);
-            return Result.Fail(new GenreNotFoundError(request.GenreId));
+            _logger.LogInformation("Genre {GenreId} is not assigned to movie {MovieId}", request.GenreId, request.MovieId);
+            return Result.Ok();
         }
 
-        if (movie.Genres.Contains(genre))
-        {
-            _logger.LogWarning("Genre {GenreId} is already assigned to movie {MovieId}", request.GenreId, request.MovieId); 
-            movie.Genres.Remove(genre);
-        }
+        movie.Genres.Remove(assignedGenre);
 
         await _dbContext.SaveChangesAsync();
 
