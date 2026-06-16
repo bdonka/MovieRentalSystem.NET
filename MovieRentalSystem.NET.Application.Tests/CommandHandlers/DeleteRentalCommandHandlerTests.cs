@@ -1,0 +1,117 @@
+﻿using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using MockQueryable.NSubstitute;
+using MovieRentalSystem.NET.Application.Common.Errors;
+using MovieRentalSystem.NET.Application.Interfaces;
+using MovieRentalSystem.NET.Application.Tests.Common;
+using MovieRentalSystem.NET.Domain.Entities;
+using NSubstitute;
+
+namespace MovieRentalSystem.NET.Application.Tests.CommandHandlers;
+
+public class DeleteRentalCommandHandlerTests
+{
+    private static IDbContext CreateDb(List<Rental> rentals)
+    {
+        var db = Substitute.For<IDbContext>();
+
+        db.Rentals.Returns(rentals.BuildMockDbSet());
+        db.SaveChangesAsync(default).ReturnsForAnyArgs(1);
+
+        return db;
+    }
+
+    private static DeleteRentalCommandHandler CreateHandler(IDbContext db)
+        => new(db, Substitute.For<ILogger<DeleteRentalCommandHandler>>());
+
+    [Fact]
+    public async Task Handle_ExistingRental_DeletesSuccessfully()
+    {
+        // Arrange
+        using FluentAssertions;
+        using Microsoft.Extensions.Logging;
+        using MockQueryable.NSubstitute;
+        using MovieRentalSystem.NET.Application.Common.Errors;
+        using MovieRentalSystem.NET.Application.Interfaces;
+        using MovieRentalSystem.NET.Domain.Entities;
+        using NSubstitute;
+
+namespace MovieRentalSystem.NET.Application.Tests.CommandHandlers;
+
+public class DeleteRentalCommandHandlerTests
+{
+    private static IDbContext CreateDb(List<Rental> rentals)
+    {
+        var db = Substitute.For<IDbContext>();
+
+        db.Rentals.Returns(rentals.BuildMockDbSet());
+        db.SaveChangesAsync(default).ReturnsForAnyArgs(1);
+
+        return db;
+    }
+
+    private static DeleteRentalCommandHandler CreateHandler(IDbContext db)
+        => new(db, Substitute.For<ILogger<DeleteRentalCommandHandler>>());
+
+    [Fact]
+    public async Task Handle_ExistingRental_DeletesSuccessfully()
+    {
+        // Arrange
+        var rental = TestData.CreateRental(
+            id: 1,
+            user: TestData.CreateUser(),
+            copy: TestData.CreateMovieCopy(1, TestData.CreateMovie()));
+
+        var rentals = new List<Rental> { rental };
+
+        var db = CreateDb(rentals);
+        var handler = CreateHandler(db);
+
+        var command = new DeleteRentalCommand
+        {
+            Id = 1
+        };
+
+        // Act
+        var result = await handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+
+        rentals.Should().BeEmpty();
+
+        await db.Received(1)
+            .SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_RentalDoesNotExist_ReturnsNotFoundError()
+    {
+        // Arrange
+        var rentals = new List<Rental>();
+
+        var db = CreateDb(rentals);
+        var handler = CreateHandler(db);
+
+        var command = new DeleteRentalCommand
+        {
+            Id = 999
+        };
+
+        // Act
+        var result = await handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+
+        result.Errors.Should()
+            .ContainSingle()
+            .Which.Should()
+            .BeOfType<RentalNotFoundError>();
+
+        rentals.Should().BeEmpty();
+
+        await db.DidNotReceive()
+            .SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+}

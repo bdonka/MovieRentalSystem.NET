@@ -1,9 +1,5 @@
 ﻿using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.Domain.Entities;
-using MovieRentalSystem.NET.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MovieRentalSystem.NET.Infrastructure.Mapping;
 
