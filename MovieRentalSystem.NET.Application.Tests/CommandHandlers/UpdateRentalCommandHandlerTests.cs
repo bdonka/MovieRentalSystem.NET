@@ -1,6 +1,4 @@
-﻿using Bogus;
-using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using MockQueryable.NSubstitute;
 using MovieRentalSystem.NET.Application.Common.Errors;
@@ -55,7 +53,7 @@ public class UpdateRentalCommandHandlerTests
         var rentals = new List<Rental> { rental };
         var copies = new List<MoviePhysicalCopy>();
 
-        var db = CreateDb(new List<User>, rentals, copies);
+        var db = CreateDb(new List<User>(), rentals, copies);
         var handler = CreateHandler(db);
 
         var command = new UpdateRentalCommand

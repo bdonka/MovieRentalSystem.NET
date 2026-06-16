@@ -28,39 +28,12 @@ public class DeleteRentalCommandHandlerTests
     public async Task Handle_ExistingRental_DeletesSuccessfully()
     {
         // Arrange
-        using FluentAssertions;
-        using Microsoft.Extensions.Logging;
-        using MockQueryable.NSubstitute;
-        using MovieRentalSystem.NET.Application.Common.Errors;
-        using MovieRentalSystem.NET.Application.Interfaces;
-        using MovieRentalSystem.NET.Domain.Entities;
-        using NSubstitute;
+        var movie = TestData.CreateMovie();
 
-namespace MovieRentalSystem.NET.Application.Tests.CommandHandlers;
-
-public class DeleteRentalCommandHandlerTests
-{
-    private static IDbContext CreateDb(List<Rental> rentals)
-    {
-        var db = Substitute.For<IDbContext>();
-
-        db.Rentals.Returns(rentals.BuildMockDbSet());
-        db.SaveChangesAsync(default).ReturnsForAnyArgs(1);
-
-        return db;
-    }
-
-    private static DeleteRentalCommandHandler CreateHandler(IDbContext db)
-        => new(db, Substitute.For<ILogger<DeleteRentalCommandHandler>>());
-
-    [Fact]
-    public async Task Handle_ExistingRental_DeletesSuccessfully()
-    {
-        // Arrange
         var rental = TestData.CreateRental(
             id: 1,
             user: TestData.CreateUser(),
-            copy: TestData.CreateMovieCopy(1, TestData.CreateMovie()));
+            copy: TestData.CreateMovieCopy(1, movie));
 
         var rentals = new List<Rental> { rental };
 
@@ -69,7 +42,7 @@ public class DeleteRentalCommandHandlerTests
 
         var command = new DeleteRentalCommand
         {
-            Id = 1
+            Id = rental.Id
         };
 
         // Act
@@ -78,7 +51,8 @@ public class DeleteRentalCommandHandlerTests
         // Assert
         result.IsSuccess.Should().BeTrue();
 
-        rentals.Should().BeEmpty();
+        db.Rentals.Received(1)
+            .Remove(Arg.Is<Rental>(r => r.Id == rental.Id));
 
         await db.Received(1)
             .SaveChangesAsync(Arg.Any<CancellationToken>());
@@ -109,7 +83,8 @@ public class DeleteRentalCommandHandlerTests
             .Which.Should()
             .BeOfType<RentalNotFoundError>();
 
-        rentals.Should().BeEmpty();
+        db.Rentals.DidNotReceive()
+            .Remove(Arg.Any<Rental>());
 
         await db.DidNotReceive()
             .SaveChangesAsync(Arg.Any<CancellationToken>());
