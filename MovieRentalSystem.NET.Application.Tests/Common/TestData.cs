@@ -99,4 +99,12 @@ public static class TestData
             })
             .ToList();
     }
+
+    public static Faker<MoviePhysicalCopy> MoviePhysicalCopyFaker(Movie movie)
+    => new Faker<MoviePhysicalCopy>()
+        .RuleFor(x => x.Id, f => f.IndexFaker + 1)
+        .RuleFor(x => x.MovieId, movie.Id)
+        .RuleFor(x => x.Movie, movie)
+        .RuleFor(x => x.Code, f => $"COPY-{f.Random.AlphaNumeric(6)}")
+        .RuleFor(x => x.Status, _ => MovieCopyStatus.Available);
 }
