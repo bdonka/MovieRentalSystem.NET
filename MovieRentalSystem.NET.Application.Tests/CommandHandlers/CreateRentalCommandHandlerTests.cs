@@ -23,8 +23,27 @@ public class CreateRentalCommandHandlerTests
         var rentalDbSet = rentals.BuildMockDbSet();
 
         db.Users.Returns(userDbSet);
-        db.MoviePhysicalCopies.Returns(copies.BuildMockDbSet());
-        db.Rentals.Returns(rentals.BuildMockDbSet());
+        db.MoviePhysicalCopies.Returns(copyDbSet);
+        db.Rentals.Returns(rentalDbSet);
+
+        db.Rentals
+            .When(x => x.Add(Arg.Any<Rental>()))
+            .Do(callInfo =>
+            {
+                var rental = callInfo.Arg<Rental>();
+
+                if (rental.Id == 0)
+                {
+                    rental.Id = rentals.Count + 1;
+                }
+
+                rental.User = users.First(u => u.Id == rental.UserId);
+
+                rental.MoviePhysicalCopy = copies
+                    .First(c => c.Id == rental.MoviePhysicalCopyId);
+
+                rentals.Add(rental);
+            });
 
         db.SaveChangesAsync(default)
             .ReturnsForAnyArgs(1);
@@ -152,7 +171,7 @@ public class CreateRentalCommandHandlerTests
 
         var command = new CreateRentalCommand
         {
-            UserId = Guid.NewGuid().ToString(),
+            UserId = user.Id,
             MoviePhysicalCopyId = 1,
             RentalStartDate = DateTime.UtcNow,
             DueDate = DateTime.UtcNow.AddDays(7)

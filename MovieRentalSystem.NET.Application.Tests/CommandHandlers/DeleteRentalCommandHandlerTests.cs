@@ -15,7 +15,9 @@ public class DeleteRentalCommandHandlerTests
     {
         var db = Substitute.For<IDbContext>();
 
-        db.Rentals.Returns(rentals.BuildMockDbSet());
+        var rentalsDbSet = rentals.BuildMockDbSet();
+
+        db.Rentals.Returns(rentalsDbSet);
         db.SaveChangesAsync(default).ReturnsForAnyArgs(1);
 
         return db;

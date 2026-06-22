@@ -20,7 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MovieRentalSystem.NET.Application.Tests\MovieRentalSystem.NET.Application.Tests.csproj" />
     <ProjectReference Include="..\MovieRentalSystem.NET.Infrastructure\MovieRentalSystem.NET.Infrastructure.csproj" />
   </ItemGroup>
 

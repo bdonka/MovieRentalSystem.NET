@@ -15,7 +15,9 @@ public class GetRentalQueryHandlerTests
     {
         var db = Substitute.For<IDbContext>();
 
-        db.Rentals.Returns(rentals.BuildMockDbSet());
+        var rentalsDbSet = rentals.BuildMockDbSet();
+
+        db.Rentals.Returns(rentalsDbSet);
 
         return db;
     }

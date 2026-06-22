@@ -1,11 +1,11 @@
 ﻿using Bogus;
 using FluentAssertions;
 using MovieRentalSystem.NET.Application.Dtos;
-using MovieRentalSystem.NET.Application.Mappings;
+using MovieRentalSystem.NET.Infrastructure.Mapping;
 using MovieRentalSystem.NET.Domain.Entities;
 using MovieRentalSystem.NET.Domain.Enums;
 
-namespace MovieRentalSystem.NET.Application.Tests.Mapping;
+namespace MovieRentalSystem.NET.Infrastructure.Tests.Mappings;
 
 public class RentalMappingTests
 {

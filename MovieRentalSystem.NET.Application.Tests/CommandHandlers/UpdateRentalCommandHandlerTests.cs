@@ -18,8 +18,11 @@ public class UpdateRentalCommandHandlerTests
     {
         var db = Substitute.For<IDbContext>();
 
-        db.Rentals.Returns(rentals.BuildMockDbSet());
-        db.MoviePhysicalCopies.Returns(copies.BuildMockDbSet());
+        var rentalsDbSet = rentals.BuildMockDbSet();
+        var copiesDbSet = copies.BuildMockDbSet();
+
+        db.Rentals.Returns(rentalsDbSet);
+        db.MoviePhysicalCopies.Returns(copiesDbSet);
 
         db.SaveChangesAsync(default).ReturnsForAnyArgs(1);
 
