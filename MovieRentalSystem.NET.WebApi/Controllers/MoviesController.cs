@@ -82,7 +82,7 @@ public class MoviesController(IMediator mediator) : ResultsControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteMovie(int id)
     {
-        var result = await mediator.Send(new DeleteMovieCommand { Id = id });
+        var result = await mediator.Send(new DeleteMovieCommand(id));
         return ToNoContentOrErrorResponse(result);
     }
 
