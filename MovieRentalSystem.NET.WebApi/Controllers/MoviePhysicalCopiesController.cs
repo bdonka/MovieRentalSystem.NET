@@ -35,7 +35,7 @@ public class MoviePhysicalCopiesController(IMediator mediator) : ResultsControll
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<MoviePhysicalCopyDto>> GetMoviePhysicalCopy(int id)
     {
-        var result = await mediator.Send(new GetMoviePhysicalCopyByIdQuery { Id = id });
+        var result = await mediator.Send(new GetMoviePhysicalCopyByIdQuery(id));
         return ToOkOrErrorResponse(result);
     }
 
@@ -65,12 +65,7 @@ public class MoviePhysicalCopiesController(IMediator mediator) : ResultsControll
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PutMoviePhysicalCopy(int id, int movieId, UpdateMoviePhysicalCopyRequest request)
     {
-        var result = await mediator.Send(new UpdateMoviePhysicalCopyCommand
-        {
-            Id = id,
-            MovieId = movieId,
-            Status = request.Status
-        });
+        var result = await mediator.Send(new UpdateMoviePhysicalCopyCommand(id, movieId, request.Status));
         return ToNoContentOrErrorResponse(result);
     }
 

@@ -1,4 +1,5 @@
 ﻿using Bogus;
+using Microsoft.AspNetCore.Identity;
 using MovieRentalSystem.NET.Domain.Entities;
 using MovieRentalSystem.NET.Domain.Enums;
 
@@ -13,6 +14,16 @@ public static class TestData
         => new Faker<Genre>()
             .RuleFor(x => x.Id, f => f.IndexFaker + 1)
             .RuleFor(x => x.Name, f => f.Commerce.Department());
+
+
+    public static Genre CreateGenre(int id = 1)
+    {
+        return new Genre
+        {
+            Id = id,
+            Name = "Action"
+        };
+    }
 
     public static List<Genre> Genres(int count)
         => GenreFaker().Generate(count);

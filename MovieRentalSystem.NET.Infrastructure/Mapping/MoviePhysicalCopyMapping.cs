@@ -11,7 +11,8 @@ public static class MoviePhysicalCopyMapping
         {
             Id = copy.Id,
             MovieId = copy.MovieId,
-            Code = copy.Code
+            Code = copy.Code,
+            Status = copy.Status
         };
     }
 
@@ -21,7 +22,8 @@ public static class MoviePhysicalCopyMapping
         {
             Id = copy.Id,
             MovieId = copy.MovieId,
-            Code = copy.Code
+            Code = copy.Code,
+            Status = copy.Status
         };
     }
 }
