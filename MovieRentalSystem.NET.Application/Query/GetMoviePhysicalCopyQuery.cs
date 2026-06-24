@@ -6,6 +6,6 @@ namespace MovieRentalSystem.NET.Application.Query;
 
 public class GetMoviePhysicalCopyQuery
 : PagedQuery, IRequest<PagedResponse<MoviePhysicalCopyDto>>
-{ 
+{
 }
 

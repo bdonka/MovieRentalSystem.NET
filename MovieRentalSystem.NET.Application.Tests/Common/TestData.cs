@@ -1,7 +1,7 @@
 ﻿using Bogus;
-using Microsoft.AspNetCore.Identity;
 using MovieRentalSystem.NET.Domain.Entities;
 using MovieRentalSystem.NET.Domain.Enums;
+using Microsoft.AspNetCore.Identity;
 
 namespace MovieRentalSystem.NET.Application.Tests.Common;
 
@@ -165,6 +165,17 @@ public static class TestData
             DueDate = FixedNow.AddDays(7),
             Status = status,
             TotalPrice = 50m
+        };
+    }
+
+    // ROLE
+    public static IdentityRole CreateRole(string name = "Admin")
+    {
+        return new IdentityRole
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = name,
+            NormalizedName = name.ToUpper()
         };
     }
 }

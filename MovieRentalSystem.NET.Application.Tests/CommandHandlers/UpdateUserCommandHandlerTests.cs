@@ -51,7 +51,7 @@ public class UpdateUserCommandHandlerTests
             .Returns(user);
 
         userManager.FindByEmailAsync(command.Email)
-            .Returns((User?)null);
+            .Returns((User?) null);
 
         userManager.UpdateAsync(user)
             .Returns(IdentityResult.Success);
@@ -93,7 +93,7 @@ public class UpdateUserCommandHandlerTests
         var userManager = CreateUserManager();
 
         userManager.FindByIdAsync(command.Id)
-            .Returns((User?)null);
+            .Returns((User?) null);
 
         var handler = CreateHandler(userManager);
 

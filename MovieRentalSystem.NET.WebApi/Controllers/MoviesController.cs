@@ -25,7 +25,7 @@ public class MoviesController(IMediator mediator) : ResultsControllerBase
             PageSize = request.PageSize
         });
         return Ok(result);
-    }   
+    }
 
     // GET: api/movies/5
     [HttpGet("{id}")]
@@ -53,7 +53,7 @@ public class MoviesController(IMediator mediator) : ResultsControllerBase
         ));
         return ToCreatedAtActionOrErrorResponse(
             nameof(GetMovie),
-            new { id = result.Value.Id }, 
+            new { id = result.Value.Id },
             result
         );
     }

@@ -10,7 +10,7 @@ public class Rental
     public int MoviePhysicalCopyId { get; set; }
     public MoviePhysicalCopy MoviePhysicalCopy { get; set; } = null!;
     public DateTime OrderDate { get; set; } = DateTime.UtcNow;
-    public DateTime? RentalStartDate { get; set; } 
+    public DateTime? RentalStartDate { get; set; }
     public DateTime? DueDate { get; set; }
     public DateTime? ReturnDate { get; set; }
     public decimal TotalPrice { get; set; }

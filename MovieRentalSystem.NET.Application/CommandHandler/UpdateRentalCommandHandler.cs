@@ -37,9 +37,9 @@ public class UpdateRentalCommandHandler : IRequestHandler<UpdateRentalCommand, R
 
         if (request.ReturnDate != null)
         {
-            _logger.LogInformation("Rental {RentalId} is being returned, updating copy status", request.Id); 
-                var copy = await _dbContext.MoviePhysicalCopies
-                .FirstOrDefaultAsync(c => c.Id == rental.MoviePhysicalCopyId);
+            _logger.LogInformation("Rental {RentalId} is being returned, updating copy status", request.Id);
+            var copy = await _dbContext.MoviePhysicalCopies
+            .FirstOrDefaultAsync(c => c.Id == rental.MoviePhysicalCopyId);
 
             if (copy != null)
             {

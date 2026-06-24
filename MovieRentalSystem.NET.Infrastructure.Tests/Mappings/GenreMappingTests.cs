@@ -1,9 +1,9 @@
 ﻿using Bogus;
 using FluentAssertions;
 using MovieRentalSystem.NET.Application.Dtos;
-using MovieRentalSystem.NET.Infrastructure.Mapping;
 using MovieRentalSystem.NET.Domain.Entities;
 using MovieRentalSystem.NET.Domain.Enums;
+using MovieRentalSystem.NET.Infrastructure.Mapping;
 
 namespace MovieRentalSystem.NET.Infrastructure.Tests.Mapping;
 

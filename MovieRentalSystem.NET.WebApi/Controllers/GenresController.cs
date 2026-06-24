@@ -17,7 +17,7 @@ public class GenresController(IMediator mediator) : ResultsControllerBase
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(PagedResponse<GenreDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<PagedResponse<GenreDto>>> GetGenres([FromQuery] GetGenresRequest request) 
+    public async Task<ActionResult<PagedResponse<GenreDto>>> GetGenres([FromQuery] GetGenresRequest request)
     {
         var result = await mediator.Send(new GetGenreQuery
         {

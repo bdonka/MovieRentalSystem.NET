@@ -93,7 +93,7 @@ public class DeleteUserCommandHandlerTests
         var userManager = CreateUserManager();
 
         userManager.FindByIdAsync("missing-id")
-            .Returns((User?)null);
+            .Returns((User?) null);
 
         var db = CreateDbContext(
             new List<Rental>());

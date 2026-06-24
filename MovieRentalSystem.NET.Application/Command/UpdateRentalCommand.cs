@@ -9,5 +9,5 @@ public class UpdateRentalCommand : IRequest<Result>
     public DateTime? DueDate { get; set; }
     public DateTime? ReturnDate { get; set; }
     public decimal TotalPrice { get; set; }
-    public required RentalStatus Status {  get; set; } = RentalStatus.Preparing;
+    public required RentalStatus Status { get; set; } = RentalStatus.Preparing;
 }

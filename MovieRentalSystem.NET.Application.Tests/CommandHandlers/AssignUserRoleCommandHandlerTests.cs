@@ -96,7 +96,7 @@ public class AssignUserRoleCommandHandlerTests
         var roleManager = CreateRoleManager();
 
         userManager.FindByIdAsync("wrong-id")
-            .Returns((User?)null);
+            .Returns((User?) null);
 
         var handler = CreateHandler(userManager, roleManager);
 

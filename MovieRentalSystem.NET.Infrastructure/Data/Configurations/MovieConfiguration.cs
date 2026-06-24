@@ -12,7 +12,7 @@ public class MovieConfiguration : IEntityTypeConfiguration<Movie>
         builder.Property(m => m.Title)
             .IsRequired()
             .HasMaxLength(200);
-        builder.Property(m => m.Description )
+        builder.Property(m => m.Description)
             .IsRequired()
             .HasMaxLength(1000);
         builder.Property(m => m.RentalPrice)
