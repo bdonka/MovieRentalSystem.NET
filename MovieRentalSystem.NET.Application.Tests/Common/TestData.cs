@@ -7,6 +7,8 @@ namespace MovieRentalSystem.NET.Application.Tests.Common;
 
 public static class TestData
 {
+    public static DateTime FixedNow => new DateTime(2025, 01, 01);
+
     // GENRE
     public static Faker<Genre> GenreFaker()
         => new Faker<Genre>()
@@ -107,4 +109,62 @@ public static class TestData
         .RuleFor(x => x.Movie, movie)
         .RuleFor(x => x.Code, f => $"COPY-{f.Random.AlphaNumeric(6)}")
         .RuleFor(x => x.Status, _ => MovieCopyStatus.Available);
+
+    public static MoviePhysicalCopy CreateMovieCopy(
+    int id,
+    Movie movie,
+    MovieCopyStatus status = MovieCopyStatus.Available)
+    {
+        return new MoviePhysicalCopy
+        {
+            Id = id,
+            MovieId = movie.Id,
+            Movie = movie,
+            Code = $"COPY-{id}",
+            Status = status
+        };
+    }
+
+    // USER
+    public static User CreateUser(string? id = null)
+    {
+        var faker = new Faker();
+        var email = faker.Internet.Email();
+        var userName = faker.Internet.UserName();
+
+        return new User
+        {
+            Id = id ?? Guid.NewGuid().ToString(),
+            UserName = userName,
+            Email = email,
+            EmailConfirmed = true,
+            NormalizedEmail = email.ToUpper(),
+            NormalizedUserName = userName.ToUpper(),
+            SecurityStamp = Guid.NewGuid().ToString(),
+            DateRegistered = FixedNow,
+            Rentals = new List<Rental>()
+        };
+    }
+
+    // RENTAL
+    public static Rental CreateRental(
+        int id,
+        User user,
+        MoviePhysicalCopy copy,
+        RentalStatus status = RentalStatus.Active)
+    {
+        return new Rental
+        {
+            Id = id,
+            UserId = user.Id,
+            User = user,
+            MoviePhysicalCopyId = copy.Id,
+            MoviePhysicalCopy = copy,
+            OrderDate = FixedNow,
+            RentalStartDate = FixedNow,
+            DueDate = FixedNow.AddDays(7),
+            Status = status,
+            TotalPrice = 50m
+        };
+    }
 }

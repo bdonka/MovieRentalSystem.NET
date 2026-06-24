@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using MockQueryable.NSubstitute;
 using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Interfaces;
+using MovieRentalSystem.NET.Application.Tests.Common;
 using MovieRentalSystem.NET.Domain.Entities;
 using NSubstitute;
 
@@ -34,7 +35,7 @@ public class CreateGenreCommandHandlerTests
 
         var command = new CreateGenreCommand
         {
-            Name = new Faker().Commerce.Department()
+            Name = TestData.GenreFaker().Generate().Name
         };
 
         // Act
@@ -53,7 +54,8 @@ public class CreateGenreCommandHandlerTests
     public async Task Handle_ExistingGenreName_ReturnsGenreAlreadyExistsError()
     {
         // Arrange
-        var existingGenre = new Genre { Id = 1, Name = "Action" };
+        var existingGenre = TestData.GenreFaker().Generate();
+        existingGenre.Name = "Action";
 
         var genres = new List<Genre> { existingGenre };
 
@@ -72,5 +74,8 @@ public class CreateGenreCommandHandlerTests
         result.IsSuccess.Should().BeFalse();
         result.Errors.Should().ContainSingle().Which.Should().BeOfType<GenreAlreadyExistsError>();
         genres.Should().ContainSingle(g => g.Name == existingGenre.Name);
+
+        await db.DidNotReceive()
+            .SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 }
