@@ -1,10 +1,7 @@
-﻿using Bogus;
-using FluentAssertions;
+﻿using FluentAssertions;
 using MovieRentalSystem.NET.Application.Mappings;
 using MovieRentalSystem.NET.Application.Tests.Common;
-using MovieRentalSystem.NET.Domain.Entities;
 using MovieRentalSystem.NET.Domain.Enums;
-using Xunit;
 
 namespace MovieRentalSystem.NET.Application.Tests.Mapping;
 

@@ -10,13 +10,13 @@
         public bool HasNextPage => PageNumber < TotalPages;
         public bool HasPreviousPage => PageNumber > 1;
 
-        public PagedResponse(IReadOnlyList<T> data, int pageNumber, int pageSize, int totalRecords) 
+        public PagedResponse(IReadOnlyList<T> data, int pageNumber, int pageSize, int totalRecords)
         {
             Data = data;
             PageNumber = pageNumber;
             PageSize = pageSize;
             TotalRecords = totalRecords;
-            TotalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+            TotalPages = (int) Math.Ceiling(totalRecords / (double) pageSize);
         }
     }
 }

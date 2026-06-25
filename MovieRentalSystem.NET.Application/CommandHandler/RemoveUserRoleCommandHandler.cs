@@ -49,9 +49,9 @@ public class RemoveUserRoleCommandHandler : IRequestHandler<RemoveUserRoleComman
         if (!result.Succeeded)
         {
             _logger.LogWarning(
-                "Failed to remove role {Role} from user {Id} because of following errors: {Errors}", 
-                request.Role, 
-                request.Id, 
+                "Failed to remove role {Role} from user {Id} because of following errors: {Errors}",
+                request.Role,
+                request.Id,
                 result.Errors.Select(m => m.Description).ToArray());
             return Result.Fail(new UserNotRemoveRoleError(request.Id, request.Role));
         }

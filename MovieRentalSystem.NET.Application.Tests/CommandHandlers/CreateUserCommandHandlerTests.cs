@@ -45,7 +45,7 @@ public class CreateUserCommandHandlerTests
         var userManager = CreateUserManager();
 
         userManager.FindByEmailAsync(command.Email)
-            .Returns((User?)null);
+            .Returns((User?) null);
 
         userManager.CreateAsync(
                 Arg.Any<User>(),
@@ -133,7 +133,7 @@ public class CreateUserCommandHandlerTests
         var userManager = CreateUserManager();
 
         userManager.FindByEmailAsync(command.Email)
-            .Returns((User?)null);
+            .Returns((User?) null);
 
         userManager.CreateAsync(
                 Arg.Any<User>(),

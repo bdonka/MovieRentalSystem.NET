@@ -1,5 +1,5 @@
+using System.Text.Json.Serialization;
 using FluentValidation;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Identity;
 using MovieRentalSystem.NET.Application.ApplicationDependencies;
@@ -11,7 +11,6 @@ using MovieRentalSystem.NET.WebApi.Middlewares;
 using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Events;
-using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 

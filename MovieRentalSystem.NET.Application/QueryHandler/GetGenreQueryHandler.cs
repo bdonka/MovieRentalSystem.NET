@@ -1,5 +1,4 @@
-﻿using FluentResults;
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MovieRentalSystem.NET.Application.Common;

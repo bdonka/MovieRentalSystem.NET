@@ -26,7 +26,7 @@ public class AssignMovieGenreCommandHandler : IRequestHandler<AssignMovieGenreCo
             _logger.LogWarning("Movie {MovieId} not found", request.MovieId);
             return Result.Fail(new MovieNotFoundError(request.MovieId));
         }
-         
+
         var genre = await _dbContext.Genres.FirstOrDefaultAsync(g => g.Id == request.GenreId);
 
         if (genre == null)

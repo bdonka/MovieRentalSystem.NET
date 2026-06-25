@@ -1,12 +1,12 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using MovieRentalSystem.NET.Application.Interfaces;
-using MovieRentalSystem.NET.Application.Query;
-using MovieRentalSystem.NET.Domain.Entities;
-using MovieRentalSystem.NET.Application.Tests.Common;
-using MovieRentalSystem.NET.Application.Mappings;
-using NSubstitute;
 using MockQueryable.NSubstitute;
+using MovieRentalSystem.NET.Application.Interfaces;
+using MovieRentalSystem.NET.Application.Mappings;
+using MovieRentalSystem.NET.Application.Query;
+using MovieRentalSystem.NET.Application.Tests.Common;
+using MovieRentalSystem.NET.Domain.Entities;
+using NSubstitute;
 
 namespace MovieRentalSystem.NET.Application.Tests.QueryHandlers;
 

@@ -1,7 +1,6 @@
 ﻿using Bogus;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using MockQueryable;
 using MockQueryable.NSubstitute;
 using MovieRentalSystem.NET.Application.Common.Errors;
 using MovieRentalSystem.NET.Application.Interfaces;

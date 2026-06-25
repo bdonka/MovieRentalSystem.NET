@@ -10,6 +10,7 @@
     <Project Path="MovieRentalSystem.NET.WebApi/MovieRentalSystem.NET.WebApi.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
     <File Path=".gitignore" />
   </Folder>
   <Folder Name="/Tests/">

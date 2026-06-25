@@ -5,6 +5,7 @@ using MovieRentalSystem.NET.Domain.Entities;
 using MovieRentalSystem.NET.Infrastructure.Mapping;
 
 namespace MovieRentalSystem.NET.Infrastructure.Tests.Mapping;
+
 public class MovieMappingTests
 {
     private readonly Faker<Movie> _movieFaker;

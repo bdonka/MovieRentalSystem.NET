@@ -12,7 +12,8 @@ public static class RentalMapping
             Id = rental.Id,
             UserId = rental.UserId,
             MoviePhysicalCopyId = rental.MoviePhysicalCopyId,
-            MoviePhysicalCopy = new MoviePhysicalCopyDto {
+            MoviePhysicalCopy = new MoviePhysicalCopyDto
+            {
                 Id = rental.MoviePhysicalCopy.Id,
                 Code = rental.MoviePhysicalCopy.Code,
                 Status = rental.MoviePhysicalCopy.Status,

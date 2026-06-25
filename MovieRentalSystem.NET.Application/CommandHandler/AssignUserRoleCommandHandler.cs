@@ -48,9 +48,9 @@ public class AssignUserRoleCommandHandler : IRequestHandler<AssignUserRoleComman
         if (!result.Succeeded)
         {
             _logger.LogWarning(
-                "Role {Role} not assign to user {Id} because of following errors: {Errors}", 
-                request.Role, 
-                request.Id, 
+                "Role {Role} not assign to user {Id} because of following errors: {Errors}",
+                request.Role,
+                request.Id,
                 result.Errors.Select(m => m.Description).ToArray());
             return Result.Fail(new RoleNotAssignToUserError(request.Role, request.Id));
         }

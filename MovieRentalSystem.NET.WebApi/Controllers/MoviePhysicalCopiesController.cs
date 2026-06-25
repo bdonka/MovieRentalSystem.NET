@@ -76,7 +76,7 @@ public class MoviePhysicalCopiesController(IMediator mediator) : ResultsControll
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteMoviePhysicalCopy(int id)
     {
-        var result = await mediator.Send(new DeleteMoviePhysicalCopyCommand { Id = id});
+        var result = await mediator.Send(new DeleteMoviePhysicalCopyCommand { Id = id });
         return ToNoContentOrErrorResponse(result);
     }
 }

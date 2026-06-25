@@ -1,5 +1,4 @@
 ﻿using MovieRentalSystem.NET.Application.Dtos;
-using MovieRentalSystem.NET.Application.Mappings;
 using MovieRentalSystem.NET.Domain.Entities;
 
 namespace MovieRentalSystem.NET.Application.Mappings;

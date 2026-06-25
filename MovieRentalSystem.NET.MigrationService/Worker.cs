@@ -1,8 +1,7 @@
+using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using MovieRentalSystem.NET.Domain.Entities;
-using MovieRentalSystem.NET.Domain.Enums;
 using MovieRentalSystem.NET.Infrastructure.Data;
-using System.Diagnostics;
 
 namespace MovieRentalSystem.NET.MigrationService;
 

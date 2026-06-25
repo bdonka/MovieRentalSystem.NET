@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MovieRentalSystem.NET.Application.Interfaces;
 using MovieRentalSystem.NET.Infrastructure.Data;
-using Microsoft.Extensions.Configuration;
 
 namespace MovieRentalSystem.NET.Infrastructure.InfrastructureDependencies;
 
