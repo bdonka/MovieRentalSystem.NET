@@ -8,6 +8,7 @@ using MovieRentalSystem.NET.Infrastructure.Data;
 using MovieRentalSystem.NET.Infrastructure.InfrastructureDependencies;
 using MovieRentalSystem.NET.WebApi.Extensions;
 using MovieRentalSystem.NET.WebApi.Middlewares;
+using MovieRentalSystem.NET.WebApi.Validators.Genres;
 using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Events;
@@ -62,22 +63,29 @@ builder.Services.AddHttpLogging(options =>
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
-    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+    .MinimumLevel.Override(
+        "Microsoft",
+        LogEventLevel.Information)
+    .MinimumLevel.Override(
+        "Microsoft.AspNetCore",
+        LogEventLevel.Warning)
     .MinimumLevel.Override(
         "Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware",
         LogEventLevel.Information)
     .Enrich.FromLogContext()
     .WriteTo.Console()
     .WriteTo.OpenTelemetry()
-    .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day)
+    .WriteTo.File(
+        "logs/log.txt",
+        rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 builder.Services.AddSerilog();
 
 builder.AddServiceDefaults();
 
-builder.Services.AddControllers()
+builder.Services
+    .AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(
@@ -86,11 +94,13 @@ builder.Services.AddControllers()
 
 builder.Services.AddApplicationDependencies();
 
-builder.Services.AddInfrastructureDependencies(builder.Configuration);
+builder.Services.AddInfrastructureDependencies(
+    builder.Configuration);
 
 builder.Services.AddOpenApi();
 
-builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.Services.AddValidatorsFromAssemblyContaining<
+    CreateGenreRequestValidator>();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
