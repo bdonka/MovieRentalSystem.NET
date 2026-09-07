@@ -10,16 +10,17 @@ namespace MovieRentalSystem.NET.IntegrationTests.Auth;
 public class AuthTests
 {
     private readonly AspireFixture _fixture;
+
     public AuthTests(AspireFixture fixture)
     {
         _fixture = fixture;
     }
 
     [Fact]
-    public async Task Register_WithValidData_ReturnsOk()
+    public async Task Register_WhenDataIsValid_ReturnsSuccess()
     {
         // Arrange
-        var client =
+        using var client =
             _fixture.CreateClient();
 
         var auth =
@@ -38,10 +39,10 @@ public class AuthTests
     }
 
     [Fact]
-    public async Task Register_WithExistingEmail_ReturnsBadRequest()
+    public async Task Register_WhenEmailAlreadyExists_ReturnsBadRequest()
     {
         // Arrange
-        var client =
+        using var client =
             _fixture.CreateClient();
 
         var auth =
@@ -50,23 +51,27 @@ public class AuthTests
         var user =
             TestUserData.Customer();
 
-        await auth.RegisterUserAsync(user);
+        var firstResponse =
+            await auth.RegisterUserAsync(user);
+
+        Assert.True(
+            firstResponse.IsSuccessStatusCode);
 
         // Act
-        var response =
+        var secondResponse =
             await auth.RegisterUserAsync(user);
 
         // Assert
         Assert.Equal(
             HttpStatusCode.BadRequest,
-            response.StatusCode);
+            secondResponse.StatusCode);
     }
 
     [Fact]
-    public async Task Login_WithValidCredentials_ReturnsOk()
+    public async Task Login_WhenCredentialsAreValid_ReturnsSuccess()
     {
         // Arrange
-        var client =
+        using var client =
             _fixture.CreateClient();
 
         var auth =
@@ -75,22 +80,26 @@ public class AuthTests
         var user =
             TestUserData.Customer();
 
-        await auth.RegisterUserAsync(user);
+        var registerResponse =
+            await auth.RegisterUserAsync(user);
+
+        Assert.True(
+            registerResponse.IsSuccessStatusCode);
 
         // Act
-        var response =
+        var loginResponse =
             await auth.LoginUserAsync(user);
 
         // Assert
         Assert.True(
-            response.IsSuccessStatusCode);
+            loginResponse.IsSuccessStatusCode);
     }
 
     [Fact]
-    public async Task Login_WithUnknownEmail_ReturnsUnauthorized()
+    public async Task Login_WhenEmailDoesNotExist_ReturnsUnauthorized()
     {
         // Arrange
-        var client =
+        using var client =
             _fixture.CreateClient();
 
         var auth =
@@ -110,10 +119,10 @@ public class AuthTests
     }
 
     [Fact]
-    public async Task Me_AfterLogin_ReturnsCurrentUser()
+    public async Task GetCurrentUser_WhenUserIsLoggedIn_ReturnsCurrentUser()
     {
         // Arrange
-        var client =
+        using var client =
             _fixture.CreateClient();
 
         var auth =
@@ -122,17 +131,17 @@ public class AuthTests
         var user =
             TestUserData.Customer();
 
-        var register =
+        var registerResponse =
             await auth.RegisterUserAsync(user);
 
         Assert.True(
-            register.IsSuccessStatusCode);
+            registerResponse.IsSuccessStatusCode);
 
-        var login =
+        var loginResponse =
             await auth.LoginUserAsync(user);
 
         Assert.True(
-            login.IsSuccessStatusCode);
+            loginResponse.IsSuccessStatusCode);
 
         // Act
         var response =
@@ -144,40 +153,50 @@ public class AuthTests
             HttpStatusCode.OK,
             response.StatusCode);
 
-        var body =
+        var currentUser =
             await response.Content
                 .ReadFromJsonAsync<UserDto>();
 
-        Assert.NotNull(body);
+        Assert.NotNull(
+            currentUser);
+
+        Assert.False(
+            string.IsNullOrWhiteSpace(currentUser.Id));
+
+        Assert.Equal(
+            user.UserName,
+            currentUser.UserName);
 
         Assert.Equal(
             user.Email,
-            body.Email);
+            currentUser.Email);
     }
 
     [Fact]
-    public async Task Me_WithoutLogin_ReturnsUnauthorized()
+    public async Task GetCurrentUser_WhenUserIsNotLoggedIn_ReturnsUnauthorized()
     {
         // Arrange
-        var client =
-            _fixture.CreateAnonymousClient();
+        using var client =
+            _fixture.CreateClient();
 
         // Act
         var response =
-            await client.GetAsync(
-                "/auth/me");
+            await client.GetAsync("/auth/me");
 
         // Assert
+        var content =
+            await response.Content.ReadAsStringAsync();
+
         Assert.Equal(
             HttpStatusCode.Unauthorized,
             response.StatusCode);
     }
 
     [Fact]
-    public async Task Logout_AfterLogin_ReturnsOk()
+    public async Task Logout_WhenUserIsLoggedIn_ReturnsSuccess()
     {
         // Arrange
-        var client =
+        using var client =
             _fixture.CreateClient();
 
         var auth =
@@ -186,18 +205,26 @@ public class AuthTests
         var user =
             TestUserData.Customer();
 
-        var login =
+        var loginResponse =
             await auth.RegisterAndLoginAsync(user);
 
         Assert.True(
-            login.IsSuccessStatusCode);
+            loginResponse.IsSuccessStatusCode);
 
         // Act
-        var response =
+        var logoutResponse =
             await auth.LogoutUserAsync();
 
         // Assert
         Assert.True(
-            response.IsSuccessStatusCode);
+            logoutResponse.IsSuccessStatusCode);
+
+        var currentUserResponse =
+            await client.GetAsync(
+                "/auth/me");
+
+        Assert.Equal(
+            HttpStatusCode.Unauthorized,
+            currentUserResponse.StatusCode);
     }
 }

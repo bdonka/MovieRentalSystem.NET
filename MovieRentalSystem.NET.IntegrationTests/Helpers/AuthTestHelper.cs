@@ -1,9 +1,5 @@
-﻿using System.Net;
-using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
+﻿using System.Net.Http.Json;
 using MovieRentalSystem.NET.Application.Dtos;
-using MovieRentalSystem.NET.WebApi.Models.Requests.Users;
 
 namespace MovieRentalSystem.NET.IntegrationTests.Helpers;
 
@@ -11,60 +7,66 @@ public class AuthTestHelper
 {
     private readonly HttpClient _client;
 
-    public AuthTestHelper(HttpClient client)
+    public AuthTestHelper(
+        HttpClient client)
     {
-        _client =
-            client ??
-            throw new ArgumentNullException(nameof(client));
+        _client = client;
     }
 
     public async Task<HttpResponseMessage> RegisterUserAsync(
-        TestUserData userData)
+        TestUserData user)
     {
-        var request = new RegisterRequest
+        var request = new
         {
-            UserName = userData.UserName,
-            Email = userData.Email,
-            Password = userData.Password
+            user.UserName,
+            user.Email,
+            user.Password
         };
 
-        return await PostJsonAsync(
+        return await _client.PostAsJsonAsync(
             "/auth/register",
             request);
     }
 
     public async Task<HttpResponseMessage> LoginUserAsync(
-        TestUserData userData,
-        bool rememberMe = false)
+        TestUserData user)
     {
-        return await LoginUserAsync(
-            userData.Email,
-            userData.Password,
-            rememberMe);
-    }
-
-    public async Task<HttpResponseMessage> LoginUserAsync(
-        string email,
-        string password,
-        bool rememberMe = false)
-    {
-        var request = new LoginRequest
+        var request = new
         {
-            Email = email,
-            Password = password,
-            RememberMe = rememberMe
+            user.Email,
+            user.Password,
+            RememberMe = false
         };
 
-        return await PostJsonAsync(
-            "/auth/login",
-            request);
+        var response =
+            await _client.PostAsJsonAsync(
+                "/auth/login",
+                request);
+
+        var responseBody =
+            await response.Content.ReadAsStringAsync();
+
+        foreach (var header in response.Headers)
+        {
+            Console.WriteLine(
+                $"LOGIN HEADER: {header.Key} = {string.Join(", ", header.Value)}");
+        }
+
+        return response;
     }
 
-    public async Task<HttpResponseMessage> LogoutUserAsync()
+    public async Task<HttpResponseMessage> RegisterAndLoginAsync(
+        TestUserData user)
     {
-        return await _client.PostAsync(
-            "/auth/logout",
-            null);
+        var registerResponse =
+            await RegisterUserAsync(user);
+
+        if (!registerResponse.IsSuccessStatusCode)
+        {
+            return registerResponse;
+        }
+
+        return await LoginUserAsync(user);
     }
 
     public async Task<UserDto?> GetCurrentUserAsync()
@@ -81,51 +83,25 @@ public class AuthTestHelper
             .ReadFromJsonAsync<UserDto>();
     }
 
-    public async Task<HttpResponseMessage> GetAsync(
-        string url)
+    public async Task<HttpResponseMessage> LogoutUserAsync()
     {
-        return await _client.GetAsync(url);
+        return await _client.PostAsync(
+            "/auth/logout",
+            content: null);
     }
 
-    public async Task<HttpResponseMessage> RegisterAndLoginAsync(
-        TestUserData userData)
+    public async Task<HttpResponseMessage> DeleteCurrentUserAsync()
     {
-        var register =
-            await RegisterUserAsync(userData);
+        var currentUser =
+            await GetCurrentUserAsync();
 
-        if (!register.IsSuccessStatusCode)
+        if (currentUser is null)
         {
-            return register;
+            throw new InvalidOperationException(
+                "There is no authenticated user to delete.");
         }
 
-        return await LoginUserAsync(userData);
-    }
-
-    private async Task<HttpResponseMessage> PostJsonAsync<T>(
-        string url,
-        T body)
-    {
-        using var content =
-            new StringContent(
-                JsonSerializer.Serialize(body),
-                Encoding.UTF8,
-                "application/json");
-
-        return await _client.PostAsync(
-            url,
-            content);
-    }
-
-    public static bool IsSuccessful(
-        HttpResponseMessage response)
-    {
-        return response.IsSuccessStatusCode;
-    }
-
-    public static bool IsUnauthorized(
-        HttpResponseMessage response)
-    {
-        return response.StatusCode ==
-               HttpStatusCode.Unauthorized;
+        return await _client.DeleteAsync(
+            $"/api/users/{currentUser.Id}");
     }
 }

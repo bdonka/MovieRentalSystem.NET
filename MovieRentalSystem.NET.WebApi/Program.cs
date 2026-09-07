@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Identity;
 using MovieRentalSystem.NET.Application.ApplicationDependencies;
@@ -28,19 +29,34 @@ builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = null;
     options.AccessDeniedPath = null;
+
     options.Cookie.HttpOnly = true;
-    options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+
+    options.ExpireTimeSpan =
+        TimeSpan.FromMinutes(60);
+
     options.SlidingExpiration = true;
+
+    options.Events.OnValidatePrincipal = context =>
+    {
+        return Task.CompletedTask;
+    };
 
     options.Events.OnRedirectToLogin = context =>
     {
-        context.Response.StatusCode = 401;
+        context.Response.StatusCode =
+            StatusCodes.Status401Unauthorized;
+
         return Task.CompletedTask;
     };
 
     options.Events.OnRedirectToAccessDenied = context =>
     {
-        context.Response.StatusCode = 403;
+        context.Response.StatusCode =
+            StatusCodes.Status403Forbidden;
+
         return Task.CompletedTask;
     };
 });
@@ -85,6 +101,9 @@ builder.Services.AddSerilog();
 builder.AddServiceDefaults();
 
 builder.Services
+    .AddFluentValidationAutoValidation();
+
+builder.Services
     .AddControllers()
     .AddJsonOptions(options =>
     {
@@ -118,6 +137,10 @@ app.UseHttpLogging();
 
 app.UseMiddleware<ResponseTimeMiddleware>();
 
+app.UseAuthentication();
+
+app.UseAuthorization();
+
 app.MapDefaultEndpoints();
 
 if (app.Environment.IsDevelopment())
@@ -125,10 +148,6 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi().AllowAnonymous();
     app.MapScalarApiReference();
 }
-
-app.UseAuthentication();
-
-app.UseAuthorization();
 
 app.MapControllers();
 

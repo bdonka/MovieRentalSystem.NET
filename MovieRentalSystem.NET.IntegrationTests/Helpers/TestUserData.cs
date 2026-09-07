@@ -5,8 +5,6 @@ public record TestUserData(
     string Email,
     string Password)
 {
-    public string Id { get; } = Guid.NewGuid().ToString();
-
     public static TestUserData Customer()
     {
         var id = Guid.NewGuid();
@@ -17,16 +15,6 @@ public record TestUserData(
             "Password123!");
     }
 
-    public static TestUserData Admin()
-    {
-        var id = Guid.NewGuid();
-
-        return new(
-            $"admin_{id}",
-            $"admin_{id}@test.com",
-            "Admin123!");
-    }
-
     public static TestUserData Worker()
     {
         var id = Guid.NewGuid();
@@ -35,5 +23,15 @@ public record TestUserData(
             $"worker_{id}",
             $"worker_{id}@test.com",
             "Worker123!");
+    }
+
+    public static TestUserData Admin()
+    {
+        var id = Guid.NewGuid();
+
+        return new(
+            $"admin_{id}",
+            $"admin_{id}@test.com",
+            "Admin123!");
     }
 }

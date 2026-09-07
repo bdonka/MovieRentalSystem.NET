@@ -1,5 +1,10 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using MovieRentalSystem.NET.Application.Common;
+using MovieRentalSystem.NET.Application.Dtos;
+using MovieRentalSystem.NET.Domain.Enums;
 using MovieRentalSystem.NET.IntegrationTests.Fixtures;
 using MovieRentalSystem.NET.IntegrationTests.Helpers;
 
@@ -10,356 +15,951 @@ public class MoviePhysicalCopiesControllerTests
 {
     private readonly AspireFixture _fixture;
 
-    public MoviePhysicalCopiesControllerTests(
-        AspireFixture fixture)
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        Converters =
+        {
+            new JsonStringEnumConverter()
+        }
+    };
+
+    public MoviePhysicalCopiesControllerTests(AspireFixture fixture)
     {
         _fixture = fixture;
     }
 
     [Fact]
-    public async Task Admin_CanGetMoviePhysicalCopies()
+    public async Task GetMoviePhysicalCopies_WhenUserIsAdmin_ReturnsOkWithCreatedCopy()
     {
-        // Arrange
-        var client = _fixture.CreateClient();
+        using var client = _fixture.CreateClient();
 
-        var auth =
-            new AuthTestHelper(client);
+        var auth = _fixture.CreateAuthHelper(client);
+        var admin = await _fixture.CreateAdminAsync();
 
-        var login =
-            await auth.LoginUserAsync(
-                "admin@test.com",
-                "Admin123!");
+        int? movieId = null;
+        int? copyId = null;
 
-        Assert.True(
-            login.IsSuccessStatusCode);
+        try
+        {
+            await LoginAsAdminAsync(auth, admin);
 
-        // Act
-        var response =
-            await client.GetAsync(
-                "/api/moviePhysicalCopies");
+            var movie = await CreateMovieAsync(client);
+            movieId = movie.Id;
 
-        // Assert
-        Assert.Equal(
-            HttpStatusCode.OK,
-            response.StatusCode);
+            var copy = await CreateMoviePhysicalCopyAsync(
+                client,
+                movie.Id,
+                "GET-LIST");
+
+            copyId = copy.Id;
+
+            var response =
+                await client.GetAsync("/api/moviePhysicalCopies");
+
+            var result =
+                await ReadResponseAsync<
+                    PagedResponse<MoviePhysicalCopyDto>>(
+                    response);
+
+            Assert.Equal(
+                HttpStatusCode.OK,
+                response.StatusCode);
+
+            Assert.NotNull(result);
+            Assert.NotNull(result.Data);
+
+            var returnedCopy =
+                result.Data.Single(
+                    item => item.Id == copy.Id);
+
+            Assert.Equal(copy.Id, returnedCopy.Id);
+            Assert.Equal(movie.Id, returnedCopy.MovieId);
+            Assert.Equal(copy.Code, returnedCopy.Code);
+            Assert.Equal(copy.Status, returnedCopy.Status);
+        }
+        finally
+        {
+            await CleanupAsync(
+                client,
+                copyId,
+                movieId);
+
+            await _fixture.DeleteUserAsync(admin);
+        }
     }
 
     [Fact]
-    public async Task Customer_CannotGetMoviePhysicalCopies()
+    public async Task GetMoviePhysicalCopies_WhenUserIsWorker_ReturnsOkWithCreatedCopy()
     {
-        // Arrange
-        var user =
-            TestUserData.Customer();
+        using var workerClient = _fixture.CreateClient();
+        using var adminClient = _fixture.CreateClient();
 
-        var auth =
-            _fixture.CreateAuthHelper();
+        var workerAuth = _fixture.CreateAuthHelper(workerClient);
+        var adminAuth = _fixture.CreateAuthHelper(adminClient);
 
-        var login =
-            await auth.RegisterAndLoginAsync(user);
+        var worker = await _fixture.CreateWorkerAsync();
+        var admin = await _fixture.CreateAdminAsync();
 
-        Assert.True(
-            login.IsSuccessStatusCode);
+        int? movieId = null;
+        int? copyId = null;
 
-        // Act
-        var response =
-            await _fixture.ApiClient
-                .GetAsync(
+        try
+        {
+            await LoginAsWorkerAsync(workerAuth, worker);
+            await LoginAsAdminAsync(adminAuth, admin);
+
+            var movie =
+                await CreateMovieAsync(adminClient);
+
+            movieId = movie.Id;
+
+            var copy =
+                await CreateMoviePhysicalCopyAsync(
+                    adminClient,
+                    movie.Id,
+                    "GET-WORKER");
+
+            copyId = copy.Id;
+
+            var response =
+                await workerClient.GetAsync(
                     "/api/moviePhysicalCopies");
 
-        // Assert
-        Assert.Equal(
-            HttpStatusCode.Forbidden,
-            response.StatusCode);
+            var result =
+                await ReadResponseAsync<
+                    PagedResponse<MoviePhysicalCopyDto>>(
+                    response);
+
+            Assert.Equal(
+                HttpStatusCode.OK,
+                response.StatusCode);
+
+            Assert.NotNull(result);
+            Assert.NotNull(result.Data);
+
+            var returnedCopy =
+                result.Data.Single(
+                    item => item.Id == copy.Id);
+
+            Assert.Equal(copy.Id, returnedCopy.Id);
+            Assert.Equal(movie.Id, returnedCopy.MovieId);
+            Assert.Equal(copy.Code, returnedCopy.Code);
+            Assert.Equal(copy.Status, returnedCopy.Status);
+        }
+        finally
+        {
+            await CleanupAsync(
+                adminClient,
+                copyId,
+                movieId);
+
+            await _fixture.DeleteUserAsync(admin);
+            await _fixture.DeleteUserAsync(worker);
+        }
     }
 
     [Fact]
-    public async Task AnonymousUser_CanGetMoviePhysicalCopies()
+    public async Task GetMoviePhysicalCopies_WhenUserIsCustomer_ReturnsForbidden()
     {
-        // Arrange
-        var client =
-            _fixture.CreateClient();
+        using var client = _fixture.CreateClient();
 
-        // Act
+        var auth = _fixture.CreateAuthHelper(client);
+        var customer = TestUserData.Customer();
+
+        try
+        {
+            await RegisterAndLoginAsync(
+                auth,
+                customer);
+
+            var response =
+                await client.GetAsync(
+                    "/api/moviePhysicalCopies");
+
+            Assert.Equal(
+                HttpStatusCode.Forbidden,
+                response.StatusCode);
+        }
+        finally
+        {
+            await _fixture.DeleteUserAsync(customer);
+        }
+    }
+
+    [Fact]
+    public async Task GetMoviePhysicalCopies_WhenUserIsAnonymous_ReturnsUnauthorized()
+    {
+        using var client = _fixture.CreateClient();
+
         var response =
             await client.GetAsync(
                 "/api/moviePhysicalCopies");
 
-        // Assert
         Assert.Equal(
-            HttpStatusCode.OK,
-            response.StatusCode);
-    }
-
-
-    [Fact]
-    public async Task Admin_CanCreateMoviePhysicalCopy()
-    {
-        // Arrange
-        var client =
-            _fixture.CreateClient();
-
-        var auth =
-            new AuthTestHelper(client);
-
-        var login =
-            await auth.LoginUserAsync(
-                "admin@test.com",
-                "Admin123!");
-
-        Assert.True(
-            login.IsSuccessStatusCode);
-
-        var request = new
-        {
-            MovieId = 1,
-            Code = $"COPY-TEST-{Guid.NewGuid():N}"
-        };
-
-        // Act
-        var response =
-            await client.PostAsJsonAsync(
-                "/api/moviePhysicalCopies",
-                request);
-
-        // Assert
-        Assert.Equal(
-            HttpStatusCode.Created,
+            HttpStatusCode.Unauthorized,
             response.StatusCode);
     }
 
     [Fact]
-    public async Task Customer_CannotCreateMoviePhysicalCopy()
+    public async Task GetMoviePhysicalCopy_WhenCopyExistsAndUserIsAdmin_ReturnsOkWithCopy()
     {
-        // Arrange
-        var user =
-            TestUserData.Customer();
+        using var client = _fixture.CreateClient();
 
-        var auth =
-            _fixture.CreateAuthHelper();
+        var auth = _fixture.CreateAuthHelper(client);
+        var admin = await _fixture.CreateAdminAsync();
 
-        var login =
-            await auth.RegisterAndLoginAsync(user);
+        int? movieId = null;
+        int? copyId = null;
 
-        Assert.True(
-            login.IsSuccessStatusCode);
-
-        var request = new
+        try
         {
-            MovieId = 1,
-            Code = "COPY-CUSTOMER"
-        };
+            await LoginAsAdminAsync(auth, admin);
 
-        // Act
+            var movie =
+                await CreateMovieAsync(client);
+
+            movieId = movie.Id;
+
+            var copy =
+                await CreateMoviePhysicalCopyAsync(
+                    client,
+                    movie.Id,
+                    "GET-SINGLE");
+
+            copyId = copy.Id;
+
+            var response =
+                await client.GetAsync(
+                    $"/api/moviePhysicalCopies/{copy.Id}");
+
+            var returnedCopy =
+                await ReadResponseAsync<MoviePhysicalCopyDto>(
+                    response);
+
+            Assert.Equal(
+                HttpStatusCode.OK,
+                response.StatusCode);
+
+            Assert.NotNull(returnedCopy);
+
+            Assert.Equal(copy.Id, returnedCopy.Id);
+            Assert.Equal(movie.Id, returnedCopy.MovieId);
+            Assert.Equal(copy.Code, returnedCopy.Code);
+            Assert.Equal(
+                MovieCopyStatus.Available,
+                returnedCopy.Status);
+        }
+        finally
+        {
+            await CleanupAsync(
+                client,
+                copyId,
+                movieId);
+
+            await _fixture.DeleteUserAsync(admin);
+        }
+    }
+
+    [Fact]
+    public async Task GetMoviePhysicalCopy_WhenCopyDoesNotExistAndUserIsAdmin_ReturnsNotFound()
+    {
+        using var client = _fixture.CreateClient();
+
+        var auth = _fixture.CreateAuthHelper(client);
+        var admin = await _fixture.CreateAdminAsync();
+
+        try
+        {
+            await LoginAsAdminAsync(auth, admin);
+
+            var response =
+                await client.GetAsync(
+                    $"/api/moviePhysicalCopies/{int.MaxValue}");
+
+            Assert.Equal(
+                HttpStatusCode.NotFound,
+                response.StatusCode);
+        }
+        finally
+        {
+            await _fixture.DeleteUserAsync(admin);
+        }
+    }
+
+    [Fact]
+    public async Task GetMoviePhysicalCopy_WhenUserIsCustomer_ReturnsForbidden()
+    {
+        using var client = _fixture.CreateClient();
+
+        var auth = _fixture.CreateAuthHelper(client);
+        var customer = TestUserData.Customer();
+
+        try
+        {
+            await RegisterAndLoginAsync(
+                auth,
+                customer);
+
+            var response =
+                await client.GetAsync(
+                    $"/api/moviePhysicalCopies/{int.MaxValue}");
+
+            Assert.Equal(
+                HttpStatusCode.Forbidden,
+                response.StatusCode);
+        }
+        finally
+        {
+            await _fixture.DeleteUserAsync(customer);
+        }
+    }
+
+    [Fact]
+    public async Task GetMoviePhysicalCopy_WhenUserIsAnonymous_ReturnsUnauthorized()
+    {
+        using var client = _fixture.CreateClient();
+
         var response =
-            await _fixture.ApiClient
-                .PostAsJsonAsync(
+            await client.GetAsync(
+                $"/api/moviePhysicalCopies/{int.MaxValue}");
+
+        Assert.Equal(
+            HttpStatusCode.Unauthorized,
+            response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CreateMoviePhysicalCopy_WhenUserIsAdmin_ReturnsCreatedWithCreatedCopy()
+    {
+        using var client = _fixture.CreateClient();
+
+        var auth = _fixture.CreateAuthHelper(client);
+        var admin = await _fixture.CreateAdminAsync();
+
+        int? movieId = null;
+        int? copyId = null;
+
+        try
+        {
+            await LoginAsAdminAsync(auth, admin);
+
+            var movie =
+                await CreateMovieAsync(client);
+
+            movieId = movie.Id;
+
+            var copy =
+                await CreateMoviePhysicalCopyAsync(
+                    client,
+                    movie.Id,
+                    "CREATE-COPY");
+
+            copyId = copy.Id;
+
+            Assert.True(copy.Id > 0);
+            Assert.Equal(movie.Id, copy.MovieId);
+            Assert.Equal(
+                $"CREATE-COPY-{movie.Id}",
+                copy.Code);
+            Assert.Equal(
+                MovieCopyStatus.Available,
+                copy.Status);
+        }
+        finally
+        {
+            await CleanupAsync(
+                client,
+                copyId,
+                movieId);
+
+            await _fixture.DeleteUserAsync(admin);
+        }
+    }
+
+    [Fact]
+    public async Task CreateMoviePhysicalCopy_WhenUserIsCustomer_ReturnsForbidden()
+    {
+        using var client = _fixture.CreateClient();
+
+        var auth = _fixture.CreateAuthHelper(client);
+        var customer = TestUserData.Customer();
+
+        try
+        {
+            await RegisterAndLoginAsync(
+                auth,
+                customer);
+
+            var request = new
+            {
+                MovieId = int.MaxValue,
+                Code = $"CUSTOMER-COPY-{Guid.NewGuid():N}"
+            };
+
+            var response =
+                await client.PostAsJsonAsync(
                     "/api/moviePhysicalCopies",
                     request);
 
-        // Assert
-        Assert.Equal(
-            HttpStatusCode.Forbidden,
-            response.StatusCode);
+            Assert.Equal(
+                HttpStatusCode.Forbidden,
+                response.StatusCode);
+        }
+        finally
+        {
+            await _fixture.DeleteUserAsync(customer);
+        }
     }
 
     [Fact]
-    public async Task Admin_CreateMoviePhysicalCopy_WithInvalidMovie_ReturnsNotFound()
+    public async Task CreateMoviePhysicalCopy_WhenUserIsAnonymous_ReturnsUnauthorized()
     {
-        // Arrange
-        var client =
-            _fixture.CreateClient();
-
-        var auth =
-            new AuthTestHelper(client);
-
-        var login =
-            await auth.LoginUserAsync(
-                "admin@test.com",
-                "Admin123!");
-
-        Assert.True(
-            login.IsSuccessStatusCode);
+        using var client = _fixture.CreateClient();
 
         var request = new
         {
-            MovieId = 999999,
-            Code = $"INVALID-{Guid.NewGuid():N}"
+            MovieId = int.MaxValue,
+            Code = $"ANONYMOUS-COPY-{Guid.NewGuid():N}"
         };
 
-        // Act
         var response =
             await client.PostAsJsonAsync(
                 "/api/moviePhysicalCopies",
                 request);
 
-        // Assert
         Assert.Equal(
-            HttpStatusCode.NotFound,
+            HttpStatusCode.Unauthorized,
             response.StatusCode);
     }
 
     [Fact]
-    public async Task Admin_CanUpdateMoviePhysicalCopy()
+    public async Task CreateMoviePhysicalCopy_WhenMovieDoesNotExistAndUserIsAdmin_ReturnsNotFound()
     {
-        // Arrange
-        var client =
-            _fixture.CreateClient();
+        using var client = _fixture.CreateClient();
 
-        var auth =
-            new AuthTestHelper(client);
+        var auth = _fixture.CreateAuthHelper(client);
+        var admin = await _fixture.CreateAdminAsync();
 
-        var login =
-            await auth.LoginUserAsync(
-                "admin@test.com",
-                "Admin123!");
+        try
+        {
+            await LoginAsAdminAsync(auth, admin);
 
-        Assert.True(
-            login.IsSuccessStatusCode,
-            "Admin login failed.");
+            var request = new
+            {
+                MovieId = int.MaxValue,
+                Code = $"INVALID-MOVIE-{Guid.NewGuid():N}"
+            };
+
+            var response =
+                await client.PostAsJsonAsync(
+                    "/api/moviePhysicalCopies",
+                    request);
+
+            Assert.Equal(
+                HttpStatusCode.NotFound,
+                response.StatusCode);
+        }
+        finally
+        {
+            await _fixture.DeleteUserAsync(admin);
+        }
+    }
+
+    [Fact]
+    public async Task UpdateMoviePhysicalCopy_WhenCopyExistsAndUserIsAdmin_ReturnsNoContentAndUpdatesStatus()
+    {
+        using var client = _fixture.CreateClient();
+
+        var auth = _fixture.CreateAuthHelper(client);
+        var admin = await _fixture.CreateAdminAsync();
+
+        int? movieId = null;
+        int? copyId = null;
+
+        try
+        {
+            await LoginAsAdminAsync(auth, admin);
+
+            var movie =
+                await CreateMovieAsync(client);
+
+            movieId = movie.Id;
+
+            var copy =
+                await CreateMoviePhysicalCopyAsync(
+                    client,
+                    movie.Id,
+                    "UPDATE-COPY");
+
+            copyId = copy.Id;
+
+            var request = new
+            {
+                Status = MovieCopyStatus.Rented
+            };
+
+            var response =
+                await client.PutAsJsonAsync(
+                    $"/api/moviePhysicalCopies/{copy.Id}/{movie.Id}",
+                    request);
+
+            Assert.Equal(
+                HttpStatusCode.NoContent,
+                response.StatusCode);
+
+            var getResponse =
+                await client.GetAsync(
+                    $"/api/moviePhysicalCopies/{copy.Id}");
+
+            var updatedCopy =
+                await ReadResponseAsync<MoviePhysicalCopyDto>(
+                    getResponse);
+
+            Assert.Equal(
+                HttpStatusCode.OK,
+                getResponse.StatusCode);
+
+            Assert.NotNull(updatedCopy);
+
+            Assert.Equal(copy.Id, updatedCopy.Id);
+            Assert.Equal(movie.Id, updatedCopy.MovieId);
+            Assert.Equal(copy.Code, updatedCopy.Code);
+            Assert.Equal(
+                MovieCopyStatus.Rented,
+                updatedCopy.Status);
+        }
+        finally
+        {
+            await CleanupAsync(
+                client,
+                copyId,
+                movieId);
+
+            await _fixture.DeleteUserAsync(admin);
+        }
+    }
+
+    [Fact]
+    public async Task UpdateMoviePhysicalCopy_WhenCopyDoesNotExistAndUserIsAdmin_ReturnsNotFound()
+    {
+        using var client = _fixture.CreateClient();
+
+        var auth = _fixture.CreateAuthHelper(client);
+        var admin = await _fixture.CreateAdminAsync();
+
+        try
+        {
+            await LoginAsAdminAsync(auth, admin);
+
+            var request = new
+            {
+                Status = MovieCopyStatus.Rented
+            };
+
+            var response =
+                await client.PutAsJsonAsync(
+                    $"/api/moviePhysicalCopies/{int.MaxValue}/{int.MaxValue}",
+                    request);
+
+            Assert.Equal(
+                HttpStatusCode.NotFound,
+                response.StatusCode);
+        }
+        finally
+        {
+            await _fixture.DeleteUserAsync(admin);
+        }
+    }
+
+    [Fact]
+    public async Task UpdateMoviePhysicalCopy_WhenUserIsCustomer_ReturnsForbidden()
+    {
+        using var client = _fixture.CreateClient();
+
+        var auth = _fixture.CreateAuthHelper(client);
+        var customer = TestUserData.Customer();
+
+        try
+        {
+            await RegisterAndLoginAsync(
+                auth,
+                customer);
+
+            var request = new
+            {
+                Status = MovieCopyStatus.Rented
+            };
+
+            var response =
+                await client.PutAsJsonAsync(
+                    $"/api/moviePhysicalCopies/{int.MaxValue}/{int.MaxValue}",
+                    request);
+
+            Assert.Equal(
+                HttpStatusCode.Forbidden,
+                response.StatusCode);
+        }
+        finally
+        {
+            await _fixture.DeleteUserAsync(customer);
+        }
+    }
+
+    [Fact]
+    public async Task UpdateMoviePhysicalCopy_WhenUserIsAnonymous_ReturnsUnauthorized()
+    {
+        using var client = _fixture.CreateClient();
 
         var request = new
         {
-            Status = 1
+            Status = MovieCopyStatus.Rented
         };
 
-        // Act
         var response =
             await client.PutAsJsonAsync(
-                "/api/moviePhysicalCopies/1/1",
+                $"/api/moviePhysicalCopies/{int.MaxValue}/{int.MaxValue}",
                 request);
 
-        // Assert
-        var responseBody =
+        Assert.Equal(
+            HttpStatusCode.Unauthorized,
+            response.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteMoviePhysicalCopy_WhenCopyExistsAndUserIsAdmin_ReturnsNoContentAndDeletesCopy()
+    {
+        using var client = _fixture.CreateClient();
+
+        var auth = _fixture.CreateAuthHelper(client);
+        var admin = await _fixture.CreateAdminAsync();
+
+        int? movieId = null;
+        int? copyId = null;
+
+        try
+        {
+            await LoginAsAdminAsync(auth, admin);
+
+            var movie =
+                await CreateMovieAsync(client);
+
+            movieId = movie.Id;
+
+            var copy =
+                await CreateMoviePhysicalCopyAsync(
+                    client,
+                    movie.Id,
+                    "DELETE-COPY");
+
+            copyId = copy.Id;
+
+            var response =
+                await client.DeleteAsync(
+                    $"/api/moviePhysicalCopies/{copy.Id}/{movie.Id}");
+
+            Assert.Equal(
+                HttpStatusCode.NoContent,
+                response.StatusCode);
+
+            var getResponse =
+                await client.GetAsync(
+                    $"/api/moviePhysicalCopies/{copy.Id}");
+
+            Assert.Equal(
+                HttpStatusCode.NotFound,
+                getResponse.StatusCode);
+
+            // Copy has already been deleted successfully.
+            copyId = null;
+        }
+        finally
+        {
+            await CleanupAsync(
+                client,
+                copyId,
+                movieId);
+
+            await _fixture.DeleteUserAsync(admin);
+        }
+    }
+
+    [Fact]
+    public async Task DeleteMoviePhysicalCopy_WhenCopyDoesNotExistAndUserIsAdmin_ReturnsNotFound()
+    {
+        using var client = _fixture.CreateClient();
+
+        var auth = _fixture.CreateAuthHelper(client);
+        var admin = await _fixture.CreateAdminAsync();
+
+        try
+        {
+            await LoginAsAdminAsync(auth, admin);
+
+            var response =
+                await client.DeleteAsync(
+                    $"/api/moviePhysicalCopies/{int.MaxValue}/{int.MaxValue}");
+
+            Assert.Equal(
+                HttpStatusCode.NotFound,
+                response.StatusCode);
+        }
+        finally
+        {
+            await _fixture.DeleteUserAsync(admin);
+        }
+    }
+
+    [Fact]
+    public async Task DeleteMoviePhysicalCopy_WhenUserIsCustomer_ReturnsForbidden()
+    {
+        using var client = _fixture.CreateClient();
+
+        var auth = _fixture.CreateAuthHelper(client);
+        var customer = TestUserData.Customer();
+
+        try
+        {
+            await RegisterAndLoginAsync(
+                auth,
+                customer);
+
+            var response =
+                await client.DeleteAsync(
+                    $"/api/moviePhysicalCopies/{int.MaxValue}/{int.MaxValue}");
+
+            Assert.Equal(
+                HttpStatusCode.Forbidden,
+                response.StatusCode);
+        }
+        finally
+        {
+            await _fixture.DeleteUserAsync(customer);
+        }
+    }
+
+    [Fact]
+    public async Task DeleteMoviePhysicalCopy_WhenUserIsAnonymous_ReturnsUnauthorized()
+    {
+        using var client = _fixture.CreateClient();
+
+        var response =
+            await client.DeleteAsync(
+                $"/api/moviePhysicalCopies/{int.MaxValue}/{int.MaxValue}");
+
+        Assert.Equal(
+            HttpStatusCode.Unauthorized,
+            response.StatusCode);
+    }
+
+    private static async Task LoginAsAdminAsync(
+        AuthTestHelper auth,
+        TestUserData admin)
+    {
+        var response =
+            await auth.LoginUserAsync(admin);
+
+        await AssertSuccessfulAuthenticationAsync(response);
+    }
+
+    private static async Task LoginAsWorkerAsync(
+        AuthTestHelper auth,
+        TestUserData worker)
+    {
+        var response =
+            await auth.LoginUserAsync(worker);
+
+        await AssertSuccessfulAuthenticationAsync(response);
+    }
+
+    private static async Task RegisterAndLoginAsync(
+        AuthTestHelper auth,
+        TestUserData user)
+    {
+        var response =
+            await auth.RegisterAndLoginAsync(user);
+
+        await AssertSuccessfulAuthenticationAsync(response);
+    }
+
+    private static async Task AssertSuccessfulAuthenticationAsync(
+        HttpResponseMessage response)
+    {
+        var body =
             await response.Content.ReadAsStringAsync();
 
         Assert.True(
-            response.StatusCode == HttpStatusCode.NoContent,
-            $"Expected 204 No Content, but received " +
-            $"{(int) response.StatusCode} {response.StatusCode}. " +
-            $"Response: {responseBody}");
+            response.IsSuccessStatusCode,
+            $"Authentication failed. " +
+            $"Status: {response.StatusCode}. " +
+            $"Body: {body}");
     }
 
-    [Fact]
-    public async Task Admin_UpdateNonExistingCopy_ReturnsNotFound()
-        {
-        // Arrange
-        var auth =
-            _fixture.CreateAuthHelper();
+    private static async Task<T?> ReadResponseAsync<T>(
+        HttpResponseMessage response)
+    {
+        return await response.Content.ReadFromJsonAsync<T>(
+            JsonOptions);
+    }
 
-        var login =
-            await auth.LoginUserAsync(
-                "admin@test.com",
-                "Admin123!");
-
-        Assert.True(
-            login.IsSuccessStatusCode);
-
+    private static async Task<MovieDto> CreateMovieAsync(
+        HttpClient client)
+    {
         var request = new
         {
-            Status = 1
+            Title = $"Test Movie {Guid.NewGuid():N}",
+            Description = "Movie created for integration test",
+            ReleaseYear = 2025,
+            RentalPrice = 20m
         };
 
-        // Act
         var response =
-            await _fixture.ApiClient
-                .PutAsJsonAsync(
-                    "/api/moviePhysicalCopies/999999/1",
-                    request);
+            await client.PostAsJsonAsync(
+                "/api/movies",
+                request);
 
-        // Assert
-        Assert.Equal(
-            HttpStatusCode.NotFound,
-            response.StatusCode);
-    }
-
-
-    [Fact]
-    public async Task Admin_CanDeleteMoviePhysicalCopy()
-    {
-        // Arrange
-        var auth =
-            _fixture.CreateAuthHelper();
-
-        var login =
-            await auth.LoginUserAsync(
-                "admin@test.com",
-                "Admin123!");
-
-        Assert.True(
-            login.IsSuccessStatusCode);
-
-        // Create a new physical copy specifically for this test
-        var createRequest = new
-        {
-            MovieId = 1,
-            Code = $"COPY-DELETE-{Guid.NewGuid():N}"
-        };
-
-        var createResponse =
-            await _fixture.ApiClient
-                .PostAsJsonAsync(
-                    "/api/moviePhysicalCopies",
-                    createRequest);
+        var body =
+            await response.Content.ReadAsStringAsync();
 
         Assert.Equal(
             HttpStatusCode.Created,
-            createResponse.StatusCode);
-
-        var createdCopy =
-            await createResponse.Content
-                .ReadFromJsonAsync<MoviePhysicalCopyTestDto>();
-
-        Assert.NotNull(createdCopy);
-        Assert.True(createdCopy.Id > 0);
-
-        // Act
-        var deleteResponse =
-            await _fixture.ApiClient
-                .DeleteAsync(
-                    $"/api/moviePhysicalCopies/{createdCopy.Id}/1");
-
-        // Assert
-        var responseBody =
-            await deleteResponse.Content
-                .ReadAsStringAsync();
-
-        Assert.True(
-            deleteResponse.StatusCode == HttpStatusCode.NoContent,
-            $"Expected 204 No Content, but received " +
-            $"{(int) deleteResponse.StatusCode} " +
-            $"{deleteResponse.StatusCode}. " +
-            $"Response: {responseBody}");
-    }
-
-    private sealed class MoviePhysicalCopyTestDto
-    {
-        public int Id { get; set; }
-    }
-
-    [Fact]
-    public async Task Admin_DeleteNonExistingCopy_ReturnsNotFound()
-        {
-        // Arrange
-        var auth =
-            _fixture.CreateAuthHelper();
-
-        var login =
-            await auth.LoginUserAsync(
-                "admin@test.com",
-                "Admin123!");
-
-        Assert.True(
-            login.IsSuccessStatusCode);
-
-        // Act
-        var response =
-            await _fixture.ApiClient
-                .DeleteAsync(
-                    "/api/moviePhysicalCopies/999999/1");
-
-        // Assert
-        Assert.Equal(
-            HttpStatusCode.NotFound,
             response.StatusCode);
+
+        var movie =
+            await response.Content.ReadFromJsonAsync<MovieDto>();
+
+        Assert.NotNull(movie);
+
+        Assert.True(
+            movie.Id > 0);
+
+        Assert.Equal(
+            request.Title,
+            movie.Title);
+
+        Assert.Equal(
+            request.Description,
+            movie.Description);
+
+        Assert.Equal(
+            request.ReleaseYear,
+            movie.ReleaseYear);
+
+        Assert.Equal(
+            request.RentalPrice,
+            movie.RentalPrice);
+
+        return movie;
+    }
+
+    private static async Task<MoviePhysicalCopyDto>
+        CreateMoviePhysicalCopyAsync(
+            HttpClient client,
+            int movieId,
+            string codePrefix)
+    {
+        var request = new
+        {
+            MovieId = movieId,
+            Code = $"{codePrefix}-{movieId}"
+        };
+
+        var response =
+            await client.PostAsJsonAsync(
+                "/api/moviePhysicalCopies",
+                request);
+
+        var responseBody =
+            await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(
+            HttpStatusCode.Created,
+            response.StatusCode);
+
+        var copy =
+            await response.Content.ReadFromJsonAsync<
+                MoviePhysicalCopyDto>(
+                JsonOptions);
+
+        Assert.NotNull(copy);
+
+        Assert.True(
+            copy.Id > 0);
+
+        Assert.Equal(
+            request.MovieId,
+            copy.MovieId);
+
+        Assert.Equal(
+            request.Code,
+            copy.Code);
+
+        Assert.Equal(
+            MovieCopyStatus.Available,
+            copy.Status);
+
+        return copy;
+    }
+
+    private static async Task CleanupAsync(
+    HttpClient client,
+    int? copyId,
+    int? movieId)
+    {
+        if (copyId.HasValue)
+        {
+            var deleteCopyResponse =
+                await client.DeleteAsync(
+                    $"/api/moviePhysicalCopies/{copyId.Value}/{movieId}");
+
+            var deleteCopyBody =
+                await deleteCopyResponse.Content.ReadAsStringAsync();
+
+            Console.WriteLine(
+                $"DELETE COPY {copyId}: " +
+                $"{(int) deleteCopyResponse.StatusCode} " +
+                $"{deleteCopyBody}");
+
+            Assert.Equal(
+                HttpStatusCode.NoContent,
+                deleteCopyResponse.StatusCode);
+
+            var verifyCopyResponse =
+                await client.GetAsync(
+                    $"/api/moviePhysicalCopies/{copyId.Value}");
+
+            var verifyCopyBody =
+                await verifyCopyResponse.Content.ReadAsStringAsync();
+
+            Console.WriteLine(
+                $"GET COPY {copyId} AFTER DELETE: " +
+                $"{(int) verifyCopyResponse.StatusCode} " +
+                $"{verifyCopyBody}");
+
+            Assert.Equal(
+                HttpStatusCode.NotFound,
+                verifyCopyResponse.StatusCode);
+        }
+
+        if (movieId.HasValue)
+        {
+            Console.WriteLine(
+                $"ABOUT TO DELETE MOVIE {movieId}");
+
+            var deleteMovieResponse =
+                await client.DeleteAsync(
+                    $"/api/movies/{movieId.Value}");
+
+            var deleteMovieBody =
+                await deleteMovieResponse.Content.ReadAsStringAsync();
+
+            Console.WriteLine(
+                $"DELETE MOVIE {movieId}: " +
+                $"{(int) deleteMovieResponse.StatusCode} " +
+                $"{deleteMovieBody}");
+
+            Assert.Equal(
+                HttpStatusCode.NoContent,
+                deleteMovieResponse.StatusCode);
+        }
     }
 }

@@ -10,120 +10,304 @@ namespace MovieRentalSystem.NET.IntegrationTests.Genres;
 public class GenresControllerTests
 {
     private readonly AspireFixture _fixture;
+
     public GenresControllerTests(AspireFixture fixture)
     {
         _fixture = fixture;
     }
 
     [Fact]
-    public async Task GetGenres_ReturnsOk()
+    public async Task GetGenres_WhenGenresExist_ReturnsGenres()
     {
-        var client = _fixture.CreateClient();
+        // Arrange
+        using var client = _fixture.CreateClient();
 
-        var response =
-            await client.GetAsync("/api/genres");
+        var auth = _fixture.CreateAuthHelper(client);
+        var admin = await _fixture.CreateAdminAsync();
 
-        Assert.Equal(
-            HttpStatusCode.OK,
-            response.StatusCode);
+        int? genreId = null;
+
+        try
+        {
+            var loginResponse =
+                await auth.LoginUserAsync(admin);
+
+            Assert.True(
+                loginResponse.IsSuccessStatusCode);
+
+            var genreName =
+                $"Comedy-{Guid.NewGuid():N}";
+
+            var createResponse =
+                await client.PostAsJsonAsync(
+                    "/api/genres",
+                    new
+                    {
+                        Name = genreName
+                    });
+
+            Assert.Equal(
+                HttpStatusCode.Created,
+                createResponse.StatusCode);
+
+            var createdGenre =
+                await createResponse.Content
+                    .ReadFromJsonAsync<JsonElement>();
+
+            genreId =
+                createdGenre
+                    .GetProperty("id")
+                    .GetInt32();
+
+            // Act
+            var response =
+                await client.GetAsync(
+                    "/api/genres");
+
+            // Assert
+            Assert.Equal(
+                HttpStatusCode.OK,
+                response.StatusCode);
+
+            var genres =
+                await response.Content
+                    .ReadFromJsonAsync<JsonElement>();
+
+            Assert.Equal(
+                JsonValueKind.Object,
+                genres.ValueKind);
+
+            var data =
+                genres.GetProperty("data");
+
+            Assert.Equal(
+                JsonValueKind.Array,
+                data.ValueKind);
+
+            Assert.Contains(
+                data.EnumerateArray(),
+                genre =>
+                    genre.GetProperty("name").GetString()
+                    == genreName);
+        }
+        finally
+        {
+            if (genreId.HasValue)
+            {
+                await client.DeleteAsync(
+                    $"/api/genres/{genreId.Value}");
+            }
+
+            await _fixture.DeleteUserAsync(admin);
+        }
     }
 
     [Fact]
-    public async Task GetGenre_WithExistingId_ReturnsOk()
+    public async Task GetGenre_WhenGenreExists_ReturnsGenre()
     {
-        var client = _fixture.CreateClient();
+        // Arrange
+        using var client = _fixture.CreateClient();
 
-        var response =
-            await client.GetAsync("/api/genres/1");
+        var auth = _fixture.CreateAuthHelper(client);
+        var admin = await _fixture.CreateAdminAsync();
 
-        Assert.Equal(
-            HttpStatusCode.OK,
-            response.StatusCode);
+        int? genreId = null;
+
+        try
+        {
+            var loginResponse =
+                await auth.LoginUserAsync(admin);
+
+            Assert.True(
+                loginResponse.IsSuccessStatusCode);
+
+            var genreName =
+                $"Comedy-{Guid.NewGuid():N}";
+
+            var createResponse =
+                await client.PostAsJsonAsync(
+                    "/api/genres",
+                    new
+                    {
+                        Name = genreName
+                    });
+
+            Assert.Equal(
+                HttpStatusCode.Created,
+                createResponse.StatusCode);
+
+            var createdGenre =
+                await createResponse.Content
+                    .ReadFromJsonAsync<JsonElement>();
+
+            genreId =
+                createdGenre
+                    .GetProperty("id")
+                    .GetInt32();
+
+            // Act
+            var response =
+                await client.GetAsync(
+                    $"/api/genres/{genreId.Value}");
+
+            // Assert
+            Assert.Equal(
+                HttpStatusCode.OK,
+                response.StatusCode);
+
+            var genre =
+                await response.Content
+                    .ReadFromJsonAsync<JsonElement>();
+
+            Assert.Equal(
+                genreId.Value,
+                genre.GetProperty("id").GetInt32());
+
+            Assert.Equal(
+                genreName,
+                genre.GetProperty("name").GetString());
+        }
+        finally
+        {
+            if (genreId.HasValue)
+            {
+                await client.DeleteAsync(
+                    $"/api/genres/{genreId.Value}");
+            }
+
+            await _fixture.DeleteUserAsync(admin);
+        }
     }
 
     [Fact]
-    public async Task GetGenre_WithInvalidId_ReturnsNotFound()
+    public async Task GetGenre_WhenGenreDoesNotExist_ReturnsNotFound()
     {
-        var client = _fixture.CreateClient();
+        // Arrange
+        using var client = _fixture.CreateClient();
 
+        var nonExistingId = int.MaxValue;
+
+        // Act
         var response =
-            await client.GetAsync("/api/genres/999999");
+            await client.GetAsync(
+                $"/api/genres/{nonExistingId}");
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.NotFound,
             response.StatusCode);
     }
 
     [Fact]
-    public async Task Admin_CanCreateGenre()
+    public async Task CreateGenre_WhenUserIsAdmin_ReturnsCreatedGenre()
     {
-        var client = _fixture.CreateClient();
+        // Arrange
+        using var client = _fixture.CreateClient();
 
-        var auth =
-            new AuthTestHelper(client);
+        var auth = _fixture.CreateAuthHelper(client);
+        var admin = await _fixture.CreateAdminAsync();
 
-        var login =
-            await auth.LoginUserAsync(
-                "admin@test.com",
-                "Admin123!");
+        int? genreId = null;
 
-        Assert.True(
-            login.IsSuccessStatusCode);
-
-        var request = new
+        try
         {
-            Name = $"Comedy-{Guid.NewGuid():N}"
-        };
+            var loginResponse =
+                await auth.LoginUserAsync(admin);
 
-        var response =
-            await client.PostAsJsonAsync(
-                "/api/genres",
-                request);
+            Assert.True(
+                loginResponse.IsSuccessStatusCode);
 
-        Assert.Equal(
-            HttpStatusCode.Created,
-            response.StatusCode);
+            var genreName =
+                $"Comedy-{Guid.NewGuid():N}";
+
+            // Act
+            var response =
+                await client.PostAsJsonAsync(
+                    "/api/genres",
+                    new
+                    {
+                        Name = genreName
+                    });
+
+            // Assert
+            Assert.Equal(
+                HttpStatusCode.Created,
+                response.StatusCode);
+
+            var genre =
+                await response.Content
+                    .ReadFromJsonAsync<JsonElement>();
+
+            Assert.True(
+                genre.TryGetProperty(
+                    "id",
+                    out var id));
+
+            genreId = id.GetInt32();
+
+            Assert.True(
+                genreId.Value > 0);
+
+            Assert.Equal(
+                genreName,
+                genre.GetProperty("name").GetString());
+        }
+        finally
+        {
+            if (genreId.HasValue)
+            {
+                await client.DeleteAsync(
+                    $"/api/genres/{genreId.Value}");
+            }
+
+            await _fixture.DeleteUserAsync(admin);
+        }
     }
 
     [Fact]
-    public async Task Customer_CannotCreateGenre()
+    public async Task CreateGenre_WhenUserIsCustomer_ReturnsForbidden()
     {
         // Arrange
-        var client = _fixture.CreateClient();
+        using var client = _fixture.CreateClient();
 
-        var auth = new AuthTestHelper(client);
+        var auth = _fixture.CreateAuthHelper(client);
+        var customer = TestUserData.Customer();
 
-        var user = TestUserData.Customer();
-
-        var loginResponse =
-            await auth.RegisterAndLoginAsync(user);
-
-        Assert.True(
-            loginResponse.IsSuccessStatusCode);
-
-        var request = new
+        try
         {
-            Name = $"Horror-{Guid.NewGuid():N}"
-        };
+            var loginResponse =
+                await auth.RegisterAndLoginAsync(customer);
 
-        // Act
-        var response =
-            await client.PostAsJsonAsync(
-                "/api/genres",
-                request);
+            Assert.True(
+                loginResponse.IsSuccessStatusCode);
 
-        // Assert
-        Assert.Equal(
-            HttpStatusCode.Forbidden,
-            response.StatusCode);
+            var request = new
+            {
+                Name = $"Horror-{Guid.NewGuid():N}"
+            };
+
+            // Act
+            var response =
+                await client.PostAsJsonAsync(
+                    "/api/genres",
+                    request);
+
+            // Assert
+            Assert.Equal(
+                HttpStatusCode.Forbidden,
+                response.StatusCode);
+        }
+        finally
+        {
+            await _fixture.DeleteUserAsync(customer);
+        }
     }
 
     [Fact]
-    public async Task AnonymousUser_CannotCreateGenre()
-        {
+    public async Task CreateGenre_WhenUserIsAnonymous_ReturnsUnauthorized()
+    {
         // Arrange
-        var client =
-            _fixture.CreateAnonymousClient();
+        using var client = _fixture.CreateClient();
 
         var request = new
         {
@@ -143,147 +327,208 @@ public class GenresControllerTests
     }
 
     [Fact]
-    public async Task Admin_CreateGenre_WithValidName_ReturnsCreated()
+    public async Task UpdateGenre_WhenUserIsAdmin_ReturnsNoContentAndUpdatesGenre()
     {
         // Arrange
-        var client =
-            _fixture.CreateClient();
+        using var client = _fixture.CreateClient();
 
-        var auth =
-            new AuthTestHelper(client);
+        var auth = _fixture.CreateAuthHelper(client);
+        var admin = await _fixture.CreateAdminAsync();
 
-        var login =
-            await auth.LoginUserAsync(
-                "admin@test.com",
-                "Admin123!");
+        int? genreId = null;
 
-        Assert.True(
-            login.IsSuccessStatusCode);
-
-        var request = new
+        try
         {
-            Name = $"Fantasy-{Guid.NewGuid():N}"
-        };
+            var loginResponse =
+                await auth.LoginUserAsync(admin);
 
-        // Act
-        var response =
-            await client.PostAsJsonAsync(
-                "/api/genres",
-                request);
+            Assert.True(
+                loginResponse.IsSuccessStatusCode);
 
-        // Assert
-        Assert.Equal(
-            HttpStatusCode.Created,
-            response.StatusCode);
+            var originalName =
+                $"Genre-{Guid.NewGuid():N}";
+
+            var createResponse =
+                await client.PostAsJsonAsync(
+                    "/api/genres",
+                    new
+                    {
+                        Name = originalName
+                    });
+
+            Assert.Equal(
+                HttpStatusCode.Created,
+                createResponse.StatusCode);
+
+            var createdGenre =
+                await createResponse.Content
+                    .ReadFromJsonAsync<JsonElement>();
+
+            genreId =
+                createdGenre
+                    .GetProperty("id")
+                    .GetInt32();
+
+            var updatedName =
+                $"Updated-{Guid.NewGuid():N}";
+
+            // Act
+            var response =
+                await client.PutAsJsonAsync(
+                    $"/api/genres/{genreId.Value}",
+                    new
+                    {
+                        Name = updatedName
+                    });
+
+            // Assert
+            Assert.Equal(
+                HttpStatusCode.NoContent,
+                response.StatusCode);
+
+            var getResponse =
+                await client.GetAsync(
+                    $"/api/genres/{genreId.Value}");
+
+            Assert.Equal(
+                HttpStatusCode.OK,
+                getResponse.StatusCode);
+
+            var updatedGenre =
+                await getResponse.Content
+                    .ReadFromJsonAsync<JsonElement>();
+
+            Assert.Equal(
+                genreId.Value,
+                updatedGenre
+                    .GetProperty("id")
+                    .GetInt32());
+
+            Assert.Equal(
+                updatedName,
+                updatedGenre
+                    .GetProperty("name")
+                    .GetString());
+        }
+        finally
+        {
+            if (genreId.HasValue)
+            {
+                await client.DeleteAsync(
+                    $"/api/genres/{genreId.Value}");
+            }
+
+            await _fixture.DeleteUserAsync(admin);
+        }
     }
 
     [Fact]
-    public async Task Admin_CanUpdateGenre()
+    public async Task DeleteGenre_WhenGenreExistsAndUserIsAdmin_ReturnsNoContent()
     {
         // Arrange
-        var client =
-        _fixture.CreateClient();
+        using var client = _fixture.CreateClient();
 
-        var auth =
-            new AuthTestHelper(client);
+        var auth = _fixture.CreateAuthHelper(client);
+        var admin = await _fixture.CreateAdminAsync();
 
-        var login =
-            await auth.LoginUserAsync(
-                "admin@test.com",
-                "Admin123!");
+        int? genreId = null;
 
-        Assert.True(
-            login.IsSuccessStatusCode);
-
-        var createRequest = new
+        try
         {
-            Name = $"Genre-{Guid.NewGuid():N}"
-        };
+            var loginResponse =
+                await auth.LoginUserAsync(admin);
 
-        var createResponse =
-            await client.PostAsJsonAsync(
-                "/api/genres",
-                createRequest);
+            Assert.True(
+                loginResponse.IsSuccessStatusCode);
 
-        Assert.Equal(
-            HttpStatusCode.Created,
-            createResponse.StatusCode);
+            var genreName =
+                $"Genre-ToDelete-{Guid.NewGuid():N}";
 
-        var createdGenre =
-            await createResponse.Content
-                .ReadFromJsonAsync<JsonElement>();
+            var createResponse =
+                await client.PostAsJsonAsync(
+                    "/api/genres",
+                    new
+                    {
+                        Name = genreName
+                    });
 
-        var genreId =
-            createdGenre
-                .GetProperty("id")
-                .GetInt32();
+            Assert.Equal(
+                HttpStatusCode.Created,
+                createResponse.StatusCode);
 
-        var updateRequest = new
+            var createdGenre =
+                await createResponse.Content
+                    .ReadFromJsonAsync<JsonElement>();
+
+            genreId =
+                createdGenre
+                    .GetProperty("id")
+                    .GetInt32();
+
+            // Act
+            var response =
+                await client.DeleteAsync(
+                    $"/api/genres/{genreId.Value}");
+
+            // Assert
+            Assert.Equal(
+                HttpStatusCode.NoContent,
+                response.StatusCode);
+
+            var getResponse =
+                await client.GetAsync(
+                    $"/api/genres/{genreId.Value}");
+
+            Assert.Equal(
+                HttpStatusCode.NotFound,
+                getResponse.StatusCode);
+
+            genreId = null;
+        }
+        finally
         {
-            Name = $"Updated-{Guid.NewGuid():N}"
-        };
+            if (genreId.HasValue)
+            {
+                await client.DeleteAsync(
+                    $"/api/genres/{genreId.Value}");
+            }
 
-        // Act
-        var response =
-            await client.PutAsJsonAsync(
-                $"/api/genres/{genreId}",
-                updateRequest);
-
-        // Assert
-        Assert.Equal(
-            HttpStatusCode.NoContent,
-            response.StatusCode);
-    }
-
-
-
-    [Fact]
-    public async Task Admin_DeleteGenre_ReturnsNoContent()
-    {
-        var client = _fixture.CreateClient();
-
-        var auth =
-            new AuthTestHelper(client);
-
-        var login =
-            await auth.LoginUserAsync(
-                "admin@test.com",
-                "Admin123!");
-
-        Assert.True(
-            login.IsSuccessStatusCode);
-
-        var response =
-            await client.DeleteAsync(
-                "/api/genres/1");
-
-        Assert.Equal(
-            HttpStatusCode.NoContent,
-            response.StatusCode);
+            await _fixture.DeleteUserAsync(admin);
+        }
     }
 
     [Fact]
-    public async Task Admin_DeleteNonExistingGenre_ReturnsNotFound()
+    public async Task DeleteGenre_WhenGenreDoesNotExistAndUserIsAdmin_ReturnsNotFound()
     {
-        var client = _fixture.CreateClient();
+        // Arrange
+        using var client = _fixture.CreateClient();
 
-        var auth =
-            new AuthTestHelper(client);
+        var auth = _fixture.CreateAuthHelper(client);
+        var admin = await _fixture.CreateAdminAsync();
 
-        var login =
-            await auth.LoginUserAsync(
-                "admin@test.com",
-                "Admin123!");
+        try
+        {
+            var loginResponse =
+                await auth.LoginUserAsync(admin);
 
-        Assert.True(
-            login.IsSuccessStatusCode);
+            Assert.True(
+                loginResponse.IsSuccessStatusCode);
 
-        var response =
-            await client.DeleteAsync(
-                "/api/genres/999999");
+            var nonExistingId = int.MaxValue;
 
-        Assert.Equal(
-            HttpStatusCode.NotFound,
-            response.StatusCode);
+            // Act
+            var response =
+                await client.DeleteAsync(
+                    $"/api/genres/{nonExistingId}");
+
+            // Assert
+            Assert.Equal(
+                HttpStatusCode.NotFound,
+                response.StatusCode);
+        }
+        finally
+        {
+            await _fixture.DeleteUserAsync(admin);
+        }
     }
 }

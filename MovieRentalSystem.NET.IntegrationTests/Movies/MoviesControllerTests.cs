@@ -1,5 +1,8 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
+using MovieRentalSystem.NET.Application.Common;
+using MovieRentalSystem.NET.Application.Dtos;
 using MovieRentalSystem.NET.IntegrationTests.Fixtures;
 using MovieRentalSystem.NET.IntegrationTests.Helpers;
 
@@ -15,289 +18,636 @@ public class MoviesControllerTests
         _fixture = fixture;
     }
 
-
     [Fact]
-    public async Task GetMovies_ReturnsOk_WithMovies()
+    public async Task GetMovies_WhenMoviesExist_ReturnsCreatedMovie()
     {
-        // Arrange
-        var client = _fixture.ApiClient;
+        using var client = _fixture.CreateClient();
 
-        // Act
-        var response =
-            await client.GetAsync("/api/movies");
+        var auth =
+            _fixture.CreateAuthHelper(client);
 
-        // Assert
-        Assert.Equal(
-            HttpStatusCode.OK,
-            response.StatusCode);
+        var admin =
+            await _fixture.CreateAdminAsync();
 
-        var body =
-            await response.Content.ReadAsStringAsync();
+        int? movieId = null;
 
-        Assert.NotNull(body);
+        try
+        {
+            var loginResponse =
+                await auth.LoginUserAsync(admin);
+
+            Assert.True(
+                loginResponse.IsSuccessStatusCode);
+
+            var createRequest = new
+            {
+                Title =
+                    $"Test Movie {Guid.NewGuid():N}",
+                Description =
+                    "Movie created for integration test",
+                ReleaseYear = 2025,
+                RentalPrice = 20m
+            };
+
+            var createResponse =
+                await client.PostAsJsonAsync(
+                    "/api/movies",
+                    createRequest);
+
+            Assert.Equal(
+                HttpStatusCode.Created,
+                createResponse.StatusCode);
+
+            var createdMovie =
+                await createResponse.Content
+                    .ReadFromJsonAsync<MovieDto>();
+
+            Assert.NotNull(createdMovie);
+
+            movieId = createdMovie.Id;
+
+            using var anonymousClient =
+                _fixture.CreateClient();
+
+            var response =
+                await anonymousClient.GetAsync(
+                    "/api/movies");
+
+            Assert.Equal(
+                HttpStatusCode.OK,
+                response.StatusCode);
+
+            using var document =
+                await response.Content
+                    .ReadFromJsonAsync<JsonDocument>();
+
+            Assert.NotNull(document);
+
+            var data =
+                document.RootElement
+                    .GetProperty("data");
+
+            var returnedMovie =
+                data.EnumerateArray()
+                    .Single(movie =>
+                        movie.GetProperty("id").GetInt32()
+                        == movieId.Value);
+
+            Assert.Equal(
+                createRequest.Title,
+                returnedMovie
+                    .GetProperty("title")
+                    .GetString());
+
+            Assert.Equal(
+                createRequest.Description,
+                returnedMovie
+                    .GetProperty("description")
+                    .GetString());
+
+            Assert.Equal(
+                createRequest.ReleaseYear,
+                returnedMovie
+                    .GetProperty("releaseYear")
+                    .GetInt32());
+
+            Assert.Equal(
+                createRequest.RentalPrice,
+                returnedMovie
+                    .GetProperty("rentalPrice")
+                    .GetDecimal());
+        }
+        finally
+        {
+            if (movieId.HasValue)
+            {
+                await client.DeleteAsync(
+                    $"/api/movies/{movieId.Value}");
+            }
+
+            await _fixture.DeleteUserAsync(admin);
+        }
     }
 
-
     [Fact]
-    public async Task GetMovie_WithExistingId_ReturnsOk()
+    public async Task GetMovie_WhenMovieExists_ReturnsMovie()
     {
-        // Arrange
-        var client = _fixture.ApiClient;
+        using var client = _fixture.CreateClient();
 
-        // Act
-        var response =
-            await client.GetAsync("/api/movies/1");
+        var auth =
+            _fixture.CreateAuthHelper(client);
 
-        // Assert
-        Assert.Equal(
-            HttpStatusCode.OK,
-            response.StatusCode);
+        var admin =
+            await _fixture.CreateAdminAsync();
+
+        int? movieId = null;
+
+        try
+        {
+            var loginResponse =
+                await auth.LoginUserAsync(admin);
+
+            Assert.True(
+                loginResponse.IsSuccessStatusCode);
+
+            var createRequest = new
+            {
+                Title =
+                    $"Test Movie {Guid.NewGuid():N}",
+                Description =
+                    "Movie created for integration test",
+                ReleaseYear = 2025,
+                RentalPrice = 20m
+            };
+
+            var createResponse =
+                await client.PostAsJsonAsync(
+                    "/api/movies",
+                    createRequest);
+
+            Assert.Equal(
+                HttpStatusCode.Created,
+                createResponse.StatusCode);
+
+            var createdMovie =
+                await createResponse.Content
+                    .ReadFromJsonAsync<MovieDto>();
+
+            Assert.NotNull(createdMovie);
+
+            movieId = createdMovie.Id;
+
+            var response =
+                await client.GetAsync(
+                    $"/api/movies/{movieId.Value}");
+
+            Assert.Equal(
+                HttpStatusCode.OK,
+                response.StatusCode);
+
+            var movie =
+                await response.Content
+                    .ReadFromJsonAsync<MovieDto>();
+
+            Assert.NotNull(movie);
+
+            Assert.Equal(
+                createdMovie.Id,
+                movie.Id);
+
+            Assert.Equal(
+                createRequest.Title,
+                movie.Title);
+
+            Assert.Equal(
+                createRequest.Description,
+                movie.Description);
+
+            Assert.Equal(
+                createRequest.ReleaseYear,
+                movie.ReleaseYear);
+
+            Assert.Equal(
+                createRequest.RentalPrice,
+                movie.RentalPrice);
+        }
+        finally
+        {
+            if (movieId.HasValue)
+            {
+                await client.DeleteAsync(
+                    $"/api/movies/{movieId.Value}");
+            }
+
+            await _fixture.DeleteUserAsync(admin);
+        }
     }
 
-
     [Fact]
-    public async Task GetMovie_WithNonExistingId_ReturnsNotFound()
+    public async Task GetMovie_WhenMovieDoesNotExist_ReturnsNotFound()
     {
-        // Arrange
-        var client = _fixture.ApiClient;
+        using var client = _fixture.CreateClient();
 
-        // Act
         var response =
-            await client.GetAsync("/api/movies/999999");
+            await client.GetAsync(
+                $"/api/movies/{int.MaxValue}");
 
-        // Assert
         Assert.Equal(
             HttpStatusCode.NotFound,
             response.StatusCode);
     }
 
     [Fact]
-    public async Task Admin_CanCreateMovie()
+    public async Task CreateMovie_WhenUserIsAdmin_ReturnsCreatedMovie()
     {
-        // Arrange
-        var client =
-            _fixture.CreateClient();
+        using var client = _fixture.CreateClient();
 
         var auth =
-            new AuthTestHelper(client);
+            _fixture.CreateAuthHelper(client);
 
-        var login =
-            await auth.LoginUserAsync(
-                "admin@test.com",
-                "Admin123!");
+        var admin =
+            await _fixture.CreateAdminAsync();
 
-        Assert.True(
-            login.IsSuccessStatusCode);
+        int? movieId = null;
 
-        var request = new
+        try
         {
-            Title = "Test Movie",
-            Description = "Integration test movie",
-            ReleaseYear = 2025,
-            RentalPrice = 20m
-        };
+            var loginResponse =
+                await auth.LoginUserAsync(admin);
 
-        // Act
-        var response =
-            await client.PostAsJsonAsync(
-                "/api/movies",
-                request);
+            Assert.True(
+                loginResponse.IsSuccessStatusCode);
 
-        // Assert
-        Assert.Equal(
-            HttpStatusCode.Created,
-            response.StatusCode);
-    }
+            var request = new
+            {
+                Title =
+                    $"Test Movie {Guid.NewGuid():N}",
+                Description =
+                    "Integration test movie",
+                ReleaseYear = 2025,
+                RentalPrice = 20m
+            };
 
-    [Fact]
-    public async Task Customer_CannotCreateMovie()
-    {
-        // Arrange
-        var user =
-            TestUserData.Customer();
-
-        var auth =
-            _fixture.CreateAuthHelper();
-
-        await auth.RegisterAndLoginAsync(user);
-
-
-        var request = new
-        {
-            Title = "Customer Movie",
-            Description = "Should fail",
-            ReleaseYear = 2025,
-            RentalPrice = 10m
-        };
-
-
-        // Act
-        var response =
-            await _fixture.ApiClient
-                .PostAsJsonAsync(
+            var response =
+                await client.PostAsJsonAsync(
                     "/api/movies",
                     request);
 
+            Assert.Equal(
+                HttpStatusCode.Created,
+                response.StatusCode);
 
-        // Assert
-        Assert.Equal(
-            HttpStatusCode.Forbidden,
-            response.StatusCode);
+            var movie =
+                await response.Content
+                    .ReadFromJsonAsync<MovieDto>();
+
+            Assert.NotNull(movie);
+
+            movieId = movie.Id;
+
+            Assert.True(movie.Id > 0);
+            Assert.Equal(
+                request.Title,
+                movie.Title);
+
+            Assert.Equal(
+                request.Description,
+                movie.Description);
+
+            Assert.Equal(
+                request.ReleaseYear,
+                movie.ReleaseYear);
+
+            Assert.Equal(
+                request.RentalPrice,
+                movie.RentalPrice);
+        }
+        finally
+        {
+            if (movieId.HasValue)
+            {
+                await client.DeleteAsync(
+                    $"/api/movies/{movieId.Value}");
+            }
+
+            await _fixture.DeleteUserAsync(admin);
+        }
     }
 
     [Fact]
-    public async Task AnonymousUser_CanCreateMovie()
+    public async Task CreateMovie_WhenUserIsCustomer_ReturnsForbidden()
     {
-        // Arrange
-        var client =
-            _fixture.CreateClient();
+        using var client = _fixture.CreateClient();
+
+        var auth =
+            _fixture.CreateAuthHelper(client);
+
+        var customer =
+            TestUserData.Customer();
+
+        try
+        {
+            var loginResponse =
+                await auth.RegisterAndLoginAsync(
+                    customer);
+
+            Assert.True(
+                loginResponse.IsSuccessStatusCode);
+
+            var request = new
+            {
+                Title =
+                    $"Customer Movie {Guid.NewGuid():N}",
+                Description =
+                    "Should not be created",
+                ReleaseYear = 2025,
+                RentalPrice = 10m
+            };
+
+            var response =
+                await client.PostAsJsonAsync(
+                    "/api/movies",
+                    request);
+
+            Assert.Equal(
+                HttpStatusCode.Forbidden,
+                response.StatusCode);
+        }
+        finally
+        {
+            await _fixture.DeleteUserAsync(
+                customer);
+        }
+    }
+
+    [Fact]
+    public async Task CreateMovie_WhenUserIsAnonymous_ReturnsUnauthorized()
+    {
+        using var client = _fixture.CreateClient();
 
         var request = new
         {
-            Title = $"Anonymous Movie {Guid.NewGuid():N}",
-            Description = "Should succeed",
+            Title =
+                $"Anonymous Movie {Guid.NewGuid():N}",
+            Description =
+                "Should not be created",
             ReleaseYear = 2025,
             RentalPrice = 10m
         };
 
-        // Act
         var response =
             await client.PostAsJsonAsync(
                 "/api/movies",
                 request);
 
-        // Assert
         Assert.Equal(
-            HttpStatusCode.Created,
+            HttpStatusCode.Unauthorized,
             response.StatusCode);
     }
 
     [Fact]
-    public async Task Admin_CanUpdateMovie()
+    public async Task UpdateMovie_WhenMovieExistsAndUserIsAdmin_ReturnsNoContentAndUpdatesMovie()
     {
-        // Arrange
-        var client = _fixture.ApiClient;
+        using var client = _fixture.CreateClient();
 
         var auth =
-            new AuthTestHelper(client);
+            _fixture.CreateAuthHelper(client);
 
-        var login =
-            await auth.LoginUserAsync(
-                "admin@test.com",
-                "Admin123!");
+        var admin =
+            await _fixture.CreateAdminAsync();
 
-        Assert.True(
-            login.IsSuccessStatusCode);
+        int? movieId = null;
 
-        var request = new
+        try
         {
-            Title = "Updated Movie",
-            Description = "Updated description",
-            ReleaseYear = 2026,
-            RentalPrice = 30m
-        };
+            var loginResponse =
+                await auth.LoginUserAsync(admin);
 
-        // Act
-        var response =
-            await client.PutAsJsonAsync(
-                "/api/movies/1",
-                request);
+            Assert.True(
+                loginResponse.IsSuccessStatusCode);
 
-        // Assert
-        Assert.Equal(
-            HttpStatusCode.NoContent,
-            response.StatusCode);
-    }
+            var createRequest = new
+            {
+                Title =
+                    $"Original Movie {Guid.NewGuid():N}",
+                Description =
+                    "Original description",
+                ReleaseYear = 2025,
+                RentalPrice = 20m
+            };
 
-    [Fact]
-    public async Task Admin_DeleteMovie_ReturnsInternalServerError()
-    {
-        // Arrange
-        var auth =
-            new AuthTestHelper(_fixture.ApiClient);
+            var createResponse =
+                await client.PostAsJsonAsync(
+                    "/api/movies",
+                    createRequest);
 
-        var login =
-            await auth.LoginUserAsync(
-                "admin@test.com",
-                "Admin123!");
+            Assert.Equal(
+                HttpStatusCode.Created,
+                createResponse.StatusCode);
 
-        Assert.True(
-            login.IsSuccessStatusCode);
+            var createdMovie =
+                await createResponse.Content
+                    .ReadFromJsonAsync<MovieDto>();
 
-        // Act
-        var response =
-            await _fixture.ApiClient
-                .DeleteAsync(
-                    "/api/movies/1");
+            Assert.NotNull(createdMovie);
 
-        // Assert
-        Assert.Equal(
-            HttpStatusCode.InternalServerError,
-            response.StatusCode);
-    }
+            movieId = createdMovie.Id;
 
-    [Fact]
-    public async Task DeleteMovie_WithInvalidId_ReturnsNotFound()
-    {
-        // Arrange
-        var auth =
-            _fixture.CreateAuthHelper();
+            var updateRequest = new
+            {
+                Title =
+                    $"Updated Movie {Guid.NewGuid():N}",
+                Description =
+                    "Updated description",
+                ReleaseYear = 2026,
+                RentalPrice = 30m
+            };
 
-        var login =
-            await auth.LoginUserAsync(
-                "admin@test.com",
-                "Admin123!");
+            var response =
+                await client.PutAsJsonAsync(
+                    $"/api/movies/{movieId.Value}",
+                    updateRequest);
 
-        Assert.True(
-            login.IsSuccessStatusCode);
+            Assert.Equal(
+                HttpStatusCode.NoContent,
+                response.StatusCode);
 
-        // Act
-        var response =
-            await _fixture.ApiClient
-                .DeleteAsync(
-                    "/api/movies/999999");
+            var getResponse =
+                await client.GetAsync(
+                    $"/api/movies/{movieId.Value}");
 
-        // Assert
-        Assert.Equal(
-            HttpStatusCode.NotFound,
-            response.StatusCode);
-    }
+            Assert.Equal(
+                HttpStatusCode.OK,
+                getResponse.StatusCode);
 
-    [Fact]
-    public async Task Admin_CreateMovie_WithInvalidData_ReturnsInternalServerError()
-    {
-        // Arrange
-        var client =
-            _fixture.CreateClient();
+            var updatedMovie =
+                await getResponse.Content
+                    .ReadFromJsonAsync<MovieDto>();
 
-        var auth =
-            new AuthTestHelper(client);
+            Assert.NotNull(updatedMovie);
 
-        var login =
-            await auth.LoginUserAsync(
-                "admin@test.com",
-                "Admin123!");
+            Assert.Equal(
+                movieId.Value,
+                updatedMovie.Id);
 
-        Assert.True(
-            login.IsSuccessStatusCode);
+            Assert.Equal(
+                updateRequest.Title,
+                updatedMovie.Title);
 
-        var request = new
+            Assert.Equal(
+                updateRequest.Description,
+                updatedMovie.Description);
+
+            Assert.Equal(
+                updateRequest.ReleaseYear,
+                updatedMovie.ReleaseYear);
+
+            Assert.Equal(
+                updateRequest.RentalPrice,
+                updatedMovie.RentalPrice);
+        }
+        finally
         {
-            Title = "",
-            Description = "",
-            ReleaseYear = 0,
-            RentalPrice = -1
-        };
+            if (movieId.HasValue)
+            {
+                await client.DeleteAsync(
+                    $"/api/movies/{movieId.Value}");
+            }
 
-        // Act
-        var response =
-            await client.PostAsJsonAsync(
-                "/api/movies",
-                request);
+            await _fixture.DeleteUserAsync(admin);
+        }
+    }
 
-        // Assert
-        Assert.Equal(
-            HttpStatusCode.InternalServerError,
-            response.StatusCode);
+    [Fact]
+    public async Task DeleteMovie_WhenMovieExistsAndUserIsAdmin_ReturnsNoContentAndRemovesMovie()
+    {
+        using var client = _fixture.CreateClient();
+
+        var auth =
+            _fixture.CreateAuthHelper(client);
+
+        var admin =
+            await _fixture.CreateAdminAsync();
+
+        int? movieId = null;
+
+        try
+        {
+            var loginResponse =
+                await auth.LoginUserAsync(admin);
+
+            Assert.True(
+                loginResponse.IsSuccessStatusCode);
+
+            var createRequest = new
+            {
+                Title =
+                    $"Movie To Delete {Guid.NewGuid():N}",
+                Description =
+                    "Movie created for delete test",
+                ReleaseYear = 2025,
+                RentalPrice = 20m
+            };
+
+            var createResponse =
+                await client.PostAsJsonAsync(
+                    "/api/movies",
+                    createRequest);
+
+            Assert.Equal(
+                HttpStatusCode.Created,
+                createResponse.StatusCode);
+
+            var createdMovie =
+                await createResponse.Content
+                    .ReadFromJsonAsync<MovieDto>();
+
+            Assert.NotNull(createdMovie);
+
+            movieId = createdMovie.Id;
+
+            var response =
+                await client.DeleteAsync(
+                    $"/api/movies/{movieId.Value}");
+
+            Assert.Equal(
+                HttpStatusCode.NoContent,
+                response.StatusCode);
+
+            var getResponse =
+                await client.GetAsync(
+                    $"/api/movies/{movieId.Value}");
+
+            Assert.Equal(
+                HttpStatusCode.NotFound,
+                getResponse.StatusCode);
+
+            movieId = null;
+        }
+        finally
+        {
+            if (movieId.HasValue)
+            {
+                await client.DeleteAsync(
+                    $"/api/movies/{movieId.Value}");
+            }
+
+            await _fixture.DeleteUserAsync(admin);
+        }
+    }
+
+    [Fact]
+    public async Task DeleteMovie_WhenMovieDoesNotExistAndUserIsAdmin_ReturnsNotFound()
+    {
+        using var client = _fixture.CreateClient();
+
+        var auth =
+            _fixture.CreateAuthHelper(client);
+
+        var admin =
+            await _fixture.CreateAdminAsync();
+
+        try
+        {
+            var loginResponse =
+                await auth.LoginUserAsync(admin);
+
+            Assert.True(
+                loginResponse.IsSuccessStatusCode);
+
+            var response =
+                await client.DeleteAsync(
+                    $"/api/movies/{int.MaxValue}");
+
+            Assert.Equal(
+                HttpStatusCode.NotFound,
+                response.StatusCode);
+        }
+        finally
+        {
+            await _fixture.DeleteUserAsync(admin);
+        }
+    }
+
+    [Fact]
+    public async Task CreateMovie_WhenRequestDataIsInvalidAndUserIsAdmin_ReturnsBadRequest()
+    {
+        using var client = _fixture.CreateClient();
+
+        var auth =
+            _fixture.CreateAuthHelper(client);
+
+        var admin =
+            await _fixture.CreateAdminAsync();
+
+        try
+        {
+            var loginResponse =
+                await auth.LoginUserAsync(admin);
+
+            Assert.True(
+                loginResponse.IsSuccessStatusCode);
+
+            var request = new
+            {
+                Title = string.Empty,
+                Description = string.Empty,
+                ReleaseYear = 0,
+                RentalPrice = -1m
+            };
+
+            var response =
+                await client.PostAsJsonAsync(
+                    "/api/movies",
+                    request);
+
+            Assert.Equal(
+                HttpStatusCode.BadRequest,
+                response.StatusCode);
+        }
+        finally
+        {
+            await _fixture.DeleteUserAsync(admin);
+        }
     }
 }

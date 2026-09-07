@@ -1,36 +1,45 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
-namespace MovieRentalSystem.NET.WebApi.Middlewares
-{
-    internal sealed class GlobalExceptionHandler(
+namespace MovieRentalSystem.NET.WebApi.Middlewares;
+
+internal sealed class GlobalExceptionHandler(
     IProblemDetailsService problemDetailsService,
     ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
+{
+    public async ValueTask<bool> TryHandleAsync(
+        HttpContext httpContext,
+        Exception exception,
+        CancellationToken cancellationToken)
     {
-        public async ValueTask<bool> TryHandleAsync(
-            HttpContext httpContext,
-            Exception exception,
-            CancellationToken cancellationToken)
+        logger.LogError(
+            exception,
+            "Unhandled exception occurred");
+
+        httpContext.Response.StatusCode = exception switch
         {
-            logger.LogError(exception, "Unhandled exception occurred");
+            ValidationException =>
+                StatusCodes.Status400BadRequest,
 
-            httpContext.Response.StatusCode = exception switch
-            {
-                ApplicationException => StatusCodes.Status400BadRequest,
-                _ => StatusCodes.Status500InternalServerError
-            };
+            ApplicationException =>
+                StatusCodes.Status400BadRequest,
 
-            return await problemDetailsService.TryWriteAsync(new ProblemDetailsContext
+            _ =>
+                StatusCodes.Status500InternalServerError
+        };
+
+        return await problemDetailsService.TryWriteAsync(
+            new ProblemDetailsContext
             {
                 HttpContext = httpContext,
                 Exception = exception,
                 ProblemDetails = new ProblemDetails
                 {
                     Type = exception.GetType().Name,
-                    Title = "An error occured",
+                    Title = "An error occurred",
                     Detail = exception.Message
                 }
             });
-        }
     }
 }
