@@ -48,12 +48,19 @@ public class AuthController : ControllerBase
     [AllowAnonymous]
     public async Task<ActionResult> Login(LoginRequest request)
     {
+        Console.WriteLine($"LOGIN: looking for user {request.Email}");
+
         var user = await _userManager.FindByEmailAsync(request.Email);
+
+        Console.WriteLine(
+            $"LOGIN: user found = {user is not null}");
 
         if (user is null)
         {
             return Unauthorized();
         }
+
+        Console.WriteLine("LOGIN: before PasswordSignInAsync");
 
         var result = await _signInManager.PasswordSignInAsync(
             user.UserName!,
@@ -61,10 +68,15 @@ public class AuthController : ControllerBase
             request.RememberMe,
             lockoutOnFailure: false);
 
+        Console.WriteLine(
+            $"LOGIN: PasswordSignInAsync finished. Succeeded={result.Succeeded}");
+
         if (!result.Succeeded)
         {
             return Unauthorized();
         }
+
+        Console.WriteLine("LOGIN: returning OK");
 
         return Ok();
     }

@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Identity;
 using MovieRentalSystem.NET.Application.ApplicationDependencies;
@@ -8,6 +9,7 @@ using MovieRentalSystem.NET.Infrastructure.Data;
 using MovieRentalSystem.NET.Infrastructure.InfrastructureDependencies;
 using MovieRentalSystem.NET.WebApi.Extensions;
 using MovieRentalSystem.NET.WebApi.Middlewares;
+using MovieRentalSystem.NET.WebApi.Validators.Genres;
 using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Events;
@@ -27,19 +29,34 @@ builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = null;
     options.AccessDeniedPath = null;
+
     options.Cookie.HttpOnly = true;
-    options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+
+    options.ExpireTimeSpan =
+        TimeSpan.FromMinutes(60);
+
     options.SlidingExpiration = true;
+
+    options.Events.OnValidatePrincipal = context =>
+    {
+        return Task.CompletedTask;
+    };
 
     options.Events.OnRedirectToLogin = context =>
     {
-        context.Response.StatusCode = 401;
+        context.Response.StatusCode =
+            StatusCodes.Status401Unauthorized;
+
         return Task.CompletedTask;
     };
 
     options.Events.OnRedirectToAccessDenied = context =>
     {
-        context.Response.StatusCode = 403;
+        context.Response.StatusCode =
+            StatusCodes.Status403Forbidden;
+
         return Task.CompletedTask;
     };
 });
@@ -62,22 +79,32 @@ builder.Services.AddHttpLogging(options =>
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
-    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+    .MinimumLevel.Override(
+        "Microsoft",
+        LogEventLevel.Information)
+    .MinimumLevel.Override(
+        "Microsoft.AspNetCore",
+        LogEventLevel.Warning)
     .MinimumLevel.Override(
         "Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware",
         LogEventLevel.Information)
     .Enrich.FromLogContext()
     .WriteTo.Console()
     .WriteTo.OpenTelemetry()
-    .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day)
+    .WriteTo.File(
+        "logs/log.txt",
+        rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 builder.Services.AddSerilog();
 
 builder.AddServiceDefaults();
 
-builder.Services.AddControllers()
+builder.Services
+    .AddFluentValidationAutoValidation();
+
+builder.Services
+    .AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(
@@ -86,11 +113,13 @@ builder.Services.AddControllers()
 
 builder.Services.AddApplicationDependencies();
 
-builder.Services.AddInfrastructureDependencies(builder.Configuration);
+builder.Services.AddInfrastructureDependencies(
+    builder.Configuration);
 
 builder.Services.AddOpenApi();
 
-builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.Services.AddValidatorsFromAssemblyContaining<
+    CreateGenreRequestValidator>();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
@@ -108,6 +137,10 @@ app.UseHttpLogging();
 
 app.UseMiddleware<ResponseTimeMiddleware>();
 
+app.UseAuthentication();
+
+app.UseAuthorization();
+
 app.MapDefaultEndpoints();
 
 if (app.Environment.IsDevelopment())
@@ -115,10 +148,6 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi().AllowAnonymous();
     app.MapScalarApiReference();
 }
-
-app.UseAuthentication();
-
-app.UseAuthorization();
 
 app.MapControllers();
 
